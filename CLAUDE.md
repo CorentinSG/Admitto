@@ -19,6 +19,19 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)
 
+## Skills de projet (`.claude/skills/`)
+
+Instructions chargées **à la demande**, pas à chaque session — elles n'alourdissent le
+contexte que lorsqu'elles servent :
+
+- `verification-avant-livraison` — avant d'annoncer un travail terminé ou de committer
+- `debogage-systematique` — dès qu'un bug ou une vérification échoue
+- `design-admitto` — toute modification visuelle (contrat d'animation, palette, quirks)
+- `moteurs-admitto` — règles du Moteur A, notation du Moteur B
+- `contenu-admitto` — copie visible, blocs de rapport et d'email, bases légales
+
+Validés par `npm run check:skills` (un skill mal formé est ignoré silencieusement).
+
 ## Exploration du code — Graphify d'abord (économie de tokens)
 
 **Avant tout grep/glob large : lire `graphify-out/GRAPH_REPORT.md`** (god nodes,

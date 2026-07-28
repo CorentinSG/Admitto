@@ -30,6 +30,12 @@ jobs:
       - name: Couleurs hors palette (design system)
         run: npm run check:tokens
 
+      - name: Règles du Moteur A sourcées et datées (CDC §14.1)
+        run: npm run check:rules
+
+      - name: Skills de projet bien formés
+        run: npm run check:skills
+
       - name: Lint
         run: npm run lint
 

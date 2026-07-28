@@ -87,7 +87,24 @@ Ces règles réduisent le nombre de tokens que chaque session doit charger :
 - **Pas de fichiers générés commités** (sauf `GRAPH_REPORT.md`) : node_modules, .next,
   coverage et graph.json sont ignorés — ils pollueraient toute recherche.
 
-## 4. Sous-agents et parallélisme
+## 4. Skills de projet — instructions à la demande
+
+`.claude/skills/<nom>/SKILL.md` contient les conventions détaillées du projet (contrat
+d'animation, règles des moteurs, contraintes de contenu, procédures de vérification et de
+débogage).
+
+L'intérêt en tokens est direct : ces instructions **ne sont pas chargées à chaque
+session**. Seule leur description en une ligne est visible ; le corps n'est lu que lorsque
+la tâche correspond. Cela permet de garder `CLAUDE.md` court — donc le préfixe de session
+stable et le cache prompt efficace — tout en conservant des consignes détaillées là où
+elles servent.
+
+Conséquence pratique : ce qui est volumineux et situationnel va dans un skill, pas dans
+`CLAUDE.md`. Un skill mal formé est ignoré sans erreur, d'où le garde-fou
+`npm run check:skills` qui vérifie frontmatter, correspondance nom/dossier, unicité et
+longueur utile de la description.
+
+## 5. Sous-agents et parallélisme
 
 Pour les tâches larges (audit, migration, revue), déléguer les balayages de fichiers à des
 sous-agents (agent `Explore`) qui ne remontent que la conclusion : le contexte principal ne
