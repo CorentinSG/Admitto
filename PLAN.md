@@ -471,8 +471,23 @@ Points contrôlés :
 |---|---|---|
 | **S1 — Socle & design system** | Scaffold Next.js/React 19/TS, `design/tokens.ts`, `design/animations.tsx`, `design/global-css.ts`, reset, garde-fous, CI, graphe Graphify | **Fait** |
 | **S2 — Homepage** | Les 10 blocs du CDC §11, nav fixe, footer, copie centralisée, checklist animations automatisée et conforme | **Fait** |
-| S3 — Questionnaire + Moteur A + résultat immédiat | 12 écrans, logique conditionnelle, règles seed, page de résultat, email J+0 | À faire |
+| **S3 — Questionnaire + Moteur A + résultat immédiat** | 12 écrans typés, logique conditionnelle §12.4, profil inféré, règles versionnées, résultat immédiat à six blocs, paliers de délai §18 | **Fait**, sauf les deux réserves ci-dessous |
 | S4 — Moteur B + rapport + back-office minimal | 5 axes, assemblage du rapport, PDF, file de capacité | À faire |
+
+**Deux réserves explicites sur le Sprint 3**, à lever avant la bêta :
+
+1. **Règles juridiques non vérifiées.** Les règles du Moteur A qui énoncent une règle de
+   droit américain (`R-NY-001`, `R-NY-002`, `R-ALT-001`) sont livrées `active: false` et
+   `verifiedAt: null` : leur contenu doit être confronté à la source officielle par le
+   fondateur avant activation. Tant qu'elles sont inactives, le moteur retombe sur
+   « revue humaine », ce qui est le comportement voulu par le CDC §1. Le garde-fou
+   `npm run check:rules` refuse toute règle active sans source ni date de vérification.
+   Seules les règles structurelles (informations manquantes, cursus en cours), qui
+   n'énoncent aucune règle de droit, sont actives.
+2. **Persistance et email.** Les évaluations sont stockées en mémoire du processus
+   (`lib/store/assessments.ts`) et l'email transactionnel J+0 n'est pas encore envoyé.
+   Les deux points sont isolés derrière une interface : brancher Prisma et Resend ne
+   change rien au reste du code.
 
 La photographie professionnelle du fondateur (CDC §6) est intégrée : détourage sur fond
 transparent dans `public/`, décliné en médaillon circulaire dans le hero

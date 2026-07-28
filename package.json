@@ -15,8 +15,10 @@
     "test:watch": "vitest",
     "check:vocabulary": "node scripts/check-vocabulary.mjs",
     "check:tokens": "node scripts/check-design-tokens.mjs",
+    "check:rules": "node scripts/check-rules.mjs",
     "verify:animations": "node scripts/verify-animations.mjs",
-    "check:all": "npm run lint && npm run typecheck && npm run test && npm run check:vocabulary && npm run check:tokens",
+    "verify:questionnaire": "node scripts/verify-questionnaire.mjs",
+    "check:all": "npm run lint && npm run typecheck && npm run test && npm run check:vocabulary && npm run check:tokens && npm run check:rules",
     "graph:build": "graphify . || echo 'graphify non installé — voir docs/TOKEN_OPTIMIZATION.md'",
     "graph:update": "graphify . --update || echo 'graphify non installé — voir docs/TOKEN_OPTIMIZATION.md'",
     "prepare": "git config core.hooksPath .githooks || true"

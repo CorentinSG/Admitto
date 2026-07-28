@@ -27,8 +27,12 @@ export interface Rule {
   textBlockId: string;
   /** Source officielle (BOLE, université, autorité migratoire). */
   sourceUrl: string;
-  /** Date de dernière vérification de la source. */
-  verifiedAt: string;
+  /**
+   * Date de dernière vérification de la source (ISO). `null` tant que la règle
+   * n'a pas été confrontée à sa source officielle : dans ce cas elle ne peut pas
+   * être activée (garde-fou `npm run check:rules`).
+   */
+  verifiedAt: string | null;
   version: number;
   active: boolean;
 }

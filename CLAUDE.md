@@ -12,8 +12,9 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run test` — tests unitaires Vitest (moteurs A/B notamment)
 - `npm run check:vocabulary` — vocabulaire interdit (CDC §5–7)
 - `npm run check:tokens` — couleurs hors palette Admitto
-- `npm run verify:animations <url>` — checklist design/animations dans un vrai
-  navigateur (nécessite un serveur lancé + Playwright)
+- `npm run check:rules` — règles du Moteur A : source + date de vérification obligatoires
+- `npm run verify:animations <url>` / `npm run verify:questionnaire <url>` — checklists
+  design et parcours de diagnostic dans un vrai navigateur (serveur lancé + Playwright)
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)
 
 ## Exploration du code — Graphify d'abord (économie de tokens)
@@ -42,8 +43,15 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   volontairement : une constante exportée d'un module `"use client"` arrive au
   layout comme référence client, et les keyframes ne sont jamais injectées.
 - `content/homepage.ts` — toute la copie de la page d'accueil, source unique.
+- `lib/questionnaire/` — 12 écrans (types fermés) + logique conditionnelle CDC §12.4.
+- `lib/profile/derive.ts` — champs inférés. Les calculs de date prennent une date de
+  référence en paramètre : jamais de `Date.now()` implicite (déterminisme des tests).
 - `lib/engine-a/` — Moteur A : règles déterministes versionnées → voie préliminaire (6 catégories).
+  Une règle non vérifiée reste `active: false` ; le moteur retombe alors sur « revue humaine ».
 - `lib/engine-b/` — Moteur B : viabilité 5 axes + plafonnement → 6 verdicts.
+- `lib/store/assessments.ts` — persistance de transition en mémoire (accrochée à
+  `globalThis`, car Next.js duplique les modules entre action serveur et page).
+  À remplacer par Prisma avant la bêta.
 - `scripts/` — garde-fous exécutés par les hooks git (`.githooks/`) et la CI.
 
 ## Règles non négociables (résumé — détail dans PLAN.md)
