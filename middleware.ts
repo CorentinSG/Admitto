@@ -1,21 +1,26 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { ACCESS_COOKIE, verifyAccessToken } from "@/lib/access/session";
 
 /**
- * Protection du back-office (CDC §33).
+ * Protection du back-office (CDC §33) et de l'espace payant (CDC §21).
  *
- * Mesure de transition, volontairement minimale mais fermée par défaut :
- *  - sans `ADMITTO_ADMIN_TOKEN` configuré, /admin répond 404 — jamais de
- *    back-office ouvert par accident ;
- *  - l'accès se fait une fois par `/admin?token=…`, qui pose un cookie httpOnly ;
- *  - toute autre requête reçoit 404 plutôt que 401, pour ne pas révéler
- *    l'existence de l'interface.
+ * Les deux sont **fermés par défaut** : sans le secret correspondant configuré,
+ * l'accès est refusé. Une interface d'administration ou un espace payant ouvert
+ * par accident serait pire qu'absent.
  *
- * À remplacer par Auth.js avec rôles (ADMIN / REVIEWER) en Phase 2.
+ * À remplacer par Auth.js avec rôles (ADMIN / REVIEWER / USER) en Phase 3.
  */
 
-const COOKIE = "admitto_admin";
+const ADMIN_COOKIE = "admitto_admin";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  return request.nextUrl.pathname.startsWith("/admin")
+    ? guardAdmin(request)
+    : guardApp(request);
+}
+
+/** Back-office : accès par jeton unique, une fois, qui pose un cookie. */
+function guardAdmin(request: NextRequest) {
   const expected = process.env.ADMITTO_ADMIN_TOKEN;
   if (!expected) return notFound(request);
 
@@ -24,7 +29,7 @@ export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.searchParams.delete("token");
     const response = NextResponse.redirect(url);
-    response.cookies.set(COOKIE, expected, {
+    response.cookies.set(ADMIN_COOKIE, expected, {
       httpOnly: true,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
@@ -33,10 +38,22 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  const cookie = request.cookies.get(COOKIE)?.value;
+  const cookie = request.cookies.get(ADMIN_COOKIE)?.value;
   if (cookie && timingSafeEqual(cookie, expected)) return NextResponse.next();
 
   return notFound(request);
+}
+
+/**
+ * Espace payant : cookie signé portant l'identifiant d'évaluation. Un accès
+ * refusé renvoie vers le diagnostic plutôt que vers une 404 — l'espace payant
+ * n'est pas un secret, il est simplement réservé.
+ */
+async function guardApp(request: NextRequest) {
+  const token = request.cookies.get(ACCESS_COOKIE)?.value;
+  if (await verifyAccessToken(token, new Date())) return NextResponse.next();
+
+  return NextResponse.redirect(new URL("/diagnostic", request.url));
 }
 
 function notFound(request: NextRequest) {
@@ -51,4 +68,4 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-export const config = { matcher: "/admin/:path*" };
+export const config = { matcher: ["/admin/:path*", "/app/:path*"] };

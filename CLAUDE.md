@@ -13,8 +13,8 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run check:vocabulary` — vocabulaire interdit (CDC §5–7)
 - `npm run check:tokens` — couleurs hors palette Admitto
 - `npm run check:rules` — règles du Moteur A : source + date de vérification obligatoires
-- `npm run verify:animations|questionnaire|backoffice|checkout <url>` — checklists design,
-  diagnostic, back-office et tunnel de paiement dans un vrai navigateur
+- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard <url>` — checklists
+  design, diagnostic, back-office, tunnel de paiement et espace payant dans un vrai navigateur
   (serveur lancé + Playwright ; `verify:backoffice` exige `ADMITTO_ADMIN_TOKEN`)
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)
@@ -71,8 +71,12 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   un promotionnel ne part jamais sans consentement, `sendGuarded` est le dernier verrou.
 - `lib/payments/` — catalogue, déduction 30 jours, Stripe. Sans clé, le paiement est
   désactivé et le webhook inerte : la bascule Phase 1A → 1B se fait par configuration.
-- `app/(admin)/` — back-office, protégé par `middleware.ts` (jeton `ADMITTO_ADMIN_TOKEN`,
-  404 par défaut).
+- `lib/roadmap/` — feuille de route (CDC §22), Next Best Action (§23), progression et
+  Milestone Challenges (§24). Rien n'est coché à la place de l'utilisateur : présumer une
+  tâche accomplie gonflerait la progression et offrirait un challenge non mérité.
+- `app/(admin)/` et `app/(app)/` — back-office et espace payant, protégés par
+  `middleware.ts` : fermés par défaut faute de `ADMITTO_ADMIN_TOKEN` / `ADMITTO_SESSION_SECRET`.
+  Le middleware s'exécute en Edge : n'y importer aucun module `node:*` (Web Crypto uniquement).
 - Variables d'environnement : voir `.env.example`. Toutes optionnelles ; leur absence
   place le produit en régime Phase 1A (bêta gratuite, emails non expédiés).
 - `lib/store/assessments.ts` — persistance de transition en mémoire (accrochée à

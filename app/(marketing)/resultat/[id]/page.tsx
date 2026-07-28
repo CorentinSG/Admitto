@@ -7,6 +7,8 @@ import { announcedDelay } from "@/lib/capacity/delay";
 import { reportStore } from "@/lib/store/reports";
 import { formatUsd } from "@/lib/costs/estimate";
 import { PATH_LABELS, result } from "@/content/result";
+import { sessionSecret } from "@/lib/access/session";
+import { AccessButton } from "./AccessButton";
 
 export const metadata: Metadata = {
   title: "Votre résultat préliminaire — Admitto",
@@ -317,6 +319,9 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           >
             {result.nextCta} →
           </Link>
+
+          {/* L'espace payant n'est proposé que s'il est activé côté serveur. */}
+          {sessionSecret() && <AccessButton assessmentId={id} />}
         </div>
 
         <p
