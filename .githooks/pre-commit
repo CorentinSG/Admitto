@@ -1,0 +1,15 @@
+#!/bin/sh
+# Hook pre-commit Admitto — rapide (< 30 s) pour ne pas casser le flux.
+# Activé par `npm install` (script prepare → core.hooksPath .githooks).
+set -e
+
+echo "→ pre-commit : vocabulaire interdit"
+node scripts/check-vocabulary.mjs
+
+echo "→ pre-commit : couleurs hors palette"
+node scripts/check-design-tokens.mjs
+
+echo "→ pre-commit : typecheck"
+npx tsc --noEmit
+
+echo "✓ pre-commit OK"

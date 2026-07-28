@@ -1,0 +1,6 @@
+node_modules
+.next
+out
+coverage
+graphify-out
+package-lock.json

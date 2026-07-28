@@ -1,0 +1,6 @@
+#!/bin/sh
+# Mise à jour incrémentale du graphe Graphify après chaque commit (best effort).
+# Voir docs/TOKEN_OPTIMIZATION.md. Ne bloque jamais le commit.
+if command -v graphify >/dev/null 2>&1; then
+  (graphify . --update >/dev/null 2>&1 &) || true
+fi

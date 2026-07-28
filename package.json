@@ -1,0 +1,40 @@
+{
+  "name": "admitto",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plateforme LL.M. & Barreau américain — système personnalisé de décision, planification et exécution.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check:vocabulary": "node scripts/check-vocabulary.mjs",
+    "check:tokens": "node scripts/check-design-tokens.mjs",
+    "check:all": "npm run lint && npm run typecheck && npm run test && npm run check:vocabulary && npm run check:tokens",
+    "graph:build": "graphify . || echo 'graphify non installé — voir docs/TOKEN_OPTIMIZATION.md'",
+    "graph:update": "graphify . --update || echo 'graphify non installé — voir docs/TOKEN_OPTIMIZATION.md'",
+    "prepare": "git config core.hooksPath .githooks || true"
+  },
+  "dependencies": {
+    "next": "^15.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.5.0",
+    "prettier": "^3.3.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}

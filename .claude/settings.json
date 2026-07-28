@@ -1,0 +1,33 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh .claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run test)",
+      "Bash(npm run test:*)",
+      "Bash(npm run check:all)",
+      "Bash(npm run check:vocabulary)",
+      "Bash(npm run check:tokens)",
+      "Bash(npm run build)",
+      "Bash(npm run graph:update)",
+      "Bash(npm run graph:build)",
+      "Bash(graphify query:*)",
+      "Bash(graphify explain:*)",
+      "Bash(graphify path:*)",
+      "Bash(node scripts/*)"
+    ]
+  }
+}
