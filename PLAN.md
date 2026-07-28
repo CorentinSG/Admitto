@@ -474,9 +474,13 @@ Points contrôlés :
 | S3 — Questionnaire + Moteur A + résultat immédiat | 12 écrans, logique conditionnelle, règles seed, page de résultat, email J+0 | À faire |
 | S4 — Moteur B + rapport + back-office minimal | 5 axes, assemblage du rapport, PDF, file de capacité | À faire |
 
-Reste à fournir pour compléter la homepage : la **photographie professionnelle du fondateur**
-(emplacement réservé dans `Hero.tsx`, actuellement un médaillon aux initiales) et les pages
-légales cibles des liens du footer (mentions légales, confidentialité, CGV).
+La photographie professionnelle du fondateur (CDC §6) est intégrée : détourage sur fond
+transparent dans `public/`, décliné en médaillon circulaire dans le hero
+(`founder-avatar.png`) et en portrait dans la section « Le parcours du fondateur »
+(`founder-portrait.png`).
+
+Reste à produire : les pages légales cibles des liens du footer (mentions légales,
+confidentialité, CGV) — reportées à plus tard par décision du fondateur.
 
 ## 13. Prochaines actions immédiates
 

@@ -27,7 +27,6 @@ export const hero = {
   founderRole: "Fondateur",
   founderLine:
     "Juriste formé en France, il a lui-même accompli le parcours LL.M. et New York Bar.",
-  founderInitials: "CSG",
   ctaPrimary: "Commencer le diagnostic gratuit",
   ctaSecondary: "Voir le parcours couvert",
   scrollLabel: "DÉFILER",

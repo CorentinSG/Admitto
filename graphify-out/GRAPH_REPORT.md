@@ -4,21 +4,22 @@
 - cluster-only mode — file stats not available
 
 ## Summary
-- 201 nodes · 387 edges · 19 communities (14 shown, 5 thin omitted)
+- 201 nodes · 384 edges · 20 communities (15 shown, 5 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2be8fbef`
+- Built from commit: `b138579e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- homepage.ts
+- ui.tsx
 - compilerOptions
 - devDependencies
-- (marketing)/page.tsx
 - scripts
+- homepage.ts
+- (marketing)/page.tsx
 - evaluate.ts
 - package.json
 - verdict.ts
@@ -34,7 +35,7 @@
 - next.config.ts
 
 ## God Nodes (most connected - your core abstractions)
-1. `useInView()` - 23 edges
+1. `useInView()` - 21 edges
 2. `scripts` - 17 edges
 3. `colors` - 16 edges
 4. `fonts` - 16 edges
@@ -54,17 +55,17 @@
   app/(marketing)/_sections/Faq.tsx → design/animations.tsx
 - `FinalCta()` --calls--> `useInView()`  [EXTRACTED]
   app/(marketing)/_sections/FinalCta.tsx → design/animations.tsx
-- `Founder()` --calls--> `useInView()`  [EXTRACTED]
-  app/(marketing)/_sections/Founder.tsx → design/animations.tsx
+- `Journey()` --calls--> `useInView()`  [EXTRACTED]
+  app/(marketing)/_sections/Journey.tsx → design/animations.tsx
 
 ## Import Cycles
 - None detected.
 
-## Communities (19 total, 5 thin omitted)
+## Communities (20 total, 5 thin omitted)
 
-### Community 0 - "homepage.ts"
-Cohesion: 0.21
-Nodes (24): Badge(), GhostCta(), GoldCta(), SectionLabel(), SectionTitle(), dashboard, diagnostic, faq (+16 more)
+### Community 0 - "ui.tsx"
+Cohesion: 0.35
+Nodes (12): Badge(), GhostCta(), GoldCta(), SectionLabel(), SectionTitle(), thresholds, alpha, colors (+4 more)
 
 ### Community 1 - "compilerOptions"
 Cohesion: 0.07
@@ -74,43 +75,47 @@ Nodes (27): dom, dom.iterable, esnext, graphify-out, next-env.d.ts, .next/types/
 Cohesion: 0.10
 Nodes (21): eslint, eslint-config-next, @eslint/eslintrc, devDependencies, eslint, eslint-config-next, @eslint/eslintrc, prettier (+13 more)
 
-### Community 3 - "(marketing)/page.tsx"
-Cohesion: 0.18
-Nodes (15): Footer(), Nav(), DashboardPreview(), Diagnostic(), Faq(), FinalCta(), Founder(), Hero() (+7 more)
-
-### Community 4 - "scripts"
+### Community 3 - "scripts"
 Cohesion: 0.12
 Nodes (17): scripts, build, check:all, check:tokens, check:vocabulary, dev, format, format:check (+9 more)
 
-### Community 5 - "evaluate.ts"
+### Community 4 - "homepage.ts"
+Cohesion: 0.13
+Nodes (14): Footer(), dashboard, diagnostic, faq, finalCta, footer, founder, hero (+6 more)
+
+### Community 5 - "(marketing)/page.tsx"
+Cohesion: 0.21
+Nodes (13): Nav(), DashboardPreview(), Diagnostic(), Faq(), FinalCta(), Founder(), Hero(), Journey() (+5 more)
+
+### Community 6 - "evaluate.ts"
 Cohesion: 0.27
 Nodes (8): evaluateCondition(), fireRules(), StructuredProfile, EngineAOutput, PRELIMINARY_PATHS, PreliminaryPath, Rule, RuleCondition
 
-### Community 6 - "package.json"
+### Community 7 - "package.json"
 Cohesion: 0.17
 Nodes (11): next, dependencies, next, react, react-dom, description, name, private (+3 more)
 
-### Community 7 - "verdict.ts"
+### Community 8 - "verdict.ts"
 Cohesion: 0.22
 Nodes (8): AXES, Axis, AxisScore, AxisScores, computeVerdict(), Verdict, VerdictInput, VERDICTS
 
-### Community 8 - "layout.tsx"
+### Community 9 - "layout.tsx"
 Cohesion: 0.29
 Nodes (3): cormorant, dmSans, metadata
 
-### Community 9 - "check-vocabulary.mjs"
+### Community 10 - "check-vocabulary.mjs"
 Cohesion: 0.33
 Nodes (4): ALLOWLIST, EXTS, FORBIDDEN, ROOTS
 
-### Community 10 - ".prettierrc.json"
+### Community 11 - ".prettierrc.json"
 Cohesion: 0.40
 Nodes (4): printWidth, semi, singleQuote, trailingComma
 
-### Community 11 - "check-design-tokens.mjs"
+### Community 12 - "check-design-tokens.mjs"
 Cohesion: 0.40
 Nodes (3): EXTS, PALETTE, ROOTS
 
-### Community 12 - "verify-animations.mjs"
+### Community 13 - "verify-animations.mjs"
 Cohesion: 0.40
 Nodes (3): consoleErrors, failures, longest
 
@@ -134,3 +139,5 @@ _Questions this graph is uniquely positioned to answer:_
   _Cohesion score 0.09523809523809523 - nodes in this community are weakly interconnected._
 - **Should `scripts` be split into smaller, more focused modules?**
   _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
+- **Should `homepage.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._

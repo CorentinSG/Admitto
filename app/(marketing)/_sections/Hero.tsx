@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { colors, fonts, gradients, alpha, layout } from "@/design/tokens";
 import { useInView, thresholds } from "@/design/animations";
 import { Badge, GoldCta, GhostCta } from "../_components/ui";
@@ -143,27 +144,28 @@ export function Hero() {
             transition: "opacity 0.9s ease 0.3s, transform 0.9s ease 0.3s",
           }}
         >
-          {/* Emplacement de la photographie professionnelle (CDC §6) :
-              remplacer par <Image src="/founder.jpg" …> dès qu'elle est fournie. */}
+          {/* Photographie professionnelle du fondateur (CDC §6) : le portrait est
+              détouré sur fond transparent, la pastille dorée sert de fond. */}
           <span
             aria-hidden
             style={{
-              width: 56,
-              height: 56,
+              width: 60,
+              height: 60,
               borderRadius: "50%",
               border: `1px solid ${alpha.goldBorderHover}`,
               backgroundColor: "rgba(201, 168, 76, 0.08)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: fonts.serif,
-              fontSize: "1.05rem",
-              letterSpacing: "0.08em",
-              color: colors.goldLight,
+              overflow: "hidden",
               flexShrink: 0,
             }}
           >
-            {hero.founderInitials}
+            <Image
+              src="/founder-avatar.png"
+              alt=""
+              width={60}
+              height={60}
+              priority
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           </span>
           <span style={{ fontFamily: fonts.sans, fontSize: "0.86rem", lineHeight: 1.6 }}>
             <strong style={{ color: colors.ivory, fontWeight: 500 }}>{hero.founderName}</strong>
