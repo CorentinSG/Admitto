@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { colors, fonts } from "@/design/tokens";
-import { globalCss } from "@/design/animations";
+import { globalCss } from "@/design/global-css";
+import { resetCss } from "@/design/reset";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -33,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           fontFamily: fonts.sans,
         }}
       >
-        <style>{globalCss}</style>
+        <style>{resetCss + globalCss}</style>
         {children}
       </body>
     </html>

@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "check:vocabulary": "node scripts/check-vocabulary.mjs",
     "check:tokens": "node scripts/check-design-tokens.mjs",
+    "verify:animations": "node scripts/verify-animations.mjs",
     "check:all": "npm run lint && npm run typecheck && npm run test && npm run check:vocabulary && npm run check:tokens",
     "graph:build": "graphify . || echo 'graphify non installé — voir docs/TOKEN_OPTIMIZATION.md'",
     "graph:update": "graphify . --update || echo 'graphify non installé — voir docs/TOKEN_OPTIMIZATION.md'",

@@ -414,7 +414,16 @@ humain nécessaire** (CDC §36) — tableau de bord dédié dans le back-office.
 
 ## 10. Definition of Done — design, animations & produit
 
-### 10.1 Design/animations — avant toute mise en ligne d'une page, valider la checklist du document d'animations :
+### 10.1 Design/animations — avant toute mise en ligne d'une page, valider la checklist du document d'animations.
+
+La checklist est **automatisée** : `npm run verify:animations <url>` pilote un vrai navigateur
+et contrôle les valeurs mesurées (état de la nav, hauteur du hero, présence effective des
+keyframes, onde de pulsations, absence d'animation de sortie, `prefers-reduced-motion`,
+débordement mobile, console propre). Elle vérifie notamment que les `@keyframes` sont
+réellement injectées : un `animation: shimmer …` inline se lit dans le style calculé même
+quand la keyframe est absente, si bien qu'un contrôle purement visuel ne suffit pas.
+
+Points contrôlés :
 
 1. Nav transparente à froid ; cascade hero badge→titre→sous-titre→boutons en 1,2 s ;
    mot doré en shimmer 4 s.
@@ -456,7 +465,20 @@ humain nécessaire** (CDC §36) — tableau de bord dédié dans le back-office.
 
 ---
 
-## 12. Prochaines actions immédiates
+## 12. État d'avancement
+
+| Sprint | Périmètre | État |
+|---|---|---|
+| **S1 — Socle & design system** | Scaffold Next.js/React 19/TS, `design/tokens.ts`, `design/animations.tsx`, `design/global-css.ts`, reset, garde-fous, CI, graphe Graphify | **Fait** |
+| **S2 — Homepage** | Les 10 blocs du CDC §11, nav fixe, footer, copie centralisée, checklist animations automatisée et conforme | **Fait** |
+| S3 — Questionnaire + Moteur A + résultat immédiat | 12 écrans, logique conditionnelle, règles seed, page de résultat, email J+0 | À faire |
+| S4 — Moteur B + rapport + back-office minimal | 5 axes, assemblage du rapport, PDF, file de capacité | À faire |
+
+Reste à fournir pour compléter la homepage : la **photographie professionnelle du fondateur**
+(emplacement réservé dans `Hero.tsx`, actuellement un médaillon aux initiales) et les pages
+légales cibles des liens du footer (mentions légales, confidentialité, CGV).
+
+## 13. Prochaines actions immédiates
 
 1. Valider ce plan et les choix de stack (§1) avec le fondateur.
 2. Sprint 1 : initialiser le projet, porter le design system et faire valider la page `/dev/ui`
