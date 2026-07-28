@@ -30,12 +30,20 @@ const FORBIDDEN = [
     "CDC §30 : aucune offre ne promet des consultations illimitées."],
 ];
 
-// Fichiers où les termes apparaissent légitimement (docs internes, ce script, tests du script).
+// Fichiers où les termes apparaissent légitimement (docs internes, ce script).
 const ALLOWLIST = new Set([
   "scripts/check-vocabulary.mjs",
   "PLAN.md",
   "CLAUDE.md",
 ]);
+
+/**
+ * Les fichiers de test sont hors périmètre : ils citent nécessairement les
+ * termes interdits pour vérifier qu'ils n'apparaissent PAS dans la copie
+ * (`expect(signature).not.toMatch(/Esq\./)`). Le garde-fou vise le texte
+ * livré à l'utilisateur, et les tests ne sont jamais livrés.
+ */
+const isTestFile = (path) => /\.test\.tsx?$/.test(path);
 
 function* walk(dir) {
   let entries;
@@ -56,7 +64,7 @@ function* walk(dir) {
 let violations = 0;
 for (const root of ROOTS) {
   for (const file of walk(root)) {
-    if (ALLOWLIST.has(file.replaceAll("\\", "/"))) continue;
+    if (ALLOWLIST.has(file.replaceAll("\\", "/")) || isTestFile(file)) continue;
     const text = readFileSync(file, "utf8");
     const lines = text.split("\n");
     for (const [re, why] of FORBIDDEN) {

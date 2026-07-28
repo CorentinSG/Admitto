@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { colors, fonts, alpha, gradients } from "@/design/tokens";
 import { assessmentStore } from "@/lib/store/assessments";
 import { announcedDelay } from "@/lib/capacity/delay";
+import { reportStore } from "@/lib/store/reports";
 import { formatUsd } from "@/lib/costs/estimate";
 import { PATH_LABELS, result } from "@/content/result";
 
@@ -23,6 +24,9 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
   const { id } = await params;
   const assessment = await assessmentStore.get(id);
   if (!assessment) notFound();
+
+  // Délai annoncé calculé sur la file réelle (CDC §18).
+  const activeReports = await reportStore.activeCount();
 
   const { answers, derived, path, textBlocks, partnerships, costs, deadlines } = assessment;
 
@@ -295,9 +299,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
               color: colors.goldLight,
             }}
           >
-            {/* Le nombre de rapports en file viendra de la base une fois Prisma
-                branché ; la règle de palier est déjà celle du CDC §18. */}
-            {result.nextDelay(announcedDelay(0))}
+            {result.nextDelay(announcedDelay(activeReports))}
           </p>
         </div>
 

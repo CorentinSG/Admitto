@@ -18,6 +18,8 @@
     "check:rules": "node scripts/check-rules.mjs",
     "verify:animations": "node scripts/verify-animations.mjs",
     "verify:questionnaire": "node scripts/verify-questionnaire.mjs",
+    "verify:backoffice": "node scripts/verify-backoffice.mjs",
+    "report:pdf": "node scripts/render-report-pdf.mjs",
     "check:all": "npm run lint && npm run typecheck && npm run test && npm run check:vocabulary && npm run check:tokens && npm run check:rules",
     "graph:build": "graphify . || echo 'graphify non installé — voir docs/TOKEN_OPTIMIZATION.md'",
     "graph:update": "graphify . --update || echo 'graphify non installé — voir docs/TOKEN_OPTIMIZATION.md'",

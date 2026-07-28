@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { computeAssessment } from "@/lib/assessment/compute";
 import { assessmentStore } from "@/lib/store/assessments";
+import { reportStore } from "@/lib/store/reports";
 import {
   BUDGET,
   CAREER_GOAL,
@@ -70,6 +71,10 @@ export async function submitQuestionnaire(raw: Record<string, unknown>) {
   const id = randomUUID();
   const assessment = computeAssessment(answers, new Date(), id);
   await assessmentStore.save(assessment);
+  // Le rapport entre en file dès la soumission : c'est ce compteur qui pilote
+  // le délai annoncé à l'utilisateur (CDC §18). Priorité « gratuit » en phase
+  // bêta ; les rapports payants passeront devant en Phase 1B.
+  await reportStore.create(assessment, "FREE");
 
   // TODO Phase 1A : envoi de l'email transactionnel J+0 (CDC §19) une fois le
   // fournisseur d'envoi configuré. Le contenu est déjà déterminé par

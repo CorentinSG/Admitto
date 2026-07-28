@@ -13,8 +13,10 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run check:vocabulary` — vocabulaire interdit (CDC §5–7)
 - `npm run check:tokens` — couleurs hors palette Admitto
 - `npm run check:rules` — règles du Moteur A : source + date de vérification obligatoires
-- `npm run verify:animations <url>` / `npm run verify:questionnaire <url>` — checklists
-  design et parcours de diagnostic dans un vrai navigateur (serveur lancé + Playwright)
+- `npm run verify:animations <url>` / `verify:questionnaire <url>` / `verify:backoffice <url>` —
+  checklists design, parcours de diagnostic et back-office dans un vrai navigateur
+  (serveur lancé + Playwright ; `verify:backoffice` exige `ADMITTO_ADMIN_TOKEN`)
+- `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)
 
 ## Exploration du code — Graphify d'abord (économie de tokens)
@@ -48,7 +50,12 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   référence en paramètre : jamais de `Date.now()` implicite (déterminisme des tests).
 - `lib/engine-a/` — Moteur A : règles déterministes versionnées → voie préliminaire (6 catégories).
   Une règle non vérifiée reste `active: false` ; le moteur retombe alors sur « revue humaine ».
-- `lib/engine-b/` — Moteur B : viabilité 5 axes + plafonnement → 6 verdicts.
+- `lib/engine-b/` — Moteur B : notation des 5 axes + plafonnement → 6 verdicts. Une réponse
+  absente ne vaut jamais une réponse positive (un écran non affiché laisse le champ `undefined`).
+- `lib/report/` — assemblage du rapport depuis `content/report-blocks.ts`. `fill.ts` refuse
+  toute variable hors de la liste du CDC §17 : c'est ce qui empêche un texte produit librement.
+- `app/(admin)/` — back-office, protégé par `middleware.ts` (jeton `ADMITTO_ADMIN_TOKEN`,
+  404 par défaut).
 - `lib/store/assessments.ts` — persistance de transition en mémoire (accrochée à
   `globalThis`, car Next.js duplique les modules entre action serveur et page).
   À remplacer par Prisma avant la bêta.
