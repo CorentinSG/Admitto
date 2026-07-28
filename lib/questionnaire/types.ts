@@ -68,6 +68,11 @@ export interface Answers {
   firstName?: string;
   email?: string;
   comment?: string; // seul champ libre, facultatif (CDC §12.2)
+  /**
+   * Consentement marketing (CDC §34) : distinct, facultatif, jamais pré-coché.
+   * Son absence n'empêche aucun email d'exécution du service.
+   */
+  consentMarketing?: boolean;
 }
 
 /** Identifiants d'écran, dans l'ordre du CDC §12.3. */

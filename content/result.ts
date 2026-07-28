@@ -50,6 +50,7 @@ export const result = {
   nextBody:
     "Votre rapport éducatif et stratégique personnalisé est en préparation. Il détaille les cinq axes de viabilité de votre projet, les risques principaux, les actions permettant de les réduire, votre timeline et vos scénarios de coût.",
   nextDelay: (delay: string) => `Délai annoncé : ${delay}.`,
+  nextCta: "Voir ce que contient le rapport",
   emailConfirmation: (email: string) => `Une confirmation vient d'être envoyée à ${email}.`,
   homeCta: "Revenir à l'accueil",
   disclaimer:

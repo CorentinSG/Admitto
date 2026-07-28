@@ -13,8 +13,8 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run check:vocabulary` — vocabulaire interdit (CDC §5–7)
 - `npm run check:tokens` — couleurs hors palette Admitto
 - `npm run check:rules` — règles du Moteur A : source + date de vérification obligatoires
-- `npm run verify:animations <url>` / `verify:questionnaire <url>` / `verify:backoffice <url>` —
-  checklists design, parcours de diagnostic et back-office dans un vrai navigateur
+- `npm run verify:animations|questionnaire|backoffice|checkout <url>` — checklists design,
+  diagnostic, back-office et tunnel de paiement dans un vrai navigateur
   (serveur lancé + Playwright ; `verify:backoffice` exige `ADMITTO_ADMIN_TOKEN`)
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)
@@ -54,8 +54,14 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   absente ne vaut jamais une réponse positive (un écran non affiché laisse le champ `undefined`).
 - `lib/report/` — assemblage du rapport depuis `content/report-blocks.ts`. `fill.ts` refuse
   toute variable hors de la liste du CDC §17 : c'est ce qui empêche un texte produit librement.
+- `lib/email/` — séquence J+0 → J+25. `types.ts` fixe la base légale de chaque email :
+  un promotionnel ne part jamais sans consentement, `sendGuarded` est le dernier verrou.
+- `lib/payments/` — catalogue, déduction 30 jours, Stripe. Sans clé, le paiement est
+  désactivé et le webhook inerte : la bascule Phase 1A → 1B se fait par configuration.
 - `app/(admin)/` — back-office, protégé par `middleware.ts` (jeton `ADMITTO_ADMIN_TOKEN`,
   404 par défaut).
+- Variables d'environnement : voir `.env.example`. Toutes optionnelles ; leur absence
+  place le produit en régime Phase 1A (bêta gratuite, emails non expédiés).
 - `lib/store/assessments.ts` — persistance de transition en mémoire (accrochée à
   `globalThis`, car Next.js duplique les modules entre action serveur et page).
   À remplacer par Prisma avant la bêta.

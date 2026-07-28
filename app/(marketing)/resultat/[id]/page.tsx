@@ -301,6 +301,22 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           >
             {result.nextDelay(announcedDelay(activeReports))}
           </p>
+          <Link
+            href={`/diagnostic/paiement/${id}`}
+            style={{
+              display: "inline-block",
+              marginTop: 20,
+              fontFamily: fonts.sans,
+              fontSize: "0.82rem",
+              letterSpacing: "0.04em",
+              padding: "13px 22px",
+              border: `1px solid ${alpha.goldBorderHover}`,
+              color: colors.goldLight,
+              textDecoration: "none",
+            }}
+          >
+            {result.nextCta} →
+          </Link>
         </div>
 
         <p

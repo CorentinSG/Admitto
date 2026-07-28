@@ -40,6 +40,10 @@ export const ui = {
   deliverable:
     "Vous recevez immédiatement votre résultat préliminaire à l'écran, puis votre rapport éducatif et stratégique personnalisé par email.",
   submitting: "Analyse en cours…",
+  consentLabel:
+    "J'accepte de recevoir des contenus et informations sur les offres Admitto.",
+  consentNote:
+    "Facultatif et révocable à tout moment. Les emails nécessaires à l'exécution du service vous sont envoyés indépendamment de ce choix.",
 };
 
 export const SCREENS: Screen[] = [

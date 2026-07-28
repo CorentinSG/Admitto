@@ -473,6 +473,7 @@ Points contrôlés :
 | **S2 — Homepage** | Les 10 blocs du CDC §11, nav fixe, footer, copie centralisée, checklist animations automatisée et conforme | **Fait** |
 | **S3 — Questionnaire + Moteur A + résultat immédiat** | 12 écrans typés, logique conditionnelle §12.4, profil inféré, règles versionnées, résultat immédiat à six blocs, paliers de délai §18 | **Fait**, sauf les deux réserves ci-dessous |
 | **S4 — Moteur B + rapport + back-office** | Notation des 5 axes, assemblage du rapport depuis les blocs, version imprimable et PDF, file de rapports, transitions de statut, journal des corrections | **Fait** |
+| **Phase 1B — Diagnostic payant + emails** | Consentement marketing distinct, séquence J+0 → J+25 avec bases légales séparées, catalogue d'offres, déduction de 79 € sur trente jours, tunnel de paiement à six mentions obligatoires, Stripe et webhook signé | **Fait**, en attente des clés |
 
 **Deux réserves explicites sur le Sprint 3**, à lever avant la bêta :
 
@@ -491,6 +492,13 @@ Points contrôlés :
 3. **Accès au back-office.** Le back-office est protégé par un jeton unique
    (`ADMITTO_ADMIN_TOKEN`) et répond 404 tant que ce jeton n'est pas configuré. C'est une
    mesure de transition, à remplacer par Auth.js avec rôles ADMIN / REVIEWER en Phase 2.
+4. **Clés de service absentes.** Tout le code de la Phase 1B est en place, mais rien n'est
+   branché tant que les variables de `.env.example` ne sont pas renseignées, et c'est
+   volontaire : sans `RESEND_API_KEY` le transport journalise sans expédier — aucun envoi
+   accidentel en développement ; sans `STRIPE_SECRET_KEY` le paiement reste désactivé et le
+   diagnostic est offert, ce qui est exactement le régime de la phase bêta ; sans
+   `STRIPE_WEBHOOK_SECRET` le webhook est inerte plutôt que permissif. Le passage 1A → 1B
+   se fait donc par configuration, sans modification de code.
 
 La photographie professionnelle du fondateur (CDC §6) est intégrée : détourage sur fond
 transparent dans `public/`, décliné en médaillon circulaire dans le hero

@@ -1,4 +1,5 @@
 import type { Assessment } from "@/lib/assessment/compute";
+import type { Deduction } from "@/lib/payments/deduction";
 
 /**
  * File de rapports et journal des corrections (CDC §18 et §33).
@@ -27,6 +28,8 @@ export interface ReportRecord {
   createdAt: string;
   sentAt: string | null;
   corrections: CorrectionEntry[];
+  /** Fenêtre de déduction ouverte par le paiement du diagnostic (CDC §16.2). */
+  deduction: Deduction | null;
 }
 
 const globalStore = globalThis as typeof globalThis & {
@@ -44,6 +47,7 @@ export const reportStore = {
       createdAt: assessment.createdAt,
       sentAt: null,
       corrections: [],
+      deduction: null,
     };
     memory.set(record.id, record);
     return record;
@@ -83,6 +87,20 @@ export const reportStore = {
     const record = memory.get(id);
     if (!record) return null;
     record.corrections.push(entry);
+    return record;
+  },
+
+  /**
+   * Paiement confirmé : le rapport passe en priorité payante (CDC §18) et la
+   * fenêtre de déduction de trente jours s'ouvre (CDC §16.2).
+   * Idempotent : un webhook rejoué ne réouvre pas la fenêtre.
+   */
+  async markPaid(id: string, deduction: Deduction): Promise<ReportRecord | null> {
+    const record = memory.get(id);
+    if (!record) return null;
+    if (record.priority === "PAID") return record;
+    record.priority = "PAID";
+    record.deduction = deduction;
     return record;
   },
 

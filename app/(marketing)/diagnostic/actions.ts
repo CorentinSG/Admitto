@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { computeAssessment } from "@/lib/assessment/compute";
 import { assessmentStore } from "@/lib/store/assessments";
 import { reportStore } from "@/lib/store/reports";
+import { dispatchEmail, emailVariables } from "@/lib/email/dispatch";
 import {
   BUDGET,
   CAREER_GOAL,
@@ -55,6 +56,9 @@ function parseAnswers(raw: Record<string, unknown>): Answers {
     // Minimisation : le champ libre est plafonné, il n'a pas vocation à
     // recueillir de données sensibles (CDC §29, §34).
     comment: comment ? comment.slice(0, 800) : undefined,
+    // Consentement marketing : accepté seulement s'il vaut littéralement true.
+    // Toute autre valeur (absente, chaîne, 0) vaut refus (CDC §34).
+    consentMarketing: raw.consentMarketing === true,
   };
 }
 
@@ -76,9 +80,18 @@ export async function submitQuestionnaire(raw: Record<string, unknown>) {
   // bêta ; les rapports payants passeront devant en Phase 1B.
   await reportStore.create(assessment, "FREE");
 
-  // TODO Phase 1A : envoi de l'email transactionnel J+0 (CDC §19) une fois le
-  // fournisseur d'envoi configuré. Le contenu est déjà déterminé par
-  // l'évaluation ; il ne manque que le transport.
+  // Email transactionnel J+0 (CDC §19). Un échec d'envoi ne doit pas priver
+  // l'utilisateur de son résultat : il est journalisé, le parcours continue.
+  const active = await reportStore.activeCount();
+  const sent = await dispatchEmail(
+    "J0_CONFIRMATION",
+    answers.email,
+    emailVariables(assessment, active),
+    answers.consentMarketing === true
+  );
+  if (!sent.ok) {
+    console.error(`[email] J+0 non envoyé pour ${id} : ${sent.error}`);
+  }
 
   redirect(`/resultat/${id}`);
 }

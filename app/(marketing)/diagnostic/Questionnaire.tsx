@@ -344,6 +344,32 @@ function ContactScreen({
         style={{ ...inputStyle, minHeight: 110, resize: "vertical" }}
       />
 
+      {/* Consentement marketing (CDC §34) : distinct des emails d'exécution du
+          service, facultatif, et jamais pré-coché. */}
+      <label
+        style={{
+          display: "flex",
+          gap: 12,
+          alignItems: "flex-start",
+          fontFamily: fonts.sans,
+          fontSize: "0.84rem",
+          lineHeight: 1.6,
+          color: alpha.whiteDesc,
+          cursor: "pointer",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={answers.consentMarketing === true}
+          onChange={(e) => setAnswers((p) => ({ ...p, consentMarketing: e.target.checked }))}
+          style={{ marginTop: 3, accentColor: colors.gold, flexShrink: 0 }}
+        />
+        <span>
+          {ui.consentLabel}
+          <span style={{ display: "block", marginTop: 4, opacity: 0.75 }}>{ui.consentNote}</span>
+        </span>
+      </label>
+
       {error && (
         <p style={{ fontFamily: fonts.sans, fontSize: "0.85rem", margin: 0, color: colors.goldLight }}>
           {error}
