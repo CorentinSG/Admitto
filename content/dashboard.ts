@@ -40,6 +40,7 @@ export const dashboard = {
   nav: [
     { label: "Tableau de bord", href: "/app/dashboard" },
     { label: "Feuille de route", href: "/app/roadmap" },
+    { label: "Simulateur", href: "/app/simulateur" },
   ],
   greeting: (firstName?: string) =>
     firstName ? `Bonjour ${firstName}.` : "Bonjour.",
