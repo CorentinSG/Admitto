@@ -4,6 +4,9 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { ACCESS_COOKIE, verifyAccessToken } from "@/lib/access/session";
 import { roadmapStore } from "@/lib/store/roadmap";
+import { milestoneStore } from "@/lib/store/milestones";
+import { loadRoadmap } from "@/lib/roadmap/load";
+import { milestoneStates } from "@/lib/roadmap/progress";
 import { TASK_STATUSES, type TaskStatus } from "@/lib/roadmap/types";
 import { TASK_TEMPLATES } from "@/content/roadmap-tasks";
 
@@ -30,6 +33,18 @@ export async function setTaskStatus(taskId: string, status: string) {
   }
 
   await roadmapStore.setStatus(assessmentId, taskId, status as TaskStatus);
+
+  // Un changement de statut peut achever un Milestone Challenge. La date est
+  // enregistrée ici, au moment où l'acquisition se produit : la calculer plus
+  // tard donnerait la date de consultation, pas celle de l'accomplissement.
+  const loaded = await loadRoadmap(assessmentId, new Date());
+  if (loaded) {
+    const now = new Date().toISOString();
+    for (const state of milestoneStates(loaded.tasks)) {
+      if (state.achieved) await milestoneStore.recordFirst(assessmentId, state.milestone, now);
+    }
+  }
+
   revalidatePath("/app/dashboard");
   revalidatePath("/app/roadmap");
   return { ok: true };

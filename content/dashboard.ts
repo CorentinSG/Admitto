@@ -72,6 +72,7 @@ export const dashboard = {
     waitingOnOthers: "En attente d'un tiers",
     overdue: "Échéances dépassées",
   },
+  milestoneAchievedOn: "Acquis le",
   milestonesNote:
     "Ces étapes ne portent que sur des actions qui dépendent de vous. Une admission, une bourse ou un résultat d'examen n'en font jamais partie.",
   documentsIntro:

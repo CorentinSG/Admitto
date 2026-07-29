@@ -14,6 +14,7 @@ import type { Assessment } from "@/lib/assessment/compute";
 export interface AssessmentStore {
   save(assessment: Assessment): Promise<void>;
   get(id: string): Promise<Assessment | null>;
+  all(): Promise<Assessment[]>;
 }
 
 /**
@@ -34,5 +35,8 @@ export const assessmentStore: AssessmentStore = {
   },
   async get(id) {
     return memory.get(id) ?? null;
+  },
+  async all() {
+    return [...memory.values()];
   },
 };

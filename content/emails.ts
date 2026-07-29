@@ -81,4 +81,22 @@ Vous recevez cet email parce que vous avez accepté de recevoir nos contenus. Vo
 Corentin Saint-Girons
 Founder`,
   },
+
+  DEADLINE_NOTICE: {
+    subject: "Échéance : {taskTitle}",
+    body: `Bonjour {firstName},
+
+{taskTitle} {noticeLead}.
+
+{deadlineList}
+
+Ces dates sont calculées à rebours de la rentrée que vous visez. Si votre calendrier a changé, mettez-le à jour depuis votre feuille de route : les échéances suivantes se recalculeront.
+
+Voir votre feuille de route : {dashboardUrl}
+
+Ce rappel fait partie du service auquel vous avez souscrit. Il ne vous est pas envoyé à des fins promotionnelles.
+
+Corentin Saint-Girons
+Founder`,
+  },
 };

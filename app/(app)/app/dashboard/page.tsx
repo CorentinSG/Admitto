@@ -13,6 +13,7 @@ import { dashboard, MILESTONE_LABELS, PHASE_LABELS, STATUS_LABELS } from "@/cont
 import { findModule, isModulePublished } from "@/content/modules";
 import { DOCUMENT_TYPE_LABELS, vault } from "@/content/vault";
 import { documentStore } from "@/lib/store/documents";
+import { milestoneStore } from "@/lib/store/milestones";
 import { TaskStatusControl } from "../_components/TaskStatusControl";
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default async function DashboardPage() {
 
   const { assessment, tasks } = loaded;
   const documents = await documentStore.list(assessmentId);
+  const milestoneDates = await milestoneStore.dates(assessmentId);
   const nba = selectNextBestAction(tasks, now);
   const progress = computeProgress(tasks);
   const stats = personalStats(tasks, now);
@@ -375,10 +377,12 @@ export default async function DashboardPage() {
                     marginLeft: "auto",
                     fontFamily: fonts.sans,
                     fontSize: "0.78rem",
-                    color: colors.slate,
+                    color: m.achieved ? colors.gold : colors.slate,
                   }}
                 >
-                  {m.done} / {m.total}
+                  {m.achieved && milestoneDates[m.milestone]
+                    ? `${dashboard.milestoneAchievedOn} ${dateFr(milestoneDates[m.milestone]!)}`
+                    : `${m.done} / ${m.total}`}
                 </span>
               </div>
             ))}

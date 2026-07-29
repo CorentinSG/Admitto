@@ -19,6 +19,10 @@ const VARIABLES = {
   offerName: "Roadmap & Platform",
   deductionAmount: "79 €",
   deductionExpiry: "27 août 2026",
+  taskTitle: "Demander vos relevés de notes",
+  noticeLead: "est à faire dans 7 jours",
+  deadlineList: "— Demander vos relevés de notes : 2026-09-15 (est à faire dans 7 jours)",
+  dashboardUrl: "https://admitto.app/app/roadmap",
 };
 
 describe("calendrier de la séquence (CDC §19)", () => {
@@ -71,6 +75,22 @@ describe("rendu des emails", () => {
   it("porte un lien de désinscription sur les emails promotionnels", () => {
     expect(renderEmail("J12_CONTENT", VARIABLES).body).toContain(VARIABLES.unsubscribeUrl);
     expect(renderEmail("J25_DEDUCTION_EXPIRY", VARIABLES).body).toContain(VARIABLES.unsubscribeUrl);
+  });
+
+  it("le rappel d'échéance repose sur le contrat, jamais sur le consentement", () => {
+    // Requalifier ce rappel en promotionnel le ferait cesser de partir pour
+    // ceux qui n'ont pas consenti — c'est-à-dire priver du service ceux qui
+    // l'ont payé.
+    expect(EMAIL_LEGAL_BASIS.DEADLINE_NOTICE).toBe("CONTRACT");
+    const body = renderEmail("DEADLINE_NOTICE", VARIABLES).body;
+    expect(body).not.toContain(VARIABLES.unsubscribeUrl);
+    expect(body).toMatch(/pas envoyé à des fins promotionnelles/);
+  });
+
+  it("le rappel d'échéance n'entre pas dans la séquence datée", () => {
+    // La séquence part de la soumission ; un rappel d'échéance dépend de la
+    // feuille de route. Les mélanger planifierait un rappel à J+12.
+    expect(scheduleSequence(SUBMITTED, true).map((e) => e.kind)).not.toContain("DEADLINE_NOTICE");
   });
 
   it("ne présente jamais le rapport comme un conseil juridique", () => {

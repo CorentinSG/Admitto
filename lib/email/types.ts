@@ -7,7 +7,8 @@
  * qu'à ceux qui l'ont donné.
  */
 
-export const EMAIL_KINDS = [
+/** Séquence de conversion, envoyée à date fixe depuis la soumission (CDC §19). */
+export const SEQUENCE_KINDS = [
   "J0_CONFIRMATION", // résultat préliminaire, confirmation, délai, lien de correction
   "J2_REPORT", // rapport, résumé, risques, offre recommandée, déduction
   "J5_FOLLOWUP", // email court : des questions ?
@@ -15,7 +16,20 @@ export const EMAIL_KINDS = [
   "J25_DEDUCTION_EXPIRY", // rappel de la date limite et de l'offre
 ] as const;
 
-export type EmailKind = (typeof EMAIL_KINDS)[number];
+export type SequenceKind = (typeof SEQUENCE_KINDS)[number];
+
+/**
+ * Emails déclenchés par l'état de la feuille de route, sans date fixe (CDC §22).
+ * Séparés de la séquence : ils n'ont pas de décalage depuis la soumission, et
+ * les mélanger ferait planifier un rappel d'échéance à J+12.
+ */
+export const TRIGGERED_KINDS = ["DEADLINE_NOTICE"] as const;
+
+export type TriggeredKind = (typeof TRIGGERED_KINDS)[number];
+
+export const EMAIL_KINDS = [...SEQUENCE_KINDS, ...TRIGGERED_KINDS] as const;
+
+export type EmailKind = SequenceKind | TriggeredKind;
 
 export const LEGAL_BASES = ["CONTRACT", "CONSENT"] as const;
 export type LegalBasis = (typeof LEGAL_BASES)[number];
@@ -27,10 +41,12 @@ export const EMAIL_LEGAL_BASIS: Record<EmailKind, LegalBasis> = {
   J5_FOLLOWUP: "CONTRACT",
   J12_CONTENT: "CONSENT",
   J25_DEDUCTION_EXPIRY: "CONSENT",
+  // Rappel d'échéance : exécution du service payé, jamais promotionnel.
+  DEADLINE_NOTICE: "CONTRACT",
 };
 
 /** Décalage d'envoi, en jours, depuis la soumission du questionnaire. */
-export const EMAIL_OFFSET_DAYS: Record<EmailKind, number> = {
+export const EMAIL_OFFSET_DAYS: Record<SequenceKind, number> = {
   J0_CONFIRMATION: 0,
   J2_REPORT: 2,
   J5_FOLLOWUP: 5,

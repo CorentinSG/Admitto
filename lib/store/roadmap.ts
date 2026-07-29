@@ -20,6 +20,11 @@ export const roadmapStore = {
     return Object.fromEntries(memory.get(assessmentId) ?? new Map());
   },
 
+  /** L'utilisateur a-t-il déjà touché à sa feuille de route ? */
+  async hasAny(assessmentId: string): Promise<boolean> {
+    return (memory.get(assessmentId)?.size ?? 0) > 0;
+  },
+
   async setStatus(assessmentId: string, taskId: string, status: TaskStatus): Promise<void> {
     const forAssessment = memory.get(assessmentId) ?? new Map<string, TaskStatus>();
     forAssessment.set(taskId, status);

@@ -20,6 +20,10 @@ export const ALLOWED_EMAIL_VARIABLES = [
   "offerName",
   "deductionAmount",
   "deductionExpiry",
+  "taskTitle",
+  "noticeLead",
+  "deadlineList",
+  "dashboardUrl",
 ] as const;
 
 export type AllowedEmailVariable = (typeof ALLOWED_EMAIL_VARIABLES)[number];

@@ -1,7 +1,7 @@
 import {
-  EMAIL_KINDS,
   EMAIL_LEGAL_BASIS,
   EMAIL_OFFSET_DAYS,
+  SEQUENCE_KINDS,
   type ScheduledEmail,
 } from "./types";
 
@@ -17,7 +17,9 @@ export function scheduleSequence(
   submittedAt: Date,
   consentMarketing: boolean
 ): ScheduledEmail[] {
-  return EMAIL_KINDS.filter(
+  // Seule la séquence est planifiée ici : les rappels d'échéance sont
+  // déclenchés par l'état de la feuille de route, pas par une date de départ.
+  return SEQUENCE_KINDS.filter(
     (kind) => EMAIL_LEGAL_BASIS[kind] === "CONTRACT" || consentMarketing
   ).map((kind) => {
     const sendAt = new Date(submittedAt);
