@@ -13,6 +13,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
     "check:vocabulary": "node scripts/check-vocabulary.mjs",
     "check:tokens": "node scripts/check-design-tokens.mjs",
     "check:rules": "node scripts/check-rules.mjs",
@@ -30,9 +34,11 @@
     "check:all": "npm run lint && npm run typecheck && npm run test && npm run check:vocabulary && npm run check:tokens && npm run check:rules && npm run check:skills",
     "graph:build": "graphify . || echo 'graphify non installé — voir docs/TOKEN_OPTIMIZATION.md'",
     "graph:update": "graphify . --update || echo 'graphify non installé — voir docs/TOKEN_OPTIMIZATION.md'",
-    "prepare": "git config core.hooksPath .githooks || true"
+    "prepare": "git config core.hooksPath .githooks || true",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "next": "^15.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -45,7 +51,9 @@
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.5.0",
+    "playwright": "^1.62.0",
     "prettier": "^3.3.0",
+    "prisma": "^6.19.3",
     "typescript": "^5.6.0",
     "vitest": "^3.0.0"
   }

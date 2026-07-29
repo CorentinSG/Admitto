@@ -42,7 +42,46 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Tests unitaires (moteurs A/B)
+      - name: Tests unitaires (moteurs A/B, stores en mémoire)
+        run: npm run test
+
+  # Le contrat des stores est vérifié une seconde fois contre une vraie base :
+  # les deux implémentations (mémoire et Prisma) partagent lib/store/stores.test.ts,
+  # et c'est ce second passage qui empêche la version Prisma de diverger sans
+  # que rien ne le signale.
+  database:
+    name: Contrat des stores sur PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: admitto
+          POSTGRES_PASSWORD: admitto
+          POSTGRES_DB: admitto
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://admitto:admitto@localhost:5432/admitto
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Migrations
+        run: npm run db:deploy
+
+      - name: Tests contre la base
         run: npm run test
 
   build:

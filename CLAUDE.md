@@ -19,6 +19,7 @@ que pour des changements durables (stabilité = cache prompt efficace).
   `ADMITTO_ADMIN_TOKEN`, `verify:espace` et `verify:dashboard` exigent `ADMITTO_SESSION_SECRET`,
   `verify:consultations` exige les deux)
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
+- `npm run db:migrate` / `db:deploy` / `db:studio` — migrations Prisma (dev / prod / inspection)
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)
 
 ## Skills de projet (`.claude/skills/`)
@@ -111,9 +112,14 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   Le middleware s'exécute en Edge : n'y importer aucun module `node:*` (Web Crypto uniquement).
 - Variables d'environnement : voir `.env.example`. Toutes optionnelles ; leur absence
   place le produit en régime Phase 1A (bêta gratuite, emails non expédiés).
-- `lib/store/assessments.ts` — persistance de transition en mémoire (accrochée à
-  `globalThis`, car Next.js duplique les modules entre action serveur et page).
-  À remplacer par Prisma avant la bêta.
+- `lib/db/client.ts` + `prisma/schema.prisma` — persistance. Chaque store de
+  `lib/store/` porte DEUX implémentations dans le même fichier : Prisma quand
+  `DATABASE_URL` est défini, mémoire du processus sinon. Les garder côte à côte
+  est délibéré — séparées, elles divergeraient sans que rien ne le signale.
+  Le contrat commun est `lib/store/stores.test.ts`, qui tourne contre le backend
+  actif ; la CI le rejoue sur PostgreSQL. Ne jamais importer de module `node:*`
+  dans `lib/store/` : ces fichiers sont atteints depuis des composants clients
+  via les actions serveur, et le bundle client ne résout pas `node:`.
 - `scripts/` — garde-fous exécutés par les hooks git (`.githooks/`) et la CI.
 
 ## Règles non négociables (résumé — détail dans PLAN.md)

@@ -484,7 +484,8 @@ Points contrôlés :
 | **Phase 3 — Milestone Challenges actifs** | Date de première acquisition enregistrée au moment de l'accomplissement, état toujours recalculé depuis les tâches | **Fait** |
 | **Phase 3 — Coaching intégré** | Quatre types de séance avec durée, inclusions et exclusions, solde fini toujours affiché, créneaux ouverts depuis le back-office, délai de prévenance de 48 h, attribution au cas par cas bornée | **Fait** |
 | **Phase 3 — Métriques** | Tableau de bord §36 : conversion rapport → achat et temps humain présentés ensemble, délai médian de production, détection de partenariats, activation des feuilles de route ; chaque chiffre porte son nombre d'observations | **Fait** |
-| Phase 3 — Matrices éditables sans code | Édition des règles et blocs de texte depuis le back-office | **Bloqué par la persistance** (voir réserve 7) |
+| **Persistance PostgreSQL** | Schéma Prisma des onze entités, migration initiale, huit stores rebasculés, contrat de store unique rejoué contre la base en CI ; sans `DATABASE_URL` le régime mémoire reste jouable | **Fait** |
+| Phase 3 — Matrices éditables sans code | Édition des règles et blocs de texte depuis le back-office | À faire (la persistance qui le bloquait est en place) |
 
 **Deux réserves explicites sur le Sprint 3**, à lever avant la bêta :
 
@@ -496,10 +497,8 @@ Points contrôlés :
    `npm run check:rules` refuse toute règle active sans source ni date de vérification.
    Seules les règles structurelles (informations manquantes, cursus en cours), qui
    n'énoncent aucune règle de droit, sont actives.
-2. **Persistance et email.** Les évaluations et la file de rapports sont stockées en
-   mémoire du processus (`lib/store/`) et l'email transactionnel J+0 n'est pas encore
-   envoyé. Les deux points sont isolés derrière une interface : brancher Prisma et
-   Resend ne change rien au reste du code.
+2. **Email.** L'email transactionnel J+0 n'est pas encore expédié : sans `RESEND_API_KEY`
+   le transport journalise sans envoyer. La persistance, elle, est faite — voir ci-dessous.
 3. **Accès au back-office.** Le back-office est protégé par un jeton unique
    (`ADMITTO_ADMIN_TOKEN`) et répond 404 tant que ce jeton n'est pas configuré. C'est une
    mesure de transition, à remplacer par Auth.js avec rôles ADMIN / REVIEWER en Phase 2.
@@ -518,12 +517,13 @@ Points contrôlés :
    survit pas à un déploiement sans volume persistant : à remplacer par un stockage
    objet chiffré au repos avant la bêta.
 7. **Matrices éditables sans code.** Le CDC §33 veut que les règles et les blocs de texte
-   soient modifiables depuis le back-office. Ce chantier attend Prisma, et ce n'est pas un
-   simple ordre de priorité : les stores actuels vivent en mémoire du processus. Un écran
-   d'édition posé dessus laisserait modifier une règle juridique dont la modification
-   disparaîtrait au redémarrage suivant — le pire des deux mondes, puisque l'auteur croirait
-   la correction acquise. Les règles restent donc dans `rules.seed.ts`, versionnées et
-   soumises à `check:rules`, jusqu'à la bascule en base.
+   soient modifiables depuis le back-office. La persistance qui bloquait ce chantier est en
+   place : les règles peuvent désormais passer en base sans qu'une correction disparaisse au
+   redémarrage. Reste à décider ce qui bascule. Une règle du Moteur A porte source, date de
+   vérification et version, et `check:rules` les impose au commit ; un écran d'édition doit
+   reproduire ces contrôles côté serveur, sinon il devient le moyen le plus simple d'activer
+   une règle juridique non vérifiée. `rules.seed.ts` reste donc la source jusqu'à ce que
+   l'écran porte les mêmes garde-fous.
 
 6. **Contenu des modules 1 à 10.** Seul le Module 0 est rédigé et publié. Les dix autres
    portent leur plan de sections, dont celles qui énonceront une règle officielle : le

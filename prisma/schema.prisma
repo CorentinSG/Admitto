@@ -1,0 +1,199 @@
+// Schéma Prisma — Admitto (PLAN.md §4).
+//
+// Remplace les stores en mémoire accrochés à globalThis. Deux principes ont
+// guidé la modélisation :
+//
+// 1. **Le profil est stocké tel qu'il a été répondu.** `answers` et `derived`
+//    sont des colonnes JSON : les recalculer à la lecture ferait qu'un rapport
+//    rouvert six mois plus tard s'appuierait sur des règles ou des barèmes qui
+//    ont changé depuis. `rulesSnapshot` fige déjà la version des règles ; la
+//    même logique s'applique aux réponses.
+//
+// 2. **Ce que le code garantit déjà n'est pas relâché en base.** Les listes
+//    fermées du CDC (statuts, voies, types de document, types de séance)
+//    restent des unions TypeScript et sont stockées en `String` : dupliquer
+//    ces listes en `enum` Prisma créerait deux sources de vérité, dont une
+//    qui ne serait pas contrôlée par `check:vocabulary` ni par les tests.
+//    L'intégrité vient des types à l'écriture, pas d'un enum de plus.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Une soumission de diagnostic. Racine de tout le reste.
+model Assessment {
+  id        String   @id
+  createdAt DateTime
+
+  /// Réponses brutes du questionnaire, figées (voir principe 1).
+  answers Json
+  /// Champs inférés au moment de la soumission.
+  derived Json
+
+  path       String
+  textBlocks String[]
+
+  partnerships Json
+  costs        Json
+  deadlines    Json
+
+  /// Version exacte des règles utilisées — traçabilité CDC §14.1.
+  rulesSnapshot Json
+
+  report       Report?
+  taskStatuses TaskStatus[]
+  scenarios    Scenario[]
+  documents    Document[]
+  notices      SentNotice[]
+  milestones   MilestoneAward[]
+  bookings     Booking[]
+  entitlement  Entitlement?
+
+  @@index([createdAt])
+}
+
+/// Rapport en file (CDC §18) et sa revue avant envoi (CDC §17).
+model Report {
+  id           String   @id
+  assessmentId String   @unique
+  status       String
+  priority     String
+  createdAt    DateTime
+  sentAt       DateTime?
+
+  /// Fenêtre de déduction ouverte par le paiement (CDC §16.2).
+  deduction Json?
+
+  /// Points de revue traités. Identifiants dérivés du profil, recalculés à
+  /// chaque affichage : un acquittement orphelin ne débloque jamais rien.
+  acknowledged String[]
+
+  assessment  Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  corrections Correction[]
+
+  @@index([status, priority, createdAt])
+}
+
+/// Journal des corrections humaines (CDC §18 et §33).
+model Correction {
+  id       String   @id @default(uuid())
+  reportId String
+  at       DateTime
+  author   String
+  note     String
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, at])
+}
+
+/// Écart au statut initial d'une tâche. La feuille de route elle-même est
+/// régénérée depuis les modèles : seuls les écarts sont persistés, ce qui
+/// permet d'ajouter des tâches sans migration de données.
+model TaskStatus {
+  assessmentId String
+  taskId       String
+  status       String
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@id([assessmentId, taskId])
+}
+
+/// Scénario de coût (CDC §26). Seules les entrées sont conservées : les
+/// sorties sont recalculées, sinon un scénario enregistré porterait un total
+/// devenu faux après un changement de formule.
+model Scenario {
+  id           String @id
+  assessmentId String
+  inputs       Json
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId])
+}
+
+/// Pièce du coffre (CDC §29). Ni contenu ni index de contenu : le coffre range
+/// des documents, il ne les lit pas.
+model Document {
+  id           String   @id
+  assessmentId String
+  type         String
+  fileName     String
+  sizeBytes    Int
+  uploadedAt   DateTime
+  /// Absent quand le stockage n'est pas configuré : la fiche existe, pas le fichier.
+  storageKey   String?
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId, type])
+}
+
+/// Rappel d'échéance déjà envoyé (CDC §22). La clé composée EST le mécanisme
+/// d'idempotence : un second envoi du même rappel viole la contrainte.
+model SentNotice {
+  assessmentId String
+  noticeId     String
+  sentAt       DateTime @default(now())
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@id([assessmentId, noticeId])
+}
+
+/// Première acquisition d'un Milestone Challenge (CDC §24). Seule la date est
+/// stockée, jamais l'état : l'acquisition reste calculée depuis les tâches,
+/// sinon un challenge resterait acquis après que le travail a été défait.
+model MilestoneAward {
+  assessmentId String
+  milestone    String
+  achievedAt   DateTime
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@id([assessmentId, milestone])
+}
+
+/// Créneau de consultation ouvert par le fondateur (CDC §31).
+model ConsultationSlot {
+  id       String   @id
+  startsAt DateTime
+  minutes  Int
+
+  booking Booking?
+
+  @@index([startsAt])
+}
+
+/// Séance réservée. `slotId` est unique : deux personnes ne peuvent pas tenir
+/// le même créneau, et la base le refuse même si deux réservations arrivent
+/// exactement en même temps.
+model Booking {
+  id           String   @id
+  assessmentId String
+  slotId       String   @unique
+  type         String
+  bookedAt     DateTime
+
+  assessment Assessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  slot       ConsultationSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId])
+}
+
+/// Droit à consultation (CDC §31). `granted` est un entier : il n'existe pas
+/// de valeur « illimité » à écrire, ici pas plus qu'en TypeScript.
+model Entitlement {
+  assessmentId String  @id
+  offer        String?
+  granted      Int     @default(0)
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+}
