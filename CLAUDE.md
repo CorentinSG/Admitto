@@ -13,9 +13,10 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run check:vocabulary` — vocabulaire interdit (CDC §5–7)
 - `npm run check:tokens` — couleurs hors palette Admitto
 - `npm run check:rules` — règles du Moteur A : source + date de vérification obligatoires
-- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator <url>` —
-  checklists design, diagnostic, back-office, paiement, espace payant et simulateur au navigateur
-  (serveur lancé + Playwright ; `verify:backoffice` exige `ADMITTO_ADMIN_TOKEN`)
+- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace <url>` —
+  checklists design, diagnostic, back-office, paiement, espace payant, simulateur, coffre et
+  modules au navigateur (serveur lancé + Playwright ; `verify:backoffice` exige
+  `ADMITTO_ADMIN_TOKEN`, `verify:espace` et `verify:dashboard` exigent `ADMITTO_SESSION_SECRET`)
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)
 
@@ -82,6 +83,18 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
 - `lib/roadmap/` — feuille de route (CDC §22), Next Best Action (§23), progression et
   Milestone Challenges (§24). Rien n'est coché à la place de l'utilisateur : présumer une
   tâche accomplie gonflerait la progression et offrirait un challenge non mérité.
+- `lib/vault/` + `content/vault.ts` — coffre de documents (CDC §29). Cinq types fermés :
+  la liste EST le contrôle de minimisation. `policy.ts` décide avant toute écriture, et
+  refuse les images — un scan de pièce d'identité en est une. Sans `ADMITTO_VAULT_DIR`,
+  aucun fichier n'est reçu et l'écran le dit.
+- `lib/modules/` + `content/modules.ts` — modules pédagogiques (CDC §25). Une section
+  `OFFICIAL_RULE` porte sa source dans son type : le compilateur interdit d'énoncer une
+  procédure sans dire d'où elle vient. `isPublishable` retire de la bibliothèque tout
+  module publié dont une source manque — seul le Module 0 est rédigé à ce jour.
+  Les modules vivent sous `/app/modules/…`, jamais `/modules/…` : hors zone protégée.
+- Aucun composant client ne formate de date. Le serveur formate en UTC, le navigateur
+  dans le fuseau de l'utilisateur : à cheval sur minuit les deux rendus divergent et
+  React régénère l'arbre. Passer un libellé déjà formaté (cf. `DocumentView`).
 - `app/(admin)/` et `app/(app)/` — back-office et espace payant, protégés par
   `middleware.ts` : fermés par défaut faute de `ADMITTO_ADMIN_TOKEN` / `ADMITTO_SESSION_SECRET`.
   Le middleware s'exécute en Edge : n'y importer aucun module `node:*` (Web Crypto uniquement).

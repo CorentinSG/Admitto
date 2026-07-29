@@ -477,7 +477,8 @@ Points contrôlés :
 | **Phase 2 — Espace payant (cœur)** | Accès signé avec reprise du profil sans ressaisie, feuille de route par parcours type et par phases, Next Best Action à cinq composantes, progression, statistiques et Milestone Challenges | **Fait** |
 | **Phase 2 — Simulateur de coût** | Dix-sept postes, six sorties, préréglages par ville, jusqu'à trois scénarios comparés, aucun retour sur investissement annoncé | **Fait** |
 | **Phase 2 — Base de partenariats** | 42 accords France ↔ États-Unis importés depuis `corentinsg/llm-partnerships`, détection par université ET par niveau d'études, effet sur la fourchette de coût et sur l'axe financier, back-office avec taux de détection | **Fait** |
-| Phase 2 — Compléments | Contenus des modules (§25), document vault (§29) | À faire |
+| **Phase 2 — Document vault** | Cinq types fermés, refus des pièces sensibles décidé avant toute écriture, images écartées, quota par type, stockage désactivé par défaut (le coffre bascule alors en suivi de documents) | **Fait** |
+| **Phase 2 — Modules** | Onze modules, ordre de production §25.1, contenu du Module 0 rédigé et publié, plan des dix autres, publication conditionnée au sourçage des sections officielles | **Fait**, contenu des modules 1 à 10 à écrire |
 
 **Deux réserves explicites sur le Sprint 3**, à lever avant la bêta :
 
@@ -503,6 +504,20 @@ Points contrôlés :
    diagnostic est offert, ce qui est exactement le régime de la phase bêta ; sans
    `STRIPE_WEBHOOK_SECRET` le webhook est inerte plutôt que permissif. Le passage 1A → 1B
    se fait donc par configuration, sans modification de code.
+5. **Coffre de documents sans stockage persistant.** Sans `ADMITTO_VAULT_DIR`, aucun
+   fichier n'est reçu : le coffre suit les documents que l'utilisateur déclare avoir
+   préparés, et le dit à l'écran plutôt que de laisser croire à un envoi. Avec la
+   variable, les pièces acceptées sont écrites dans un répertoire local sous une clé
+   opaque — le nom d'origine n'entre jamais dans le chemin. Un répertoire local ne
+   survit pas à un déploiement sans volume persistant : à remplacer par un stockage
+   objet chiffré au repos avant la bêta.
+6. **Contenu des modules 1 à 10.** Seul le Module 0 est rédigé et publié. Les dix autres
+   portent leur plan de sections, dont celles qui énonceront une règle officielle : le
+   type `ModuleSection` rend impossible d'écrire une telle section sans indiquer sa
+   source et sa date de vérification, et `isPublishable` retire de la bibliothèque tout
+   module publié dont une source manque. Ces contenus relèvent du fondateur : ils
+   engagent des affirmations de procédure que seule une source officielle vérifiée
+   autorise.
 
 La photographie professionnelle du fondateur (CDC §6) est intégrée : détourage sur fond
 transparent dans `public/`, décliné en médaillon circulaire dans le hero

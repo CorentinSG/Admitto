@@ -89,7 +89,9 @@ export function selectNextBestAction(tasks: Task[], reference: Date): NextBestAc
     duration: formatDuration(task.estimatedMinutes),
     dueDate: task.dueDate,
     delayRisk: task.delayRisk,
-    resourceUrl: task.moduleSlug ? `/modules/${task.moduleSlug}` : null,
+    // Les modules vivent dans l'espace payant : un lien vers /modules/… sortirait
+    // de la zone protégée et tomberait sur une page inexistante.
+    resourceUrl: task.moduleSlug ? `/app/modules/${task.moduleSlug}` : null,
     urgent: urgent && task.dueDate !== null && task.dueDate >= today ? true : urgent,
   };
 }

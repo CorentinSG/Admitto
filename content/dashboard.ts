@@ -40,7 +40,9 @@ export const dashboard = {
   nav: [
     { label: "Tableau de bord", href: "/app/dashboard" },
     { label: "Feuille de route", href: "/app/roadmap" },
+    { label: "Modules", href: "/app/modules" },
     { label: "Simulateur", href: "/app/simulateur" },
+    { label: "Documents", href: "/app/documents" },
   ],
   greeting: (firstName?: string) =>
     firstName ? `Bonjour ${firstName}.` : "Bonjour.",
@@ -72,8 +74,8 @@ export const dashboard = {
   },
   milestonesNote:
     "Ces étapes ne portent que sur des actions qui dépendent de vous. Une admission, une bourse ou un résultat d'examen n'en font jamais partie.",
-  documentsPlaceholder:
-    "L'espace documents arrive prochainement. Il n'accueillera que CV, personal statements, listes d'écoles, documents de travail et checklists — jamais de pièce sensible.",
+  documentsIntro:
+    "Le coffre n'accueille que CV, personal statements, listes d'écoles, documents de travail et checklists — jamais de pièce sensible.",
   modulePlaceholder: "Ce module est en cours de production.",
   roadmapTitle: "Votre feuille de route",
   roadmapIntro:

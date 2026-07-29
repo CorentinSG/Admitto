@@ -11,6 +11,8 @@ import { applicableTasks } from "@/lib/roadmap/generate";
 import { NOT_ACTIONABLE } from "@/lib/roadmap/types";
 import { dashboard, MILESTONE_LABELS, PHASE_LABELS, STATUS_LABELS } from "@/content/dashboard";
 import { findModule, isModulePublished } from "@/content/modules";
+import { DOCUMENT_TYPE_LABELS, vault } from "@/content/vault";
+import { documentStore } from "@/lib/store/documents";
 import { TaskStatusControl } from "../_components/TaskStatusControl";
 
 export const metadata: Metadata = {
@@ -40,6 +42,7 @@ export default async function DashboardPage() {
   if (!loaded) redirect("/diagnostic");
 
   const { assessment, tasks } = loaded;
+  const documents = await documentStore.list(assessmentId);
   const nba = selectNextBestAction(tasks, now);
   const progress = computeProgress(tasks);
   const stats = personalStats(tasks, now);
@@ -430,9 +433,49 @@ export default async function DashboardPage() {
 
       {/* 8. Documents */}
       <Section title={dashboard.sections.documents}>
-        <p style={{ fontFamily: fonts.sans, fontSize: "0.88rem", lineHeight: 1.7, margin: 0, color: colors.slate }}>
-          {dashboard.documentsPlaceholder}
-        </p>
+        {documents.length === 0 ? (
+          <p style={{ fontFamily: fonts.sans, fontSize: "0.88rem", lineHeight: 1.7, margin: 0, color: colors.slate }}>
+            {vault.dashboardEmpty}
+          </p>
+        ) : (
+          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+            {documents.map((document) => (
+              <li
+                key={document.id}
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  padding: "9px 0",
+                  borderTop: `1px solid ${alpha.cardGridGap}`,
+                  fontFamily: fonts.sans,
+                  fontSize: "0.88rem",
+                  color: colors.navy900,
+                }}
+              >
+                <span>{document.fileName}</span>
+                <span style={{ color: colors.slate, fontSize: "0.78rem" }}>
+                  {DOCUMENT_TYPE_LABELS[document.type]}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <Link
+          href="/app/documents"
+          style={{
+            display: "inline-block",
+            marginTop: 14,
+            fontFamily: fonts.sans,
+            fontSize: "0.8rem",
+            letterSpacing: "0.04em",
+            color: colors.gold,
+            textDecoration: "none",
+          }}
+        >
+          {vault.dashboardLink} →
+        </Link>
       </Section>
     </div>
   );
