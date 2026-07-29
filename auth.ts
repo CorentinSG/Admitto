@@ -78,41 +78,66 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
       ...authConfig.callbacks,
 
       /**
-       * Reprise du profil sans ressaisie (CDC §10).
+       * Rôle relu en base à la connexion.
        *
-       * À la connexion, les diagnostics portant cette adresse et encore
-       * rattachés à aucun compte sont attachés. Le rattachement se fait ici et
-       * non à l'affichage : un utilisateur doit retrouver son profil parce
-       * qu'il s'est connecté, pas parce qu'il a ouvert la bonne page.
+       * `authConfig.jwt` se contente de `user.role`, ce qui suffit au runtime
+       * Edge mais dépend de l'ordre dans lequel Auth.js crée le compte et
+       * mint le jeton. Ici, côté Node, on interroge la base : c'est la seule
+       * valeur qui fasse foi, et une requête par connexion — pas par requête.
        */
-      async signIn({ user, email: request }) {
-        // Auth.js appelle ce callback DEUX fois pour un lien email : d'abord à
-        // la demande, où le compte n'existe pas encore, puis à l'ouverture du
-        // lien. Rattacher dès la demande viserait un identifiant inexistant —
-        // et la clé étrangère refuserait l'écriture.
-        if (request?.verificationRequest) return true;
+      async jwt({ token, user }) {
+        if (!user) return token;
+        token.userId = user.id;
 
         const db = prisma();
-        if (!db || !user.email) return true;
-        const address = user.email.toLowerCase();
+        const row = user.id
+          ? await db?.user.findUnique({ where: { id: user.id }, select: { role: true } })
+          : null;
+        token.role = (row?.role ?? (user as { role?: string }).role ?? "CLIENT") as Role;
+        return token;
+      },
+    },
 
-        // Le compte est relu par son adresse plutôt que pris dans `user` : le
-        // rattachement doit viser une ligne dont on sait qu'elle existe.
-        const account = await db.user.findUnique({ where: { email: user.email } });
-        if (!account) return true;
+    events: {
+      /**
+       * Élévation du premier administrateur (CDC §33).
+       *
+       * Dans `events.createUser`, le compte existe : c'est le premier instant
+       * où son rôle peut être écrit. La faire plus tôt viserait une ligne
+       * inexistante.
+       */
+      async createUser({ user }) {
+        const db = prisma();
+        if (!db || !user.email || !user.id) return;
+        if (!bootstrapAdmins().includes(user.email.toLowerCase())) return;
 
-        if (bootstrapAdmins().includes(address) && account.role === "CLIENT") {
-          await db.user.update({
-            where: { id: account.id },
-            data: { role: "ADMIN" satisfies Role },
-          });
-        }
+        await db.user.update({
+          where: { id: user.id },
+          data: { role: "ADMIN" satisfies Role },
+        });
+      },
+
+      /**
+       * Reprise du profil sans ressaisie (CDC §10).
+       *
+       * Rattachement dans un ÉVÉNEMENT et non dans le callback `signIn` : ce
+       * callback s'exécute **avant** que l'adaptateur ne crée le compte, si
+       * bien qu'à la première connexion il n'y avait aucun compte à rattacher.
+       * Conséquence observée : tout nouvel utilisateur se connectait sans
+       * jamais retrouver son diagnostic — l'exigence du CDC §10 tombait pour
+       * exactement les personnes qu'elle vise.
+       *
+       * Un événement ne peut pas bloquer la connexion, ce qui est le bon
+       * comportement : un rattachement raté ne doit pas empêcher d'entrer.
+       */
+      async signIn({ user }) {
+        const db = prisma();
+        if (!db || !user?.email || !user.id) return;
 
         await db.assessment.updateMany({
-          where: { email: address, userId: null },
-          data: { userId: account.id },
+          where: { email: user.email.toLowerCase(), userId: null },
+          data: { userId: user.id },
         });
-        return true;
       },
     },
   };

@@ -10,7 +10,9 @@
  */
 
 const BASE = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
+const { verifyEmail } = await import("./lib/identity.mjs");
 const ADMIN_EMAIL = process.env.ADMITTO_ADMIN_EMAIL;
+const REQUESTER_EMAIL = verifyEmail("camille");
 
 if (!process.env.AUTH_SECRET || !ADMIN_EMAIL) {
   console.error("✗ AUTH_SECRET et ADMITTO_ADMIN_EMAIL requis.");
@@ -25,6 +27,9 @@ try {
   process.exit(1);
 }
 
+const { waitFor, waitForText, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
+const { answerScreens } = await import("./lib/questionnaire.mjs");
+
 const failures = [];
 const check = (label, ok, detail = "") => {
   console.log(`${ok ? "✓" : "✗"} ${label}${detail ? ` — ${detail}` : ""}`);
@@ -37,6 +42,11 @@ const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined,
 });
 
+// Réchauffage : la première navigation paie sinon le démarrage à froid.
+const warmPage = await browser.newPage();
+await warmUp(warmPage, BASE);
+await warmPage.close();
+
 // ── Le back-office est fermé sans jeton ────────────────────────────────────
 const anonymous = await browser.newContext();
 const anonPage = await anonymous.newPage();
@@ -45,9 +55,11 @@ check("Back-office inaccessible sans compte", anonResponse?.status() === 404, `H
 
 // ── Un diagnostic est soumis pour alimenter la file ────────────────────────
 await anonPage.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
+const beforeStart = await anonPage.locator("body").innerText();
 await anonPage.getByRole("button", { name: "Commencer" }).click();
-await anonPage.waitForTimeout(300);
-for (const label of [
+await waitForTextChange(anonPage, beforeStart);
+// Chaque écran attend le changement réel plutôt qu'un délai deviné.
+await answerScreens(anonPage, [
   "Je prépare mes candidatures",
   "Master 2",
   "Université Paris 1 Panthéon-Sorbonne",
@@ -58,12 +70,9 @@ for (const label of [
   "L'an prochain",
   "Pas encore commencé",
   "Français, sans statut américain",
-]) {
-  await anonPage.getByRole("button", { name: label, exact: true }).click();
-  await anonPage.waitForTimeout(220);
-}
+]);
 await anonPage.getByPlaceholder("Prénom").fill("Camille");
-await anonPage.getByPlaceholder("Adresse email").fill("camille@example.com");
+await anonPage.getByPlaceholder("Adresse email").fill(REQUESTER_EMAIL);
 await anonPage.getByRole("button", { name: "Obtenir mon résultat" }).click();
 await anonPage.waitForURL("**/resultat/**", { timeout: 20000 });
 const assessmentId = anonPage.url().split("/resultat/")[1];
@@ -95,10 +104,10 @@ check("Règles déclenchées tracées", /r-[a-z]+-\d+ v\d+|aucune/.test(detail))
 
 // ── Transition de statut ───────────────────────────────────────────────────
 await page.getByRole("button", { name: "En relecture" }).click();
-await page.waitForTimeout(1200);
+// Le bouton se désactive quand le statut est appliqué : c'est le signal.
 check(
   "Statut passé en relecture",
-  await page.getByRole("button", { name: "En relecture" }).isDisabled()
+  Boolean(await waitFor(() => page.getByRole("button", { name: "En relecture" }).isDisabled()))
 );
 
 // ── Revue avant envoi (CDC §17) ────────────────────────────────────────────
@@ -133,26 +142,31 @@ if (blocked) {
   // est pilotée par le serveur, `check` exigerait un basculement synchrone.
   for (let i = 0; i < pointCount; i++) {
     const box = boxes.nth(i);
-    if (!(await box.isChecked())) {
-      await box.click();
-      await page.waitForTimeout(900);
-    }
+    if (!(await box.isChecked())) await box.click();
   }
-  const after = await page.locator("body").innerText();
-  check("Revue close une fois les points traités", /l'envoi est ouvert/i.test(after));
+
+  /**
+   * Attendre que la CASE soit cochée ne prouverait rien : elle l'est
+   * immédiatement, par affichage optimiste, avant même que le serveur réponde.
+   * Le seul signal confirmé côté serveur est l'ouverture du bouton d'envoi,
+   * calculée à partir des acquittements réellement enregistrés.
+   */
+  const sendOpen = await waitFor(
+    async () => !(await page.getByRole("button", { name: "Envoyé" }).isDisabled())
+  );
+  check("Envoi ouvert après revue", Boolean(sendOpen));
   check(
-    "Envoi ouvert après revue",
-    !(await page.getByRole("button", { name: "Envoyé" }).isDisabled())
+    "Revue close une fois les points traités",
+    /l'envoi est ouvert/i.test(await page.locator("body").innerText())
   );
 }
 
 // ── Journal des corrections ────────────────────────────────────────────────
 await page.locator("textarea").fill("Fourchette de coût ajustée après vérification.");
 await page.getByRole("button", { name: "Consigner" }).click();
-await page.waitForTimeout(1200);
 check(
   "Correction consignée et horodatée",
-  (await page.locator("text=Fourchette de coût ajustée").count()) > 0
+  Boolean(await waitForText(page, "Fourchette de coût ajustée"))
 );
 
 // ── Version imprimable ─────────────────────────────────────────────────────

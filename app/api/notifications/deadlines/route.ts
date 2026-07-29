@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqualString } from "@/lib/access/constant-time";
 import { runDeadlineNotifications } from "@/lib/notifications/run";
+import { purgeTechnicalData } from "@/lib/security/purge";
 
 /**
  * Déclenchement des rappels d'échéance (CDC §22).
@@ -23,6 +24,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Jeton invalide." }, { status: 401 });
   }
 
-  const summary = await runDeadlineNotifications(new Date());
-  return NextResponse.json(summary);
+  const now = new Date();
+  const summary = await runDeadlineNotifications(now);
+  // La purge suit le même déclencheur : un cron de moins à configurer, et
+  // l'un ne va pas sans l'autre en production (revue §B2 et §C6).
+  const purged = await purgeTechnicalData(now);
+  return NextResponse.json({ ...summary, purged });
 }

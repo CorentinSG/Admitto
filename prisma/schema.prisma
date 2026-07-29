@@ -86,6 +86,27 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
+/// Tentative comptée pour la limitation de débit (revue §A2).
+///
+/// Chaque tentative est enregistrée, **y compris celles qui sont refusées** :
+/// ne compter que les tentatives acceptées laisserait un script marteler
+/// indéfiniment, puisque la fenêtre se viderait pendant qu'il frappe. Un
+/// acharnement prolonge donc le blocage, ce qui est le comportement voulu.
+///
+/// Les lignes sont purgées par la route cron : sans purge, la table grossit
+/// sans limite pour une information qui n'a de valeur que quelques minutes.
+model RateLimitHit {
+  id    String   @id @default(uuid())
+  /// Périmètre limité (soumission de diagnostic, demande de lien de connexion).
+  scope String
+  /// Clé limitée, préfixée par sa nature : « ip:… » ou « email:… ».
+  key   String
+  at    DateTime @default(now())
+
+  @@index([scope, key, at])
+  @@index([at])
+}
+
 /// Une soumission de diagnostic. Racine de tout le reste.
 model Assessment {
   id        String   @id

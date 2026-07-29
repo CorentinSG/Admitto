@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { colors, fonts, alpha, gradients } from "@/design/tokens";
@@ -8,6 +8,7 @@ import { reportStore } from "@/lib/store/reports";
 import { formatUsd } from "@/lib/costs/estimate";
 import { PATH_LABELS, result } from "@/content/result";
 import { usingDatabase } from "@/lib/db/client";
+import { resultAccess } from "@/lib/access/result";
 import { AccessButton } from "./AccessButton";
 import { PARTNERSHIP_LABELS, TUITION_LABELS } from "@/content/partnerships-labels";
 import type { PartnershipDetection } from "@/lib/partnerships/detect";
@@ -32,6 +33,14 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
   const { id } = await params;
   const assessment = await assessmentStore.get(id);
   if (!assessment) notFound();
+
+  // Un diagnostic revendiqué par un compte n'est plus consultable sur simple
+  // possession de l'URL (revue §B1). Le refus renvoie vers la connexion : la
+  // personne concernée a une action à portée de main, et l'existence du
+  // diagnostic n'est de toute façon pas un secret pour qui détient le lien.
+  if ((await resultAccess(id)) === "DENIED") {
+    redirect(`/connexion?motif=resultat`);
+  }
 
   // Délai annoncé calculé sur la file réelle (CDC §18).
   const activeReports = await reportStore.activeCount();

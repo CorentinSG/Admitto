@@ -50,7 +50,7 @@ export function lastSignInLink(email) {
  * Demande un lien depuis /connexion, l'attend, puis l'ouvre.
  * Renvoie `true` si la session est ouverte.
  */
-export async function signInByEmail(page, base, email, { timeoutMs = 15000 } = {}) {
+export async function signInByEmail(page, base, email, { timeoutMs = 30000 } = {}) {
   const before = lastSignInLink(email);
 
   await page.goto(`${base}/connexion`, { waitUntil: "networkidle" });
@@ -64,7 +64,17 @@ export async function signInByEmail(page, base, email, { timeoutMs = 15000 } = {
     if (link && link !== before) break;
     await page.waitForTimeout(300);
   }
-  if (!link || link === before) return false;
+
+  if (!link || link === before) {
+    // Distinguer les deux causes : un plafond atteint n'est pas une panne.
+    const text = await page.locator("body").innerText();
+    if (/Trop de tentatives/i.test(text)) {
+      console.error(`  ↳ connexion refusée par la limitation de débit pour ${email}`);
+    } else {
+      console.error(`  ↳ aucun lien de connexion reçu pour ${email} en ${timeoutMs} ms`);
+    }
+    return false;
+  }
 
   await page.goto(link, { waitUntil: "networkidle" });
 

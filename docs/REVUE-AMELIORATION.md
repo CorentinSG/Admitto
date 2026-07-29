@@ -144,6 +144,13 @@ vérifiable indépendamment.
    *Vérification : nouvelle suite `verify:legal` (liens présents, export
    fonctionne, suppression efface réellement — contrôle en base).*
 
+### Lot 2 — Durcissement — **FAIT**
+### Lot 3 — Fiabilité de la vérification — **FAIT**
+
+Voir la section 4 pour ce que ces deux lots ont révélé.
+
+<details><summary>Contenu prévu (conservé pour mémoire)</summary>
+
 ### Lot 2 — Durcissement (avant toute URL publique, ~2-3 jours)
 1. Limitation de débit sur `POST diagnostic` et `requestSignIn` (fenêtre
    glissante par IP + par adresse email, en base — pas de dépendance externe).
@@ -162,6 +169,8 @@ vérifiable indépendamment.
 3. Réchauffage : un `GET` sur chaque zone avant la première assertion.
 4. Orchestrateur `verify:all` qui lance les huit suites en série et résume.
    *Critère : trois exécutions complètes consécutives vertes départ à froid.*
+
+</details>
 
 ### Lot 4 — Cycle de vie email (~2-3 jours)
 1. Route cron pour la séquence J+2 → J+25 (même modèle que les rappels :
@@ -185,3 +194,53 @@ vérifiable indépendamment.
 - Clés de production : DATABASE_URL, AUTH_SECRET, RESEND, STRIPE, VAULT.
 - Rédaction des modules 1 à 10.
 - Périmètre exact des matrices éditables.
+
+
+---
+
+## 4. Ce que les lots 2 et 3 ont révélé
+
+Trois défauts que l'analyse statique n'avait pas vus, tous trouvés en exécutant.
+
+**Un bug produit sérieux : aucun nouvel utilisateur ne retrouvait son diagnostic.**
+Le rattachement du profil (CDC §10, « aucune ressaisie ») vivait dans le callback
+`signIn` d'Auth.js. Ce callback s'exécute **avant** que l'adaptateur ne crée le
+compte : à la première connexion, la requête cherchait un compte inexistant,
+n'en trouvait pas, et repartait sans rien rattacher. Toute personne se
+connectant pour la première fois arrivait donc sur un espace vide, redirigée
+vers le diagnostic qu'elle venait de remplir. Le défaut se cachait parce que les
+suites réutilisaient les mêmes adresses : à la deuxième exécution le compte
+existait et tout passait. Le rattachement vit maintenant dans `events.signIn`,
+qui s'exécute après la création — vérifié sur une adresse neuve.
+
+**Un plafond mal calibré, révélé par la suite elle-même.** Cinq diagnostics par
+heure et par IP a bloqué la vérification au bout de six suites. La leçon dépasse
+le test : une IP ne désigne pas une personne. Un campus de droit, un cabinet, un
+espace de coworking sortent par une seule adresse — le plafond aurait bloqué des
+candidats légitimes le jour d'une conférence. Les rôles des deux clés sont
+maintenant explicites : **par email strict** (3 diagnostics/heure — c'est ce qui
+protège une boîte d'un envoi massif), **par IP large** (30/heure — il ne s'agit
+que d'arrêter un script, qui produit des centaines de requêtes, pas des dizaines).
+
+**Une attente sur un signal optimiste.** En remplaçant les délais fixes, j'ai
+d'abord fait attendre la suite sur l'état d'une case à cocher — sauf que cette
+case est optimiste : elle se coche instantanément, avant toute réponse du
+serveur. L'attente ne prouvait donc rien. Le seul signal confirmé était
+l'ouverture du bouton d'envoi, calculée côté serveur. Un délai fixe supprimé au
+profit d'une condition fausse est une régression, pas un progrès.
+
+### Contraintes à connaître pour la vérification
+
+- **Une adresse par exécution** (`scripts/lib/identity.mjs`). Réutiliser une
+  adresse heurte le plafond de 3 diagnostics/heure — comportement correct du
+  produit.
+- **Environ quatre exécutions complètes par heure** depuis une même machine : au
+  delà, le plafond de 30 diagnostics/heure par IP mord. C'est voulu.
+- **Passer la même origine que celle vue par Auth.js** : un écart
+  127.0.0.1 / localhost fait tomber le cookie de session.
+
+### Reste du lot 2 non traité
+
+La CSP conserve `script-src 'unsafe-inline'` : Next.js injecte son script
+d'hydratation en ligne, et le durcir suppose des nonces, donc un middleware qui
+réécrit chaque réponse HTML. À faire quand le bénéfice le justifiera.

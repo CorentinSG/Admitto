@@ -12,7 +12,8 @@
  */
 
 const BASE = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
-const EMAIL = "alix@example.com";
+const { verifyEmail } = await import("./lib/identity.mjs");
+const EMAIL = verifyEmail("alix");
 
 if (!process.env.AUTH_SECRET) {
   console.error("✗ AUTH_SECRET absent : les comptes sont désactivés.");
@@ -28,6 +29,8 @@ try {
 }
 
 const { signInByEmail } = await import("./lib/sign-in.mjs");
+const { waitForTextGone, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
+const { answerScreens } = await import("./lib/questionnaire.mjs");
 
 const failures = [];
 const check = (label, ok, detail = "") => {
@@ -49,6 +52,10 @@ const consoleErrors = [];
 page.on("pageerror", (e) => consoleErrors.push(String(e)));
 page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
 
+// Réchauffage : la première navigation d'une suite paie sinon le démarrage
+// à froid (compilation, client Prisma, Auth.js) et c'est elle qui expire.
+await warmUp(page, BASE);
+
 // ── Fermé par défaut ───────────────────────────────────────────────────────
 for (const path of ["/app/documents", "/app/modules", "/app/modules/module-0-decision"]) {
   await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
@@ -57,9 +64,11 @@ for (const path of ["/app/documents", "/app/modules", "/app/modules/module-0-dec
 
 // ── Ouverture d'un accès ───────────────────────────────────────────────────
 await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
+const beforeStart = await page.locator("body").innerText();
 await page.getByRole("button", { name: "Commencer" }).click();
-await page.waitForTimeout(300);
-for (const label of [
+await waitForTextChange(page, beforeStart);
+// Chaque écran attend le changement réel plutôt qu'un délai deviné.
+await answerScreens(page, [
   "Je prépare mes candidatures",
   "Master 2",
   "Université Paris 1 Panthéon-Sorbonne",
@@ -70,10 +79,7 @@ for (const label of [
   "L'an prochain",
   "Test déjà passé",
   "Français, sans statut américain",
-]) {
-  await page.getByRole("button", { name: label, exact: true }).click();
-  await page.waitForTimeout(220);
-}
+]);
 await page.getByPlaceholder("Prénom").fill("Alix");
 await page.getByPlaceholder("Adresse email").fill(EMAIL);
 await page.getByRole("button", { name: "Obtenir mon résultat" }).click();
@@ -137,9 +143,11 @@ const proposeCv = async (fileName) => {
       buffer: Buffer.from("%PDF-1.4 contenu de vérification"),
     });
   }
+  const before = await page.locator("body").innerText();
   await page.getByRole("button", { name: submitLabel }).first().click();
-  await page.waitForTimeout(900);
-  return page.locator("body").innerText();
+  // La réponse du serveur change la page : un verdict de refus ou la fiche
+  // ajoutée. On attend ce changement, pas une durée.
+  return (await waitForTextChange(page, before)) ?? (await page.locator("body").innerText());
 };
 
 // Une pièce sensible déposée sous un type légitime doit être refusée.
@@ -170,8 +178,7 @@ check("Coffre repris au tableau de bord", contains(await page.locator("body").in
 // Retrait.
 await page.goto(`${BASE}/app/documents`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: "Retirer" }).first().click();
-await page.waitForTimeout(900);
-check("Document retirable", !contains(await page.locator("body").innerText(), "cv-alix.pdf"));
+check("Document retirable", Boolean(await waitForTextGone(page, "cv-alix.pdf")));
 
 // ── Modules (CDC §25) ──────────────────────────────────────────────────────
 await page.goto(`${BASE}/app/modules`, { waitUntil: "networkidle" });

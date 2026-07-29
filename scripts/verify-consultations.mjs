@@ -13,7 +13,8 @@
  */
 
 const BASE = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
-const EMAIL = "sacha@example.com";
+const { verifyEmail } = await import("./lib/identity.mjs");
+const EMAIL = verifyEmail("sacha");
 const ADMIN_EMAIL = process.env.ADMITTO_ADMIN_EMAIL;
 
 if (!process.env.AUTH_SECRET || !ADMIN_EMAIL) {
@@ -30,6 +31,8 @@ try {
 }
 
 const { signInByEmail } = await import("./lib/sign-in.mjs");
+const { waitFor, waitForText, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
+const { answerScreens } = await import("./lib/questionnaire.mjs");
 
 const failures = [];
 const check = (label, ok, detail = "") => {
@@ -46,15 +49,21 @@ const consoleErrors = [];
 page.on("pageerror", (e) => consoleErrors.push(String(e)));
 page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
 
+// Réchauffage : la première navigation d'une suite paie sinon le démarrage
+// à froid (compilation, client Prisma, Auth.js) et c'est elle qui expire.
+await warmUp(page, BASE);
+
 // ── Fermé par défaut ───────────────────────────────────────────────────────
 await page.goto(`${BASE}/app/consultations`, { waitUntil: "domcontentloaded" });
 check("Consultations fermées sans accès", page.url().includes("/connexion"), page.url());
 
 // ── Ouverture d'un accès ───────────────────────────────────────────────────
 await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
+const beforeStart = await page.locator("body").innerText();
 await page.getByRole("button", { name: "Commencer" }).click();
-await page.waitForTimeout(300);
-for (const label of [
+await waitForTextChange(page, beforeStart);
+// Chaque écran attend le changement réel plutôt qu'un délai deviné.
+await answerScreens(page, [
   "Je prépare mes candidatures",
   "Master 2",
   "Université Paris 1 Panthéon-Sorbonne",
@@ -65,10 +74,7 @@ for (const label of [
   "L'an prochain",
   "Test déjà passé",
   "Français, sans statut américain",
-]) {
-  await page.getByRole("button", { name: label, exact: true }).click();
-  await page.waitForTimeout(220);
-}
+]);
 await page.getByPlaceholder("Prénom").fill("Sacha");
 await page.getByPlaceholder("Adresse email").fill(EMAIL);
 await page.getByRole("button", { name: "Obtenir mon résultat" }).click();
@@ -108,35 +114,39 @@ const slotDate = new Date(Date.now() + 8 * 86_400_000);
 const local = new Date(slotDate.getTime() - slotDate.getTimezoneOffset() * 60_000)
   .toISOString()
   .slice(0, 16);
+// Comptés avant : les créneaux s'accumulent en base d'une exécution à l'autre,
+// donc « Libre » est déjà présent et attendre ce texte n'attendrait rien. Seule
+// l'augmentation du nombre prouve que le créneau a été créé — et attendre cette
+// confirmation avant de saisir la suite évite de remplir le formulaire pendant
+// que le serveur le régénère.
+const openBefore = await adminPage.locator("li:has-text('Libre')").count();
 await adminPage.getByLabel("Début du créneau").fill(local);
 await adminPage.getByRole("button", { name: "Ouvrir le créneau" }).click();
-await adminPage.waitForTimeout(1200);
-check("Créneau ouvert", contains(await adminPage.locator("body").innerText(), "Libre"));
+check(
+  "Créneau ouvert",
+  Boolean(
+    await waitFor(async () => (await adminPage.locator("li:has-text('Libre')").count()) > openBefore)
+  )
+);
 
 // Un créneau dans le passé est refusé.
 await adminPage.getByLabel("Début du créneau").fill("2020-01-01T10:00");
 await adminPage.getByRole("button", { name: "Ouvrir le créneau" }).click();
-await adminPage.waitForTimeout(1000);
 check(
   "Créneau passé refusé",
-  /ne s'ouvre pas dans le passé/i.test(await adminPage.locator("body").innerText())
+  Boolean(await waitForText(adminPage, "ne s'ouvre pas dans le passé"))
 );
 
 // Attribution de séances à cet utilisateur.
 await adminPage.getByLabel(`Offre — ${assessmentId}`).selectOption("GUIDED");
 await adminPage.getByLabel(`Séances accordées — ${assessmentId}`).fill("0");
 await adminPage.getByRole("button", { name: `Accorder — ${assessmentId}` }).click();
-await adminPage.waitForTimeout(1200);
-check("Offre attribuée", contains(await adminPage.locator("body").innerText(), "restante(s) sur 3"));
+check("Offre attribuée", Boolean(await waitForText(adminPage, "restante(s) sur 3")));
 
 // Un nombre hors bornes est refusé plutôt que tronqué.
 await adminPage.getByLabel(`Séances accordées — ${assessmentId}`).fill("999");
 await adminPage.getByRole("button", { name: `Accorder — ${assessmentId}` }).click();
-await adminPage.waitForTimeout(1000);
-check(
-  "Attribution hors bornes refusée",
-  /entre 0 et 20/i.test(await adminPage.locator("body").innerText())
-);
+check("Attribution hors bornes refusée", Boolean(await waitForText(adminPage, "entre 0 et 20")));
 
 // ── Réservation ────────────────────────────────────────────────────────────
 await page.goto(`${BASE}/app/consultations`, { waitUntil: "networkidle" });
@@ -152,8 +162,7 @@ const slotsBefore = await page
 
 await page.getByLabel("Choisir un créneau — ORIENTATION").selectOption({ index: 1 });
 await page.getByRole("button", { name: "Réserver — ORIENTATION" }).click();
-await page.waitForTimeout(1500);
-text = await page.locator("body").innerText();
+text = (await waitForText(page, "Vos séances à venir")) ?? "";
 check("Séance réservée", contains(text, "Vos séances à venir"));
 check("Solde décrémenté", contains(text, "2 sur 3"));
 
@@ -172,8 +181,7 @@ if ((await page.getByLabel("Choisir un créneau — SCHOOL_LIST_REVIEW").count()
 
 // ── Annulation ─────────────────────────────────────────────────────────────
 await page.getByRole("button", { name: "Annuler" }).first().click();
-await page.waitForTimeout(1500);
-text = await page.locator("body").innerText();
+text = (await waitForText(page, "3 sur 3")) ?? "";
 check("Séance annulable", contains(text, "3 sur 3"));
 
 check("Aucune erreur console", consoleErrors.length === 0, consoleErrors.join(" | "));

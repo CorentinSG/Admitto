@@ -18,6 +18,12 @@ try {
   process.exit(1);
 }
 
+const { waitForText, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
+const { answerScreens } = await import("./lib/questionnaire.mjs");
+
+const { verifyEmail } = await import("./lib/identity.mjs");
+const EMAIL = verifyEmail("test");
+
 const failures = [];
 const check = (label, ok, detail = "") => {
   console.log(`${ok ? "✓" : "✗"} ${label}${detail ? ` — ${detail}` : ""}`);
@@ -32,9 +38,11 @@ const consoleErrors = [];
 page.on("pageerror", (e) => consoleErrors.push(String(e)));
 page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
 
+await warmUp(page, BASE);
 await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
+const beforeStart = await page.locator("body").innerText();
 await page.getByRole("button", { name: "Commencer" }).click();
-await page.waitForTimeout(400);
+await waitForTextChange(page, beforeStart);
 
 // Profil avocat français : l'écran « barreau étranger » doit apparaître (CDC §12.4).
 const ANSWERS = [
@@ -51,13 +59,8 @@ const ANSWERS = [
   "Français, sans statut américain",
 ];
 
-const totals = [];
-for (const label of ANSWERS) {
-  const step = await page.locator("text=Étape").first().innerText();
-  totals.push(Number(step.match(/sur (\d+)/)[1]));
-  await page.getByRole("button", { name: label, exact: true }).click();
-  await page.waitForTimeout(280);
-}
+// Chaque écran attend le changement réel plutôt qu'un délai deviné.
+const totals = await answerScreens(page, ANSWERS);
 
 check("Écran barreau ajouté pour un profil avocat", totals.at(-1) === 12, `${totals.at(-1)} écrans`);
 check("Jamais plus de douze écrans visibles (CDC §12.2)", Math.max(...totals) <= 12);
@@ -66,14 +69,13 @@ check("Jamais plus de douze écrans visibles (CDC §12.2)", Math.max(...totals) 
 await page.getByPlaceholder("Prénom").fill("Corentin");
 await page.getByPlaceholder("Adresse email").fill("pas-un-email");
 await page.getByRole("button", { name: "Obtenir mon résultat" }).click();
-await page.waitForTimeout(800);
-check("Adresse email invalide refusée", (await page.locator("text=adresse email valide").count()) > 0);
+check("Adresse email invalide refusée", Boolean(await waitForText(page, "adresse email valide")));
 
 // Soumission valide → résultat.
-await page.getByPlaceholder("Adresse email").fill("test@example.com");
+await page.getByPlaceholder("Adresse email").fill(EMAIL);
 await page.getByRole("button", { name: "Obtenir mon résultat" }).click();
-await page.waitForURL("**/resultat/**", { timeout: 20000 });
-await page.waitForTimeout(600);
+await page.waitForURL("**/resultat/**", { timeout: 30000 });
+await waitForText(page, "Voie préliminaire");
 check("Redirection vers le résultat", /\/resultat\//.test(page.url()));
 
 // Les six blocs imposés par le CDC §15.

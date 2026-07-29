@@ -1,8 +1,11 @@
 "use server";
 
+import { headers } from "next/headers";
 import { signIn } from "@/auth";
 import { usingDatabase } from "@/lib/db/client";
 import { auth as copy } from "@/content/auth";
+import { callerIp, checkRateLimit } from "@/lib/security/rate-limit";
+import { security } from "@/content/security";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -20,6 +23,11 @@ export async function requestSignIn(email: string) {
 
   const trimmed = email.trim().toLowerCase();
   if (!EMAIL.test(trimmed)) return { error: copy.invalidEmail };
+
+  // Chaque demande envoie un email à l'adresse indiquée : sans plafond, le
+  // formulaire suffit à inonder la boîte de n'importe qui.
+  const limit = await checkRateLimit("SIGN_IN", { ip: callerIp(await headers()), email: trimmed });
+  if (!limit.ok) return { error: security.tooManyAttempts(limit.retryAfterMinutes) };
 
   await signIn("email", { email: trimmed, redirectTo: "/app/dashboard" });
   return { ok: true };

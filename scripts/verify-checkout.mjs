@@ -20,6 +20,12 @@ try {
   process.exit(1);
 }
 
+const { waitForTextChange, warmUp } = await import("./lib/wait.mjs");
+const { answerScreens } = await import("./lib/questionnaire.mjs");
+
+const { verifyEmail } = await import("./lib/identity.mjs");
+const EMAIL = verifyEmail("checkout");
+
 const failures = [];
 const check = (label, ok, detail = "") => {
   console.log(`${ok ? "✓" : "✗"} ${label}${detail ? ` — ${detail}` : ""}`);
@@ -34,11 +40,17 @@ const consoleErrors = [];
 page.on("pageerror", (e) => consoleErrors.push(String(e)));
 page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
 
+// Réchauffage : la première navigation d'une suite paie sinon le démarrage
+// à froid (compilation, client Prisma, Auth.js) et c'est elle qui expire.
+await warmUp(page, BASE);
+
 // ── Consentement marketing sur l'écran de contact ──────────────────────────
 await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
+const beforeStart = await page.locator("body").innerText();
 await page.getByRole("button", { name: "Commencer" }).click();
-await page.waitForTimeout(300);
-for (const label of [
+await waitForTextChange(page, beforeStart);
+// Chaque écran attend le changement réel plutôt qu'un délai deviné.
+await answerScreens(page, [
   "J'explore l'idée d'un LL.M.",
   "Master 2",
   "Université de Bordeaux",
@@ -49,10 +61,7 @@ for (const label of [
   "Dans deux ans",
   "Test déjà passé",
   "Français, sans statut américain",
-]) {
-  await page.getByRole("button", { name: label, exact: true }).click();
-  await page.waitForTimeout(220);
-}
+]);
 
 const consent = page.locator('input[type="checkbox"]');
 check("Case de consentement marketing présente", (await consent.count()) === 1);
@@ -65,7 +74,7 @@ check(
 );
 
 await page.getByPlaceholder("Prénom").fill("Alex");
-await page.getByPlaceholder("Adresse email").fill("alex@example.com");
+await page.getByPlaceholder("Adresse email").fill(EMAIL);
 await page.getByRole("button", { name: "Obtenir mon résultat" }).click();
 await page.waitForURL("**/resultat/**", { timeout: 20000 });
 const assessmentId = page.url().split("/resultat/")[1].split("?")[0];

@@ -12,7 +12,8 @@
 const BASE = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
 // Adresse propre à cette vérification : deux suites qui partagent une adresse
 // partagent un compte, donc un diagnostic — et se gênent en série.
-const EMAIL = "simulateur@example.com";
+const { verifyEmail } = await import("./lib/identity.mjs");
+const EMAIL = verifyEmail("simulateur");
 
 if (!process.env.AUTH_SECRET) {
   console.error("✗ AUTH_SECRET absent : les comptes sont désactivés.");
@@ -28,6 +29,8 @@ try {
 }
 
 const { signInByEmail } = await import("./lib/sign-in.mjs");
+const { waitFor, waitForText, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
+const { answerScreens } = await import("./lib/questionnaire.mjs");
 
 const failures = [];
 const check = (label, ok, detail = "") => {
@@ -43,14 +46,20 @@ const consoleErrors = [];
 page.on("pageerror", (e) => consoleErrors.push(String(e)));
 page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
 
+// Réchauffage : la première navigation d'une suite paie sinon le démarrage
+// à froid (compilation, client Prisma, Auth.js) et c'est elle qui expire.
+await warmUp(page, BASE);
+
 // ── Accès ──────────────────────────────────────────────────────────────────
 await page.goto(`${BASE}/app/simulateur`, { waitUntil: "domcontentloaded" });
 check("Simulateur fermé sans compte", page.url().includes("/connexion"), page.url());
 
 await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
+const beforeStart = await page.locator("body").innerText();
 await page.getByRole("button", { name: "Commencer" }).click();
-await page.waitForTimeout(300);
-for (const label of [
+await waitForTextChange(page, beforeStart);
+// Chaque écran attend le changement réel plutôt qu'un délai deviné.
+await answerScreens(page, [
   "Je prépare mes candidatures",
   "Master 2",
   "Université de Bordeaux",
@@ -61,10 +70,7 @@ for (const label of [
   "L'an prochain",
   "Test déjà passé",
   "Français, sans statut américain",
-]) {
-  await page.getByRole("button", { name: label, exact: true }).click();
-  await page.waitForTimeout(200);
-}
+]);
 await page.getByPlaceholder("Prénom").fill("Sacha");
 await page.getByPlaceholder("Adresse email").fill(EMAIL);
 await page.getByRole("button", { name: "Obtenir mon résultat" }).click();
@@ -103,8 +109,12 @@ const readNet = async () => {
 const avant = await readNet();
 const tuition = page.locator('input[type="number"]').first();
 await tuition.fill("100000");
-await page.waitForTimeout(400);
-const apres = await readNet();
+// Le recalcul est local mais passe par un rendu React : on attend que la
+// valeur ait effectivement bougé.
+const apres = (await waitFor(async () => {
+  const value = await readNet();
+  return value !== avant ? value : null;
+})) ?? (await readNet());
 check("Le coût net réagit à la saisie", avant !== apres, `${avant} → ${apres}`);
 
 // Les bourses abaissent le net sans changer le total.
@@ -116,21 +126,23 @@ const readTotal = async () => {
 const totalAvant = await readTotal();
 const bourses = page.getByLabel(/Bourses/i);
 await bourses.fill("20000");
-await page.waitForTimeout(400);
+// Le total ne doit PAS bouger : on attend que le net, lui, ait changé, faute
+// de quoi l'assertion vérifierait un écran pas encore recalculé.
+await waitFor(async () => (await readNet()) !== apres);
 check("Les bourses n'abaissent que le coût net", (await readTotal()) === totalAvant);
 
 // ── Comparaison, limitée à trois ───────────────────────────────────────────
 for (let i = 1; i <= 3; i++) {
   await page.getByLabel(/Nom du scénario/i).fill(`Scénario ${i}`);
   await page.getByRole("button", { name: "Enregistrer ce scénario" }).click();
-  await page.waitForTimeout(1200);
+  await waitForText(page, `${i} / 3`);
 }
 const compare = await page.locator("body").innerText();
 check("Trois scénarios comparés", /3\s*\/\s*3/.test(compare), compare.match(/\d\s*\/\s*3/)?.[0] ?? "?");
 
 await page.getByLabel(/Nom du scénario/i).fill("Scénario 4");
 await page.getByRole("button", { name: "Enregistrer ce scénario" }).click();
-await page.waitForTimeout(1200);
+await waitForText(page, "trois scénarios au maximum");
 check(
   "Le quatrième scénario est refusé avec une explication",
   (await page.locator("body").innerText()).includes("trois scénarios au maximum".toLowerCase()) ||

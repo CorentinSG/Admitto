@@ -1,6 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { computeAssessment } from "@/lib/assessment/compute";
 import { assessmentStore } from "@/lib/store/assessments";
@@ -20,6 +21,8 @@ import {
   type Answers,
 } from "@/lib/questionnaire/types";
 import { UNIVERSITY_IDS } from "@/content/universities";
+import { callerIp, checkRateLimit } from "@/lib/security/rate-limit";
+import { security } from "@/content/security";
 
 /**
  * Soumission du questionnaire. Les réponses arrivent du client : elles sont
@@ -70,6 +73,14 @@ export async function submitQuestionnaire(raw: Record<string, unknown>) {
   if (!answers.firstName) {
     return { error: "Merci d'indiquer votre prénom." };
   }
+
+  // Plafond avant toute écriture et tout envoi : une soumission refusée ne doit
+  // ni entrer en file, ni faire partir d'email vers l'adresse fournie.
+  const limit = await checkRateLimit("DIAGNOSTIC", {
+    ip: callerIp(await headers()),
+    email: answers.email,
+  });
+  if (!limit.ok) return { error: security.tooManyAttempts(limit.retryAfterMinutes) };
 
   const id = randomUUID();
   const assessment = computeAssessment(answers, new Date(), id);

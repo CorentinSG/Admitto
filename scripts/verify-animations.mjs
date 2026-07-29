@@ -29,6 +29,12 @@ const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined,
 });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+
+const { warmUp } = await import("./lib/wait.mjs");
+// Réchauffage : la première navigation paie sinon le démarrage à froid.
+// Les délais fixes qui suivent sont, eux, légitimes : ils attendent la fin
+// de transitions CSS dont la durée est précisément ce qui est vérifié.
+await warmUp(page, URL, [""]);
 const consoleErrors = [];
 page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
 page.on("pageerror", (e) => consoleErrors.push(String(e)));

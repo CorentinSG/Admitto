@@ -19,6 +19,8 @@ que pour des changements durables (stabilité = cache prompt efficace).
   `AUTH_SECRET`, `DATABASE_URL` et `ADMITTO_MAIL_LOG` ; les suites du back-office exigent en
   plus `ADMITTO_ADMIN_EMAIL`. **Passer la même origine que celle vue par Auth.js** :
   un écart 127.0.0.1 / localhost fait tomber le cookie de session)
+- `npm run verify:all <url>` — enchaîne les huit suites et résume. Une seule reprise par
+  suite, et seulement sur plantage : un échec d'assertion reste rouge.
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run db:migrate` / `db:deploy` / `db:studio` — migrations Prisma (dev / prod / inspection)
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)
@@ -108,7 +110,22 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   pas de valeur « illimité » à écrire, et un plafond oublié vaut zéro séance. Chaque type
   porte ses exclusions dans son type — un périmètre qui n'énonce que ses inclusions se lit
   comme ouvert.
+- `lib/security/rate-limit.ts` — plafonds des formulaires publics. Deux clés aux rôles
+  distincts : par email STRICT (protège une personne d'un envoi massif), par IP LARGE
+  (une IP est partagée — campus, cabinet — et n'identifie personne). Les tentatives
+  refusées sont comptées : sinon la fenêtre se vide pendant qu'un script frappe.
+- `lib/access/result.ts` — un résultat revendiqué par un compte n'est plus consultable
+  sur simple possession de l'URL ; non revendiqué, le lien suffit (le J0 part avant
+  qu'aucun compte n'existe).
+- `next.config.ts` — en-têtes de sécurité. `style-src 'unsafe-inline'` est le prix
+  assumé des styles inline ; tout le reste est verrouillé.
+- `scripts/lib/` — helpers des suites : `wait.mjs` (attentes sur condition, JAMAIS de
+  délai fixe), `questionnaire.mjs`, `sign-in.mjs`, `identity.mjs` (une adresse unique par
+  exécution : réutiliser une adresse heurte le plafond de 3 diagnostics/heure).
 - `auth.ts` / `auth.config.ts` — Auth.js, lien de connexion par email (CDC §10).
+  Le rattachement des diagnostics vit dans `events.signIn`, pas dans le callback
+  `signIn` : ce callback s'exécute AVANT que l'adaptateur ne crée le compte, si bien
+  qu'à la première connexion il n'y a aucun compte à rattacher.
   La scission est structurelle : `auth.config.ts` est importé par le middleware Edge et ne
   doit atteindre ni Prisma, ni `node:*`, ni le transport d'email. Le rôle voyage dans le JWT,
   écrit depuis `User.role` : élever un privilège demande une écriture en base.

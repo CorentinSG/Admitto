@@ -10,7 +10,8 @@
  */
 
 const BASE = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
-const EMAIL = "jules@example.com";
+const { verifyEmail } = await import("./lib/identity.mjs");
+const EMAIL = verifyEmail("jules");
 
 if (!process.env.AUTH_SECRET) {
   console.error("✗ AUTH_SECRET absent : les comptes sont désactivés.");
@@ -26,6 +27,8 @@ try {
 }
 
 const { signInByEmail } = await import("./lib/sign-in.mjs");
+const { waitFor, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
+const { answerScreens } = await import("./lib/questionnaire.mjs");
 
 const failures = [];
 const check = (label, ok, detail = "") => {
@@ -41,15 +44,21 @@ const consoleErrors = [];
 page.on("pageerror", (e) => consoleErrors.push(String(e)));
 page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
 
+// Réchauffage : la première navigation d'une suite paie sinon le démarrage
+// à froid (compilation, client Prisma, Auth.js) et c'est elle qui expire.
+await warmUp(page, BASE);
+
 // ── Fermé par défaut ───────────────────────────────────────────────────────
 await page.goto(`${BASE}/app/dashboard`, { waitUntil: "domcontentloaded" });
 check("Espace payant fermé sans compte", page.url().includes("/connexion"), page.url());
 
 // ── Un diagnostic est soumis ───────────────────────────────────────────────
 await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
+const beforeStart = await page.locator("body").innerText();
 await page.getByRole("button", { name: "Commencer" }).click();
-await page.waitForTimeout(300);
-for (const label of [
+await waitForTextChange(page, beforeStart);
+// Chaque écran attend le changement réel plutôt qu'un délai deviné.
+await answerScreens(page, [
   "Je prépare mes candidatures",
   "Master 2",
   "Université Paris 1 Panthéon-Sorbonne",
@@ -60,10 +69,7 @@ for (const label of [
   "L'an prochain",
   "Test déjà passé",
   "Français, sans statut américain",
-]) {
-  await page.getByRole("button", { name: label, exact: true }).click();
-  await page.waitForTimeout(220);
-}
+]);
 await page.getByPlaceholder("Prénom").fill("Jules");
 await page.getByPlaceholder("Adresse email").fill(EMAIL);
 await page.getByRole("button", { name: "Obtenir mon résultat" }).click();
@@ -112,8 +118,11 @@ check("Progression initiale à zéro", /\b0\s*%/.test(board), board.match(/\d+\s
 // ── Changement de statut ───────────────────────────────────────────────────
 const done = page.getByRole("button", { name: "Complété" }).first();
 await done.click();
-await page.waitForTimeout(1500);
-const after = await page.locator("body").innerText();
+// La progression est recalculée côté serveur : on attend qu'elle quitte 0 %.
+const after = (await waitFor(async () => {
+  const text = await page.locator("body").innerText();
+  return /\b0\s*%/.test(text) ? null : text;
+})) ?? (await page.locator("body").innerText());
 check("Statut modifiable et progression recalculée", !/\b0\s*%/.test(after), after.match(/\d+\s*%/)?.[0] ?? "?");
 
 // ── Feuille de route ───────────────────────────────────────────────────────
