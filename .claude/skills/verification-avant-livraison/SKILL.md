@@ -25,7 +25,7 @@ ne comptent pas.
 | « le build passe » | `npm run build` |
 | « le design est conforme » | `npm run verify:animations <url>` |
 | « le questionnaire fonctionne » | `npm run verify:questionnaire <url>` |
-| « le back-office fonctionne » | `ADMITTO_ADMIN_TOKEN=… npm run verify:backoffice <url>` |
+| « le back-office fonctionne » | `ADMITTO_ADMIN_EMAIL=… npm run verify:backoffice <url>` |
 | « le tunnel de paiement est conforme » | `npm run verify:checkout <url>` |
 | « la page s'affiche correctement » | capture d'écran au navigateur, **et la regarder** |
 

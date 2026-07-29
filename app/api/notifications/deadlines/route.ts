@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { timingSafeEqualString } from "@/lib/access/session";
+import { timingSafeEqualString } from "@/lib/access/constant-time";
 import { runDeadlineNotifications } from "@/lib/notifications/run";
 
 /**

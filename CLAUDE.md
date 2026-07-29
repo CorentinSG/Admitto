@@ -16,8 +16,9 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations <url>`
   — checklists design, diagnostic, back-office, paiement, espace payant, simulateur, coffre,
   modules et consultations au navigateur (serveur lancé + Playwright ; `verify:backoffice` exige
-  `ADMITTO_ADMIN_TOKEN`, `verify:espace` et `verify:dashboard` exigent `ADMITTO_SESSION_SECRET`,
-  `verify:consultations` exige les deux)
+  `AUTH_SECRET`, `DATABASE_URL` et `ADMITTO_MAIL_LOG` ; les suites du back-office exigent en
+  plus `ADMITTO_ADMIN_EMAIL`. **Passer la même origine que celle vue par Auth.js** :
+  un écart 127.0.0.1 / localhost fait tomber le cookie de session)
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run db:migrate` / `db:deploy` / `db:studio` — migrations Prisma (dev / prod / inspection)
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)
@@ -107,9 +108,14 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   pas de valeur « illimité » à écrire, et un plafond oublié vaut zéro séance. Chaque type
   porte ses exclusions dans son type — un périmètre qui n'énonce que ses inclusions se lit
   comme ouvert.
+- `auth.ts` / `auth.config.ts` — Auth.js, lien de connexion par email (CDC §10).
+  La scission est structurelle : `auth.config.ts` est importé par le middleware Edge et ne
+  doit atteindre ni Prisma, ni `node:*`, ni le transport d'email. Le rôle voyage dans le JWT,
+  écrit depuis `User.role` : élever un privilège demande une écriture en base.
+  `ADMITTO_ADMIN_EMAILS` n'amorce que le premier administrateur.
 - `app/(admin)/` et `app/(app)/` — back-office et espace payant, protégés par
-  `middleware.ts` : fermés par défaut faute de `ADMITTO_ADMIN_TOKEN` / `ADMITTO_SESSION_SECRET`.
-  Le middleware s'exécute en Edge : n'y importer aucun module `node:*` (Web Crypto uniquement).
+  `middleware.ts` : fermés par défaut faute de session. `/admin` répond 404 (ne pas révéler
+  son existence), `/app` redirige vers `/connexion`.
 - Variables d'environnement : voir `.env.example`. Toutes optionnelles ; leur absence
   place le produit en régime Phase 1A (bêta gratuite, emails non expédiés).
 - `lib/db/client.ts` + `prisma/schema.prisma` — persistance. Chaque store de

@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { colors, fonts, alpha } from "@/design/tokens";
-import { ACCESS_COOKIE, verifyAccessToken } from "@/lib/access/session";
+import { currentAssessmentId } from "@/lib/auth/current";
 import { isPublishable } from "@/lib/modules/types";
 import { findModule, modulesCopy } from "@/content/modules";
 
@@ -22,8 +21,9 @@ export const dynamic = "force-dynamic";
  * La bibliothèque ne le lie pas ; l'URL directe ne doit pas non plus l'ouvrir.
  */
 export default async function ModulePage({ params }: { params: Promise<{ slug: string }> }) {
-  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
-  const assessmentId = await verifyAccessToken(token, new Date());
+  const assessmentId = await currentAssessmentId();
+  // Session valide mais aucun diagnostic rattaché : le parcours reprend
+  // au diagnostic, dont la soumission rattachera le profil au compte.
   if (!assessmentId) redirect("/diagnostic");
 
   const { slug } = await params;

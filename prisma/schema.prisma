@@ -26,10 +26,83 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// Compte utilisateur (CDC §10 et §33).
+///
+/// Le rôle est une colonne, pas une liste d'emails lue à chaque requête : un
+/// accès au back-office doit être révocable en base, et traçable. La variable
+/// `ADMITTO_ADMIN_EMAILS` ne sert qu'à l'amorçage du premier administrateur —
+/// sans elle, personne n'est administrateur, et le back-office reste fermé.
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  role          String    @default("CLIENT")
+  createdAt     DateTime  @default(now())
+
+  accounts    Account[]
+  sessions    Session[]
+  assessments Assessment[]
+}
+
+/// Comptes liés (Auth.js). Aucun fournisseur OAuth n'est activé en V1 ; le
+/// modèle existe parce que l'adaptateur l'exige.
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+/// Sessions Auth.js. Conservées bien que la stratégie soit JWT : l'adaptateur
+/// les attend, et basculer en sessions de base ne demanderait alors qu'une
+/// ligne de configuration.
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Jeton de lien de connexion à usage unique (Auth.js).
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
 /// Une soumission de diagnostic. Racine de tout le reste.
 model Assessment {
   id        String   @id
   createdAt DateTime
+
+  /// Compte rattaché, quand la personne s'est connectée. Un diagnostic se
+  /// soumet sans compte (CDC §12) : la colonne reste donc nullable.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  /// Email dénormalisé depuis `answers`, indexé.
+  ///
+  /// C'est lui qui réalise la reprise du profil sans ressaisie du CDC §10 : à
+  /// la première connexion, les diagnostics portant cette adresse et encore
+  /// sans compte sont rattachés. Filtrer sur le JSON ferait le même travail
+  /// sans index, et se casserait au premier renommage de champ.
+  email String?
 
   /// Réponses brutes du questionnaire, figées (voir principe 1).
   answers Json
@@ -56,6 +129,8 @@ model Assessment {
   entitlement  Entitlement?
 
   @@index([createdAt])
+  @@index([email])
+  @@index([userId])
 }
 
 /// Rapport en file (CDC §18) et sa revue avant envoi (CDC §17).

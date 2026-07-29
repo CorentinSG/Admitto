@@ -1,24 +1,37 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { ACCESS_COOKIE, ACCESS_DAYS, issueAccessToken } from "@/lib/access/session";
+import { signIn } from "@/auth";
 import { assessmentStore } from "@/lib/store/assessments";
 import { paymentsEnabled } from "@/lib/payments/offers";
 import { reportStore } from "@/lib/store/reports";
+import { usingDatabase } from "@/lib/db/client";
+import { auth as copy } from "@/content/auth";
 
 /**
- * Ouverture de l'accès à l'espace payant (CDC §10 et §21).
+ * Ouverture de l'espace payant depuis le résultat (CDC §10 et §21).
  *
- * Le profil déjà constitué suit l'utilisateur : aucune ressaisie après achat.
+ * Envoie un lien de connexion à l'adresse déjà donnée dans le diagnostic. Le
+ * profil suit donc l'utilisateur sans ressaisie : à la connexion, ses
+ * diagnostics portant cette adresse sont rattachés au compte.
  *
- * Phase 1A (paiement désactivé) : l'accès est ouvert aux participants de la
- * bêta depuis leur résultat. Phase 1B et au-delà : il suppose un paiement
- * confirmé, c'est-à-dire un rapport marqué payant par le webhook Stripe.
+ * Le bouton n'ouvre plus l'accès lui-même. C'était le principe du jeton de
+ * transition : cliquer suffisait. Passer par l'email vérifie que la personne
+ * contrôle l'adresse — sans quoi un identifiant d'évaluation deviné ouvrirait
+ * le dossier de quelqu'un d'autre.
+ *
+ * Phase 1A (paiement désactivé) : ouvert aux participants de la bêta.
+ * Phase 1B et au-delà : suppose un rapport marqué payant par le webhook Stripe.
  */
-export async function grantPlatformAccess(assessmentId: string) {
+export async function requestPlatformAccess(assessmentId: string) {
+  if (!usingDatabase() || !process.env.AUTH_SECRET) {
+    return { error: copy.closedBody };
+  }
+
   const assessment = await assessmentStore.get(assessmentId);
   if (!assessment) return { error: "Évaluation introuvable." };
+
+  const email = assessment.answers.email?.trim().toLowerCase();
+  if (!email) return { error: "Aucune adresse email n'est rattachée à ce diagnostic." };
 
   if (paymentsEnabled()) {
     const report = await reportStore.get(assessmentId);
@@ -27,16 +40,6 @@ export async function grantPlatformAccess(assessmentId: string) {
     }
   }
 
-  const token = await issueAccessToken(assessmentId, new Date());
-  if (!token) return { error: "L'espace payant n'est pas activé." };
-
-  (await cookies()).set(ACCESS_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: ACCESS_DAYS * 24 * 60 * 60,
-  });
-
-  redirect("/app/dashboard");
+  await signIn("email", { email, redirectTo: "/app/dashboard" });
+  return { ok: true };
 }

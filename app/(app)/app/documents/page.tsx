@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { colors, fonts, alpha } from "@/design/tokens";
-import { ACCESS_COOKIE, verifyAccessToken } from "@/lib/access/session";
+import { currentAssessmentId } from "@/lib/auth/current";
 import { documentStore } from "@/lib/store/documents";
 import { storageEnabled } from "@/lib/vault/storage";
 import { DOCUMENT_TYPES } from "@/lib/vault/types";
@@ -18,8 +17,9 @@ export const dynamic = "force-dynamic";
 
 /** Coffre de documents (CDC §29). */
 export default async function DocumentsPage() {
-  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
-  const assessmentId = await verifyAccessToken(token, new Date());
+  const assessmentId = await currentAssessmentId();
+  // Session valide mais aucun diagnostic rattaché : le parcours reprend
+  // au diagnostic, dont la soumission rattachera le profil au compte.
   if (!assessmentId) redirect("/diagnostic");
 
   const documents = await documentStore.list(assessmentId);

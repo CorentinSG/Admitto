@@ -1,9 +1,8 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { ACCESS_COOKIE, verifyAccessToken } from "@/lib/access/session";
+import { currentAssessmentId } from "@/lib/auth/current";
 import { scenarioStore } from "@/lib/store/scenarios";
 import { CITIES, type City, type ScenarioInputs } from "@/lib/simulator/types";
 import { defaultInputs } from "@/lib/simulator/defaults";
@@ -50,9 +49,8 @@ function parseInputs(raw: Record<string, unknown>): ScenarioInputs {
 }
 
 export async function saveScenario(id: string | null, raw: Record<string, unknown>) {
-  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
-  const assessmentId = await verifyAccessToken(token, new Date());
-  if (!assessmentId) return { error: "Accès expiré. Reconnectez-vous depuis votre résultat." };
+  const assessmentId = await currentAssessmentId();
+  if (!assessmentId) return { error: "Session expirée. Reconnectez-vous pour poursuivre." };
 
   const result = await scenarioStore.save(assessmentId, {
     id: id ?? randomUUID(),
@@ -66,9 +64,8 @@ export async function saveScenario(id: string | null, raw: Record<string, unknow
 }
 
 export async function removeScenario(scenarioId: string) {
-  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
-  const assessmentId = await verifyAccessToken(token, new Date());
-  if (!assessmentId) return { error: "Accès expiré." };
+  const assessmentId = await currentAssessmentId();
+  if (!assessmentId) return { error: "Session expirée. Reconnectez-vous pour poursuivre." };
 
   await scenarioStore.remove(assessmentId, scenarioId);
   revalidatePath("/app/simulateur");

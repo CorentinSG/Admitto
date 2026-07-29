@@ -1,9 +1,8 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { ACCESS_COOKIE, verifyAccessToken } from "@/lib/access/session";
+import { currentAssessmentId } from "@/lib/auth/current";
 import { consultationStore } from "@/lib/store/consultations";
 import { decideBooking } from "@/lib/consultations/booking";
 import { REFUSAL_MESSAGES, consultations } from "@/content/consultations";
@@ -17,8 +16,7 @@ import { REFUSAL_MESSAGES, consultations } from "@/content/consultations";
  * prévenance.
  */
 export async function bookConsultation(type: string, slotId: string) {
-  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
-  const assessmentId = await verifyAccessToken(token, new Date());
+  const assessmentId = await currentAssessmentId();
   if (!assessmentId) return { error: consultations.accessError };
 
   const now = new Date();
@@ -49,8 +47,7 @@ export async function bookConsultation(type: string, slotId: string) {
 }
 
 export async function cancelConsultation(bookingId: string) {
-  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
-  const assessmentId = await verifyAccessToken(token, new Date());
+  const assessmentId = await currentAssessmentId();
   if (!assessmentId) return { error: consultations.accessError };
 
   await consultationStore.removeBooking(assessmentId, bookingId);

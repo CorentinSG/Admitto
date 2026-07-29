@@ -50,7 +50,7 @@ export const vault = {
   typeColumn: "Type",
   countSuffix: (n: number) => `${n} / ${MAX_DOCUMENTS_PER_TYPE}`,
   sensitivePrefix: "Catégorie concernée",
-  accessError: "Accès expiré. Reconnectez-vous depuis votre résultat.",
+  accessError: "Session expirée. Reconnectez-vous pour poursuivre.",
   dashboardEmpty:
     "Vous n'avez encore rangé aucun document. Le coffre n'accueille que CV, personal statements, listes d'écoles, documents de travail et checklists.",
   dashboardLink: "Ouvrir le coffre",

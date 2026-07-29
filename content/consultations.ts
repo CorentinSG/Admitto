@@ -33,7 +33,7 @@ export const consultations = {
   upcoming: "Vos séances à venir",
   noUpcoming: "Aucune séance réservée.",
   duration: (minutes: number) => `${minutes} min`,
-  accessError: "Accès expiré. Reconnectez-vous depuis votre résultat.",
+  accessError: "Session expirée. Reconnectez-vous pour poursuivre.",
   noticeNote: `Une séance se réserve au moins ${MIN_NOTICE_HOURS} heures à l'avance et peut être annulée depuis cette page.`,
 };
 

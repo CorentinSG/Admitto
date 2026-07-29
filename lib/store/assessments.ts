@@ -71,6 +71,10 @@ function toRow(assessment: Assessment) {
   return {
     id: assessment.id,
     createdAt: new Date(assessment.createdAt),
+    // Dénormalisé et normalisé en minuscules : c'est cette colonne qui
+    // rattache le diagnostic au compte à la première connexion (CDC §10).
+    // La casse d'une adresse saisie à la main varie ; la comparaison, non.
+    email: assessment.answers.email?.trim().toLowerCase() ?? null,
     answers: assessment.answers as object,
     derived: assessment.derived as object,
     path: assessment.path,

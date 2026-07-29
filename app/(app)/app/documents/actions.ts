@@ -1,9 +1,8 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { ACCESS_COOKIE, verifyAccessToken } from "@/lib/access/session";
+import { currentAssessmentId } from "@/lib/auth/current";
 import { documentStore } from "@/lib/store/documents";
 import { decideUpload, extensionOf } from "@/lib/vault/policy";
 import { storageKeyFor, vaultStorage } from "@/lib/vault/storage";
@@ -18,8 +17,7 @@ import { REFUSAL_MESSAGES, vault } from "@/content/vault";
  * existé côté serveur.
  */
 export async function uploadDocument(formData: FormData) {
-  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
-  const assessmentId = await verifyAccessToken(token, new Date());
+  const assessmentId = await currentAssessmentId();
   if (!assessmentId) return { error: vault.accessError };
 
   const type = String(formData.get("type") ?? "");
@@ -76,8 +74,7 @@ export async function uploadDocument(formData: FormData) {
 }
 
 export async function removeDocument(documentId: string) {
-  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
-  const assessmentId = await verifyAccessToken(token, new Date());
+  const assessmentId = await currentAssessmentId();
   if (!assessmentId) return { error: vault.accessError };
 
   // La lecture est bornée à l'évaluation du cookie : on ne supprime jamais

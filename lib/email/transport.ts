@@ -16,6 +16,26 @@ export interface EmailTransport {
   send(email: OutgoingEmail): Promise<{ ok: boolean; error?: string }>;
 }
 
+/**
+ * Boîte aux lettres de développement.
+ *
+ * Quand `ADMITTO_MAIL_LOG` désigne un fichier, chaque message y est écrit en
+ * entier — corps compris, donc liens de connexion compris. C'est ce qui permet
+ * aux vérifications navigateur de suivre un lien de connexion sans qu'aucune
+ * route ne l'expose.
+ *
+ * Ce n'est pas une porte dérobée : la variable est absente par défaut, et le
+ * transport console lui-même ne s'active que si `RESEND_API_KEY` manque —
+ * c'est-à-dire quand aucun email ne part nulle part. En production, le
+ * transport Resend est utilisé et rien n'est écrit sur disque.
+ */
+async function appendToMailLog(email: OutgoingEmail): Promise<void> {
+  const path = process.env.ADMITTO_MAIL_LOG;
+  if (!path) return;
+  const { appendFile } = await import("node:fs/promises");
+  await appendFile(path, `${JSON.stringify({ ...email, at: new Date().toISOString() })}\n`);
+}
+
 /** Transport de développement : trace l'envoi, n'expédie rien. */
 export const consoleTransport: EmailTransport = {
   name: "console",
@@ -23,6 +43,7 @@ export const consoleTransport: EmailTransport = {
     console.info(
       `[email:${email.legalBasis}] → ${email.to} — « ${email.subject} » (non expédié : transport console)`
     );
+    await appendToMailLog(email);
     return { ok: true };
   },
 };

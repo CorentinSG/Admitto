@@ -67,6 +67,8 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgresql://admitto:admitto@localhost:5432/admitto
+      # Auth.js exige un secret pour se charger, même hors test de connexion.
+      AUTH_SECRET: secret-de-ci-sans-valeur-en-production
     steps:
       - uses: actions/checkout@v4
 

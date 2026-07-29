@@ -7,7 +7,7 @@ import { announcedDelay } from "@/lib/capacity/delay";
 import { reportStore } from "@/lib/store/reports";
 import { formatUsd } from "@/lib/costs/estimate";
 import { PATH_LABELS, result } from "@/content/result";
-import { sessionSecret } from "@/lib/access/session";
+import { usingDatabase } from "@/lib/db/client";
 import { AccessButton } from "./AccessButton";
 import { PARTNERSHIP_LABELS, TUITION_LABELS } from "@/content/partnerships-labels";
 import type { PartnershipDetection } from "@/lib/partnerships/detect";
@@ -25,6 +25,9 @@ const dateFr = (iso: string) =>
  * Résultat préliminaire immédiat (CDC §15).
  * Rendu serveur, dynamique par nature (donnée personnelle) — jamais mis en cache.
  */
+/** Les comptes exigent une base et un secret : sans eux, aucun accès à proposer. */
+const accountsAvailable = () => usingDatabase() && Boolean(process.env.AUTH_SECRET);
+
 export default async function ResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const assessment = await assessmentStore.get(id);
@@ -305,7 +308,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           </Link>
 
           {/* L'espace payant n'est proposé que s'il est activé côté serveur. */}
-          {sessionSecret() && <AccessButton assessmentId={id} />}
+          {accountsAvailable() && <AccessButton assessmentId={id} />}
         </div>
 
         <p

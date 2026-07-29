@@ -485,6 +485,7 @@ Points contrôlés :
 | **Phase 3 — Coaching intégré** | Quatre types de séance avec durée, inclusions et exclusions, solde fini toujours affiché, créneaux ouverts depuis le back-office, délai de prévenance de 48 h, attribution au cas par cas bornée | **Fait** |
 | **Phase 3 — Métriques** | Tableau de bord §36 : conversion rapport → achat et temps humain présentés ensemble, délai médian de production, détection de partenariats, activation des feuilles de route ; chaque chiffre porte son nombre d'observations | **Fait** |
 | **Persistance PostgreSQL** | Schéma Prisma des onze entités, migration initiale, huit stores rebasculés, contrat de store unique rejoué contre la base en CI ; sans `DATABASE_URL` le régime mémoire reste jouable | **Fait** |
+| **Comptes (Auth.js)** | Connexion par lien email sans mot de passe, rôles CLIENT / REVIEWER / ADMIN, back-office 404 hors rôle, reprise du profil sans ressaisie par rattachement des diagnostics à la première connexion | **Fait** |
 | Phase 3 — Matrices éditables sans code | Édition des règles et blocs de texte depuis le back-office | À faire (la persistance qui le bloquait est en place) |
 
 **Deux réserves explicites sur le Sprint 3**, à lever avant la bêta :
@@ -499,9 +500,11 @@ Points contrôlés :
    n'énoncent aucune règle de droit, sont actives.
 2. **Email.** L'email transactionnel J+0 n'est pas encore expédié : sans `RESEND_API_KEY`
    le transport journalise sans envoyer. La persistance, elle, est faite — voir ci-dessous.
-3. **Accès au back-office.** Le back-office est protégé par un jeton unique
-   (`ADMITTO_ADMIN_TOKEN`) et répond 404 tant que ce jeton n'est pas configuré. C'est une
-   mesure de transition, à remplacer par Auth.js avec rôles ADMIN / REVIEWER en Phase 2.
+3. **Accès.** Comptes Auth.js par lien email, rôles CLIENT / REVIEWER / ADMIN. Le
+   back-office répond 404 hors de ces deux derniers rôles. Le premier administrateur
+   s'amorce par `ADMITTO_ADMIN_EMAILS` ; ensuite `User.role` fait foi, ce qui rend un accès
+   révocable en base. **`AUTH_URL` doit correspondre à l'origine réellement visitée** : un
+   écart d'hôte fait rejeter le rappel de connexion et perd le cookie de session.
 4. **Clés de service absentes.** Tout le code de la Phase 1B est en place, mais rien n'est
    branché tant que les variables de `.env.example` ne sont pas renseignées, et c'est
    volontaire : sans `RESEND_API_KEY` le transport journalise sans expédier — aucun envoi

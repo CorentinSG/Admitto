@@ -1,8 +1,7 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { ACCESS_COOKIE, verifyAccessToken } from "@/lib/access/session";
+import { currentAssessmentId } from "@/lib/auth/current";
 import { roadmapStore } from "@/lib/store/roadmap";
 import { milestoneStore } from "@/lib/store/milestones";
 import { loadRoadmap } from "@/lib/roadmap/load";
@@ -13,13 +12,12 @@ import { TASK_TEMPLATES } from "@/content/roadmap-tasks";
 /**
  * Changement de statut d'une tâche (CDC §22).
  *
- * L'identifiant d'évaluation vient du cookie signé, jamais du client : un
+ * L'identifiant d'évaluation vient de la session, jamais du client : un
  * utilisateur ne peut pas modifier la feuille de route d'un autre.
  */
 export async function setTaskStatus(taskId: string, status: string) {
-  const token = (await cookies()).get(ACCESS_COOKIE)?.value;
-  const assessmentId = await verifyAccessToken(token, new Date());
-  if (!assessmentId) return { error: "Accès expiré. Reconnectez-vous depuis votre résultat." };
+  const assessmentId = await currentAssessmentId();
+  if (!assessmentId) return { error: "Session expirée. Reconnectez-vous pour poursuivre." };
 
   if (!(TASK_STATUSES as readonly string[]).includes(status)) {
     return { error: "Statut inconnu." };

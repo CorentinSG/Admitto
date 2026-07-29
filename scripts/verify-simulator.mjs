@@ -5,14 +5,17 @@
  * calcul à la saisie, la limite de trois scénarios comparés et l'absence de
  * toute promesse de rentabilité.
  *
- * Prérequis : serveur lancé AVEC ADMITTO_SESSION_SECRET, et Playwright.
- * Usage : ADMITTO_SESSION_SECRET=… node scripts/verify-simulator.mjs [url-base]
+ * Prérequis : serveur lancé AVEC AUTH_SECRET, et Playwright.
+ * Usage : AUTH_SECRET=… node scripts/verify-simulator.mjs [url-base]
  */
 
 const BASE = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
+// Adresse propre à cette vérification : deux suites qui partagent une adresse
+// partagent un compte, donc un diagnostic — et se gênent en série.
+const EMAIL = "simulateur@example.com";
 
-if (!process.env.ADMITTO_SESSION_SECRET) {
-  console.error("✗ ADMITTO_SESSION_SECRET absent : l'espace payant est fermé par défaut.");
+if (!process.env.AUTH_SECRET) {
+  console.error("✗ AUTH_SECRET absent : les comptes sont désactivés.");
   process.exit(1);
 }
 
@@ -23,6 +26,8 @@ try {
   console.error("✗ Playwright absent. npm i -D playwright && npx playwright install chromium");
   process.exit(1);
 }
+
+const { signInByEmail } = await import("./lib/sign-in.mjs");
 
 const failures = [];
 const check = (label, ok, detail = "") => {
@@ -40,7 +45,7 @@ page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
 
 // ── Accès ──────────────────────────────────────────────────────────────────
 await page.goto(`${BASE}/app/simulateur`, { waitUntil: "domcontentloaded" });
-check("Simulateur fermé sans accès", page.url().includes("/diagnostic"), page.url());
+check("Simulateur fermé sans compte", page.url().includes("/connexion"), page.url());
 
 await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: "Commencer" }).click();
@@ -61,11 +66,12 @@ for (const label of [
   await page.waitForTimeout(200);
 }
 await page.getByPlaceholder("Prénom").fill("Sacha");
-await page.getByPlaceholder("Adresse email").fill("sacha@example.com");
+await page.getByPlaceholder("Adresse email").fill(EMAIL);
 await page.getByRole("button", { name: "Obtenir mon résultat" }).click();
 await page.waitForURL("**/resultat/**", { timeout: 20000 });
-await page.getByRole("button", { name: "Accéder à ma feuille de route" }).click();
-await page.waitForURL("**/app/dashboard", { timeout: 20000 });
+const connected = await signInByEmail(page, BASE, EMAIL);
+check("Connexion par lien email", connected);
+await page.goto(`${BASE}/app/dashboard`, { waitUntil: "networkidle" });
 
 await page.goto(`${BASE}/app/simulateur`, { waitUntil: "networkidle" });
 const body = await page.locator("body").innerText();

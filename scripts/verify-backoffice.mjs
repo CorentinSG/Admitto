@@ -4,15 +4,16 @@
  * Soumet un diagnostic, puis contrôle la file, la fiche rapport, les
  * transitions de statut, le journal des corrections et la version imprimable.
  *
- * Prérequis : serveur lancé AVEC ADMITTO_ADMIN_TOKEN, et Playwright.
- * Usage : ADMITTO_ADMIN_TOKEN=… node scripts/verify-backoffice.mjs [url-base]
+ * Prérequis : serveur lancé AVEC AUTH_SECRET, DATABASE_URL et ADMITTO_MAIL_LOG,
+ * l'adresse ci-dessous figurant dans ADMITTO_ADMIN_EMAILS. Playwright requis.
+ * Usage : ADMITTO_ADMIN_EMAIL=… node scripts/verify-backoffice.mjs [url-base]
  */
 
 const BASE = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
-const TOKEN = process.env.ADMITTO_ADMIN_TOKEN;
+const ADMIN_EMAIL = process.env.ADMITTO_ADMIN_EMAIL;
 
-if (!TOKEN) {
-  console.error("✗ ADMITTO_ADMIN_TOKEN absent : le back-office est fermé par défaut.");
+if (!process.env.AUTH_SECRET || !ADMIN_EMAIL) {
+  console.error("✗ AUTH_SECRET et ADMITTO_ADMIN_EMAIL requis.");
   process.exit(1);
 }
 
@@ -30,6 +31,8 @@ const check = (label, ok, detail = "") => {
   if (!ok) failures.push(label);
 };
 
+const { signInByEmail } = await import("./lib/sign-in.mjs");
+
 const browser = await chromium.launch({
   executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined,
 });
@@ -38,7 +41,7 @@ const browser = await chromium.launch({
 const anonymous = await browser.newContext();
 const anonPage = await anonymous.newPage();
 const anonResponse = await anonPage.goto(`${BASE}/admin`, { waitUntil: "domcontentloaded" });
-check("Back-office inaccessible sans jeton", anonResponse?.status() === 404, `HTTP ${anonResponse?.status()}`);
+check("Back-office inaccessible sans compte", anonResponse?.status() === 404, `HTTP ${anonResponse?.status()}`);
 
 // ── Un diagnostic est soumis pour alimenter la file ────────────────────────
 await anonPage.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
@@ -69,8 +72,10 @@ check("Diagnostic soumis et mis en file", Boolean(assessmentId));
 // ── Accès authentifié au back-office ───────────────────────────────────────
 const admin = await browser.newContext();
 const page = await admin.newPage();
-await page.goto(`${BASE}/admin?token=${encodeURIComponent(TOKEN)}`, { waitUntil: "networkidle" });
-check("Jeton accepté et cookie posé", page.url().endsWith("/admin"), page.url());
+const signedIn = await signInByEmail(page, BASE, ADMIN_EMAIL);
+check("Connexion administrateur", signedIn);
+await page.goto(`${BASE}/admin`, { waitUntil: "networkidle" });
+check("Back-office ouvert au rôle ADMIN", page.url().endsWith("/admin"), page.url());
 
 const queueText = await page.locator("body").innerText();
 check("File affichée avec le demandeur", /Camille/.test(queueText));

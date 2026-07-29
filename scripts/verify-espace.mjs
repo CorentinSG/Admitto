@@ -7,14 +7,15 @@
  * accessible par URL directe, et que le module publié se lit avec son
  * disclaimer.
  *
- * Prérequis : serveur lancé AVEC ADMITTO_SESSION_SECRET, et Playwright.
- * Usage : ADMITTO_SESSION_SECRET=… node scripts/verify-espace.mjs [url-base]
+ * Prérequis : serveur lancé AVEC AUTH_SECRET, et Playwright.
+ * Usage : AUTH_SECRET=… node scripts/verify-espace.mjs [url-base]
  */
 
 const BASE = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
+const EMAIL = "alix@example.com";
 
-if (!process.env.ADMITTO_SESSION_SECRET) {
-  console.error("✗ ADMITTO_SESSION_SECRET absent : l'espace payant est fermé par défaut.");
+if (!process.env.AUTH_SECRET) {
+  console.error("✗ AUTH_SECRET absent : les comptes sont désactivés.");
   process.exit(1);
 }
 
@@ -25,6 +26,8 @@ try {
   console.error("✗ Playwright absent. npm i -D playwright && npx playwright install chromium");
   process.exit(1);
 }
+
+const { signInByEmail } = await import("./lib/sign-in.mjs");
 
 const failures = [];
 const check = (label, ok, detail = "") => {
@@ -49,7 +52,7 @@ page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
 // ── Fermé par défaut ───────────────────────────────────────────────────────
 for (const path of ["/app/documents", "/app/modules", "/app/modules/module-0-decision"]) {
   await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
-  check(`${path} fermé sans accès`, page.url().includes("/diagnostic"), page.url());
+  check(`${path} fermé sans compte`, page.url().includes("/connexion"), page.url());
 }
 
 // ── Ouverture d'un accès ───────────────────────────────────────────────────
@@ -72,11 +75,12 @@ for (const label of [
   await page.waitForTimeout(220);
 }
 await page.getByPlaceholder("Prénom").fill("Alix");
-await page.getByPlaceholder("Adresse email").fill("alix@example.com");
+await page.getByPlaceholder("Adresse email").fill(EMAIL);
 await page.getByRole("button", { name: "Obtenir mon résultat" }).click();
 await page.waitForURL("**/resultat/**", { timeout: 20000 });
-await page.getByRole("button", { name: "Accéder à ma feuille de route" }).click();
-await page.waitForURL("**/app/dashboard", { timeout: 20000 });
+const connected = await signInByEmail(page, BASE, EMAIL);
+check("Connexion par lien email", connected);
+await page.goto(`${BASE}/app/dashboard`, { waitUntil: "networkidle" });
 
 // ── Coffre de documents (CDC §29) ──────────────────────────────────────────
 await page.goto(`${BASE}/app/documents`, { waitUntil: "networkidle" });

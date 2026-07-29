@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { colors, fonts, alpha } from "@/design/tokens";
 import { dashboard } from "@/content/dashboard";
+import { SignOutButton } from "./SignOutButton";
 
 /**
  * Layout de l'espace payant. Fond clair : c'est un outil de travail consulté
@@ -34,7 +35,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           ADMITTO
         </Link>
 
-        <nav style={{ display: "flex", gap: 28 }}>
+        <nav style={{ display: "flex", alignItems: "center", gap: 28 }}>
           {dashboard.nav.map((item) => (
             <Link
               key={item.href}
@@ -50,6 +51,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {item.label}
             </Link>
           ))}
+          <SignOutButton />
         </nav>
       </header>
 

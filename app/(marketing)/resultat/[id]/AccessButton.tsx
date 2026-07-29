@@ -3,11 +3,15 @@
 import { useState, useTransition } from "react";
 import { colors, fonts, gradients } from "@/design/tokens";
 import { dashboard } from "@/content/dashboard";
-import { grantPlatformAccess } from "./access-actions";
+import { auth as authCopy } from "@/content/auth";
+import { requestPlatformAccess } from "./access-actions";
 
 /**
  * Ouverture de l'espace payant depuis le résultat (CDC §10).
- * Le bouton n'apparaît que si l'espace est activé côté serveur.
+ *
+ * Le clic ne donne plus l'accès : il demande un lien de connexion à l'adresse
+ * du diagnostic. L'utilisateur doit donc contrôler cette adresse, ce qu'un
+ * simple clic ne prouvait pas.
  */
 export function AccessButton({ assessmentId }: { assessmentId: string }) {
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +25,7 @@ export function AccessButton({ assessmentId }: { assessmentId: string }) {
         onClick={() =>
           startTransition(async () => {
             setError(null);
-            const result = await grantPlatformAccess(assessmentId);
+            const result = await requestPlatformAccess(assessmentId);
             if (result?.error) setError(result.error);
           })
         }
@@ -40,6 +44,18 @@ export function AccessButton({ assessmentId }: { assessmentId: string }) {
       >
         {dashboard.betaAccess}
       </button>
+      <p
+        style={{
+          fontFamily: fonts.sans,
+          fontSize: "0.8rem",
+          lineHeight: 1.7,
+          margin: "12px 0 0",
+          maxWidth: 420,
+          color: colors.goldLight,
+        }}
+      >
+        {authCopy.resultCtaHint}
+      </p>
       {error && (
         <p
           style={{
