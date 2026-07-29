@@ -483,7 +483,8 @@ Points contrôlés :
 | **Phase 3 — Rappels d'échéance** | Quatre paliers plus le dépassement, un seul rappel par tâche et par passage, jamais de retour vers un palier moins urgent, un message unique par destinataire, base contractuelle, déclencheur fermé par défaut | **Fait** |
 | **Phase 3 — Milestone Challenges actifs** | Date de première acquisition enregistrée au moment de l'accomplissement, état toujours recalculé depuis les tâches | **Fait** |
 | **Phase 3 — Coaching intégré** | Quatre types de séance avec durée, inclusions et exclusions, solde fini toujours affiché, créneaux ouverts depuis le back-office, délai de prévenance de 48 h, attribution au cas par cas bornée | **Fait** |
-| Phase 3 — Back-office avancé | Analytics et matrices éditables sans code | À faire |
+| **Phase 3 — Métriques** | Tableau de bord §36 : conversion rapport → achat et temps humain présentés ensemble, délai médian de production, détection de partenariats, activation des feuilles de route ; chaque chiffre porte son nombre d'observations | **Fait** |
+| Phase 3 — Matrices éditables sans code | Édition des règles et blocs de texte depuis le back-office | **Bloqué par la persistance** (voir réserve 7) |
 
 **Deux réserves explicites sur le Sprint 3**, à lever avant la bêta :
 
@@ -516,6 +517,14 @@ Points contrôlés :
    opaque — le nom d'origine n'entre jamais dans le chemin. Un répertoire local ne
    survit pas à un déploiement sans volume persistant : à remplacer par un stockage
    objet chiffré au repos avant la bêta.
+7. **Matrices éditables sans code.** Le CDC §33 veut que les règles et les blocs de texte
+   soient modifiables depuis le back-office. Ce chantier attend Prisma, et ce n'est pas un
+   simple ordre de priorité : les stores actuels vivent en mémoire du processus. Un écran
+   d'édition posé dessus laisserait modifier une règle juridique dont la modification
+   disparaîtrait au redémarrage suivant — le pire des deux mondes, puisque l'auteur croirait
+   la correction acquise. Les règles restent donc dans `rules.seed.ts`, versionnées et
+   soumises à `check:rules`, jusqu'à la bascule en base.
+
 6. **Contenu des modules 1 à 10.** Seul le Module 0 est rédigé et publié. Les dix autres
    portent leur plan de sections, dont celles qui énonceront une règle officielle : le
    type `ModuleSection` rend impossible d'écrire une telle section sans indiquer sa

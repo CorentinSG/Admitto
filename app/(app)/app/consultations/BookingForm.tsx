@@ -58,8 +58,11 @@ export function BookingForm({
           ))}
         </select>
 
+        {/* Une page porte un bouton « Réserver » par type de séance : le nom
+            accessible doit dire lequel. */}
         <button
           type="button"
+          aria-label={`${consultations.book} — ${type}`}
           disabled={!slotId}
           onClick={() =>
             startTransition(async () => {

@@ -117,13 +117,13 @@ check(
 // Attribution de séances à cet utilisateur.
 await page.getByLabel(`Offre — ${assessmentId}`).selectOption("GUIDED");
 await page.getByLabel(`Séances accordées — ${assessmentId}`).fill("0");
-await page.getByRole("button", { name: "Accorder" }).first().click();
+await page.getByRole("button", { name: `Accorder — ${assessmentId}` }).click();
 await page.waitForTimeout(1200);
 check("Offre attribuée", contains(await page.locator("body").innerText(), "restante(s) sur 3"));
 
 // Un nombre hors bornes est refusé plutôt que tronqué.
 await page.getByLabel(`Séances accordées — ${assessmentId}`).fill("999");
-await page.getByRole("button", { name: "Accorder" }).first().click();
+await page.getByRole("button", { name: `Accorder — ${assessmentId}` }).click();
 await page.waitForTimeout(1000);
 check(
   "Attribution hors bornes refusée",
@@ -136,7 +136,7 @@ text = await page.locator("body").innerText();
 check("Solde mis à jour", contains(text, "3 sur 3"));
 
 await page.getByLabel("Choisir un créneau — ORIENTATION").selectOption({ index: 1 });
-await page.getByRole("button", { name: "Réserver" }).first().click();
+await page.getByRole("button", { name: "Réserver — ORIENTATION" }).click();
 await page.waitForTimeout(1500);
 text = await page.locator("body").innerText();
 check("Séance réservée", contains(text, "Vos séances à venir"));

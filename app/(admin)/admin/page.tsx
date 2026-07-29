@@ -72,6 +72,17 @@ export default async function AdminQueuePage() {
         >
           Consultations →
         </Link>
+        <Link
+          href="/admin/metriques"
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: "0.82rem",
+            color: colors.gold,
+            textDecoration: "none",
+          }}
+        >
+          Métriques →
+        </Link>
       </div>
 
       <div

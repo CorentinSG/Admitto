@@ -127,8 +127,12 @@ export function GrantForm({
         onChange={(e) => setCount(e.target.value)}
         style={{ ...field, minWidth: 80 }}
       />
+      {/* Le nom accessible porte l'identifiant : la page compte autant de
+          boutons « Accorder » que d'utilisateurs, et rien ne les distinguerait
+          sinon — ni pour un lecteur d'écran, ni pour une vérification. */}
       <button
         type="button"
+        aria-label={`${adminConsultations.grant} — ${assessmentId}`}
         onClick={() =>
           startTransition(async () => {
             setError(null);
