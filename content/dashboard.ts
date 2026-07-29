@@ -43,6 +43,7 @@ export const dashboard = {
     { label: "Modules", href: "/app/modules" },
     { label: "Simulateur", href: "/app/simulateur" },
     { label: "Documents", href: "/app/documents" },
+    { label: "Consultations", href: "/app/consultations" },
   ],
   greeting: (firstName?: string) =>
     firstName ? `Bonjour ${firstName}.` : "Bonjour.",

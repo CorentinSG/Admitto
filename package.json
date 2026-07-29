@@ -24,6 +24,7 @@
     "verify:dashboard": "node scripts/verify-dashboard.mjs",
     "verify:simulator": "node scripts/verify-simulator.mjs",
     "verify:espace": "node scripts/verify-espace.mjs",
+    "verify:consultations": "node scripts/verify-consultations.mjs",
     "report:pdf": "node scripts/render-report-pdf.mjs",
     "import:partnerships": "node scripts/import-partnerships.mjs",
     "check:all": "npm run lint && npm run typecheck && npm run test && npm run check:vocabulary && npm run check:tokens && npm run check:rules && npm run check:skills",

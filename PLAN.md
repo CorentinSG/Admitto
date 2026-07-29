@@ -479,6 +479,11 @@ Points contrôlés :
 | **Phase 2 — Base de partenariats** | 42 accords France ↔ États-Unis importés depuis `corentinsg/llm-partnerships`, détection par université ET par niveau d'études, effet sur la fourchette de coût et sur l'axe financier, back-office avec taux de détection | **Fait** |
 | **Phase 2 — Document vault** | Cinq types fermés, refus des pièces sensibles décidé avant toute écriture, images écartées, quota par type, stockage désactivé par défaut (le coffre bascule alors en suivi de documents) | **Fait** |
 | **Phase 2 — Modules** | Onze modules, ordre de production §25.1, contenu du Module 0 rédigé et publié, plan des dix autres, publication conditionnée au sourçage des sections officielles | **Fait**, contenu des modules 1 à 10 à écrire |
+| **Phase 3 — Semi-automatisation du rapport** | Revue structurée dérivée du profil, points bloquants et points d'attention, envoi verrouillé côté serveur tant qu'un point bloquant subsiste, file annonçant ce qui reste à arbitrer | **Fait** |
+| **Phase 3 — Rappels d'échéance** | Quatre paliers plus le dépassement, un seul rappel par tâche et par passage, jamais de retour vers un palier moins urgent, un message unique par destinataire, base contractuelle, déclencheur fermé par défaut | **Fait** |
+| **Phase 3 — Milestone Challenges actifs** | Date de première acquisition enregistrée au moment de l'accomplissement, état toujours recalculé depuis les tâches | **Fait** |
+| **Phase 3 — Coaching intégré** | Quatre types de séance avec durée, inclusions et exclusions, solde fini toujours affiché, créneaux ouverts depuis le back-office, délai de prévenance de 48 h, attribution au cas par cas bornée | **Fait** |
+| Phase 3 — Back-office avancé | Analytics et matrices éditables sans code | À faire |
 
 **Deux réserves explicites sur le Sprint 3**, à lever avant la bêta :
 

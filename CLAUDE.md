@@ -13,10 +13,11 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run check:vocabulary` — vocabulaire interdit (CDC §5–7)
 - `npm run check:tokens` — couleurs hors palette Admitto
 - `npm run check:rules` — règles du Moteur A : source + date de vérification obligatoires
-- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace <url>` —
-  checklists design, diagnostic, back-office, paiement, espace payant, simulateur, coffre et
-  modules au navigateur (serveur lancé + Playwright ; `verify:backoffice` exige
-  `ADMITTO_ADMIN_TOKEN`, `verify:espace` et `verify:dashboard` exigent `ADMITTO_SESSION_SECRET`)
+- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations <url>`
+  — checklists design, diagnostic, back-office, paiement, espace payant, simulateur, coffre,
+  modules et consultations au navigateur (serveur lancé + Playwright ; `verify:backoffice` exige
+  `ADMITTO_ADMIN_TOKEN`, `verify:espace` et `verify:dashboard` exigent `ADMITTO_SESSION_SECRET`,
+  `verify:consultations` exige les deux)
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)
 
@@ -95,6 +96,16 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
 - Aucun composant client ne formate de date. Le serveur formate en UTC, le navigateur
   dans le fuseau de l'utilisateur : à cheval sur minuit les deux rendus divergent et
   React régénère l'arbre. Passer un libellé déjà formaté (cf. `DocumentView`).
+- `lib/report/review.ts` — revue avant envoi (CDC §17). Les points sont dérivés du
+  profil ; `canSend` vit dans lib/ et non dans l'interface, pour qu'une action serveur
+  appelée directement ne saute pas la relecture.
+- `lib/notifications/` — rappels d'échéance (CDC §22). Un seul palier par tâche et par
+  passage, jamais de retour vers un palier moins urgent, un seul message par destinataire.
+  Déclenchés par `POST /api/notifications/deadlines`, inerte sans `ADMITTO_CRON_SECRET`.
+- `lib/consultations/` — coaching (CDC §30–31). `included` est un `number` : il n'existe
+  pas de valeur « illimité » à écrire, et un plafond oublié vaut zéro séance. Chaque type
+  porte ses exclusions dans son type — un périmètre qui n'énonce que ses inclusions se lit
+  comme ouvert.
 - `app/(admin)/` et `app/(app)/` — back-office et espace payant, protégés par
   `middleware.ts` : fermés par défaut faute de `ADMITTO_ADMIN_TOKEN` / `ADMITTO_SESSION_SECRET`.
   Le middleware s'exécute en Edge : n'y importer aucun module `node:*` (Web Crypto uniquement).

@@ -61,6 +61,17 @@ export default async function AdminQueuePage() {
         >
           Base de partenariats →
         </Link>
+        <Link
+          href="/admin/consultations"
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: "0.82rem",
+            color: colors.gold,
+            textDecoration: "none",
+          }}
+        >
+          Consultations →
+        </Link>
       </div>
 
       <div
