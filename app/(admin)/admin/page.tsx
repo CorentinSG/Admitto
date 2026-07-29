@@ -31,17 +31,30 @@ export default async function AdminQueuePage() {
 
   return (
     <div>
-      <h1
-        style={{
-          fontFamily: fonts.serif,
-          fontWeight: 300,
-          fontSize: "2.2rem",
-          margin: 0,
-          color: colors.navy900,
-        }}
-      >
-        File de rapports
-      </h1>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 20 }}>
+        <h1
+          style={{
+            fontFamily: fonts.serif,
+            fontWeight: 300,
+            fontSize: "2.2rem",
+            margin: 0,
+            color: colors.navy900,
+          }}
+        >
+          File de rapports
+        </h1>
+        <Link
+          href="/admin/partenariats"
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: "0.82rem",
+            color: colors.gold,
+            textDecoration: "none",
+          }}
+        >
+          Base de partenariats →
+        </Link>
+      </div>
 
       <div
         style={{

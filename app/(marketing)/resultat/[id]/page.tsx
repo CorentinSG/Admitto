@@ -9,6 +9,9 @@ import { formatUsd } from "@/lib/costs/estimate";
 import { PATH_LABELS, result } from "@/content/result";
 import { sessionSecret } from "@/lib/access/session";
 import { AccessButton } from "./AccessButton";
+import { PARTNERSHIP_LABELS, TUITION_LABELS } from "@/content/partnerships-labels";
+import type { PartnershipDetection } from "@/lib/partnerships/detect";
+import type { Partnership } from "@/lib/partnerships/types";
 
 export const metadata: Metadata = {
   title: "Votre résultat préliminaire — Admitto",
@@ -97,26 +100,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
 
         {/* Partenariats */}
         <Block title={result.sections.partnerships}>
-          {partnerships.matches.length === 0 ? (
-            <Paragraph>{result.partnershipsNone}</Paragraph>
-          ) : (
-            <ul style={{ margin: "16px 0 0" }}>
-              {partnerships.matches.map((p) => (
-                <li
-                  key={p.id}
-                  style={{
-                    fontFamily: fonts.sans,
-                    fontSize: "0.92rem",
-                    lineHeight: 1.7,
-                    color: alpha.whiteCtaText,
-                    marginBottom: 8,
-                  }}
-                >
-                  {p.usLawSchool} — {p.conditions}
-                </li>
-              ))}
-            </ul>
-          )}
+          <PartnershipList detection={partnerships} />
         </Block>
 
         {/* Échéances */}
@@ -389,5 +373,122 @@ function Paragraph({ children }: { children: React.ReactNode }) {
     >
       {children}
     </p>
+  );
+}
+
+/**
+ * Partenariats détectés (CDC §15 et §27).
+ * La fiabilité est rendue lisible : une fiche confirmée et une piste à vérifier
+ * ne sont pas présentées de la même façon. Un partenariat ne dit rien de
+ * l'éligibilité au barreau — seul le BOLE se prononce.
+ */
+function PartnershipList({ detection }: { detection: PartnershipDetection }) {
+  const { confirmed, toConfirm, aboveLevel, universityCovered } = detection;
+
+  if (!universityCovered) {
+    return <Paragraph>{result.partnershipsNone}</Paragraph>;
+  }
+
+  return (
+    <div>
+      {confirmed.length > 0 ? (
+        <>
+          <Paragraph>{result.partnershipsFound(confirmed.length)}</Paragraph>
+          <div style={{ marginTop: 20 }}>
+            {confirmed.map((p) => (
+              <PartnershipRow key={p.id} partnership={p} />
+            ))}
+          </div>
+        </>
+      ) : (
+        <Paragraph>{result.partnershipsNoneAtLevel}</Paragraph>
+      )}
+
+      {toConfirm.length > 0 && (
+        <>
+          <Paragraph>{result.partnershipsToConfirm(toConfirm.length)}</Paragraph>
+          <ul style={{ margin: "12px 0 0" }}>
+            {toConfirm.map((p) => (
+              <li
+                key={p.id}
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: "0.86rem",
+                  lineHeight: 1.7,
+                  color: alpha.whiteDesc,
+                  marginBottom: 6,
+                }}
+              >
+                {p.usLawSchool}
+                {p.city ? ` — ${p.city}` : ""}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {aboveLevel.length > 0 && (
+        <Paragraph>{result.partnershipsAboveLevel(aboveLevel.length)}</Paragraph>
+      )}
+    </div>
+  );
+}
+
+function PartnershipRow({ partnership }: { partnership: Partnership }) {
+  return (
+    <div style={{ padding: "16px 0", borderTop: `1px solid ${alpha.goldBorderFaint}` }}>
+      <span
+        style={{
+          display: "block",
+          fontFamily: fonts.serif,
+          fontSize: "1.1rem",
+          color: colors.ivory,
+        }}
+      >
+        {partnership.usLawSchool}
+      </span>
+      <span
+        style={{
+          display: "block",
+          fontFamily: fonts.sans,
+          fontSize: "0.78rem",
+          margin: "4px 0 0",
+          color: colors.gold,
+        }}
+      >
+        {[partnership.city, partnership.state].filter(Boolean).join(", ")}
+        {" · "}
+        {PARTNERSHIP_LABELS[partnership.partnershipType]}
+        {" · "}
+        {TUITION_LABELS[partnership.tuitionCategory]}
+      </span>
+      {partnership.tuitionDisplay && (
+        <span
+          style={{
+            display: "block",
+            fontFamily: fonts.sans,
+            fontSize: "0.86rem",
+            lineHeight: 1.7,
+            margin: "8px 0 0",
+            color: alpha.whiteCtaText,
+          }}
+        >
+          {partnership.tuitionDisplay}
+        </span>
+      )}
+      {partnership.requiredLevelRaw && (
+        <span
+          style={{
+            display: "block",
+            fontFamily: fonts.sans,
+            fontSize: "0.78rem",
+            margin: "6px 0 0",
+            color: alpha.whiteDesc,
+          }}
+        >
+          Niveau attendu : {partnership.requiredLevelRaw}
+        </span>
+      )}
+    </div>
   );
 }

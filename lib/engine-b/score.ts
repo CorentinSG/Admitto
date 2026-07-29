@@ -1,4 +1,5 @@
 import type { Answers } from "@/lib/questionnaire/types";
+import { OTHER_UNIVERSITY_ID } from "@/content/universities";
 import type { DerivedProfile } from "@/lib/profile/derive";
 import type { CostEstimate } from "@/lib/costs/estimate";
 import type { AxisScore, AxisScores, VerdictInput } from "./verdict";
@@ -23,7 +24,9 @@ export function academicStrength(answers: Answers, derived: DerivedProfile): Axi
   const years = derived.lawYearsValidated;
   if (years === null) return 2; // parcours atypique : ni valorisé ni pénalisé
   const base = years >= 6 ? 4 : years >= 5 ? 3 : years >= 4 ? 2 : 1;
-  const known = Boolean(answers.university && answers.university !== "Autre université / non listée");
+  // L'université est stockée sous forme d'identifiant, pas de libellé :
+  // comparer à un libellé donnerait le bonus à tout le monde.
+  const known = Boolean(answers.university && answers.university !== OTHER_UNIVERSITY_ID);
   // L'université peut faire remonter un cursus d'un cran, jamais décrocher la
   // note maximale : celle-ci reste réservée à un cursus achevé (CDC §14.2,
   // « l'université ne doit pas être le seul critère »).
@@ -37,7 +40,11 @@ export function academicStrength(answers: Answers, derived: DerivedProfile): Axi
  * ne dégrade pas mécaniquement la note : il déclenche d'abord une recherche de
  * financement, conformément au CDC §14.2.
  */
-export function financialFit(answers: Answers, costs: CostEstimate): AxisScore {
+export function financialFit(
+  answers: Answers,
+  costs: CostEstimate,
+  hasCostAdvantage = false
+): AxisScore {
   const budgetFloor: Record<string, number> = {
     UNDER_30K: 30_000,
     "30_60K": 60_000,
@@ -55,6 +62,10 @@ export function financialFit(answers: Answers, costs: CostEstimate): AxisScore {
   if (score <= 2 && (answers.funding === "SCHOLARSHIPS" || answers.funding === "BOTH")) score += 1;
   // Aucune piste de financement identifiée avec un budget serré : signal fort.
   if (score >= 2 && answers.funding === "NONE" && ratio < 1) score -= 1;
+
+  // Un partenariat confirmé de l'université d'origine est un levier financier concret,
+  // pas une hypothèse : il relève la note d'un cran.
+  if (hasCostAdvantage) score += 1;
 
   return clamp(score);
 }
@@ -121,11 +132,12 @@ export function immigrationRisk(answers: Answers, derived: DerivedProfile): Axis
 export function scoreAxes(
   answers: Answers,
   derived: DerivedProfile,
-  costs: CostEstimate
+  costs: CostEstimate,
+  hasCostAdvantage = false
 ): AxisScores {
   return {
     ACADEMIC_STRENGTH: academicStrength(answers, derived),
-    FINANCIAL_FIT: financialFit(answers, costs),
+    FINANCIAL_FIT: financialFit(answers, costs, hasCostAdvantage),
     PROFESSIONAL_REALISM: professionalRealism(answers, derived),
     TIMELINE_FEASIBILITY: timelineFeasibility(answers, derived),
     IMMIGRATION_RISK: immigrationRisk(answers, derived),
@@ -140,11 +152,12 @@ export function scoreAxes(
 export function buildVerdictInput(
   answers: Answers,
   derived: DerivedProfile,
-  costs: CostEstimate
+  costs: CostEstimate,
+  hasCostAdvantage = false
 ): VerdictInput {
   const months = derived.monthsUntilIntake;
   return {
-    scores: scoreAxes(answers, derived, costs),
+    scores: scoreAxes(answers, derived, costs, hasCostAdvantage),
     timelineCritical:
       months !== null && months > 0 && months < 8 && answers.status !== "ADMITTED_OR_ENROLLED",
     goalTooVague:

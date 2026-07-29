@@ -2,6 +2,8 @@ import type { Assessment } from "@/lib/assessment/compute";
 import { buildVerdictInput } from "@/lib/engine-b/score";
 import { computeVerdict, AXES, type Axis, type AxisScore, type Verdict } from "@/lib/engine-b/verdict";
 import { recommendOffer, type RecommendedOffer } from "@/lib/offers/recommend";
+import { bestCostAdvantage } from "@/lib/partnerships/detect";
+import { universityName } from "@/content/universities";
 import { formatUsd } from "@/lib/costs/estimate";
 import { fill, type ReportVariables } from "./fill";
 import {
@@ -105,17 +107,19 @@ const JOURNEY_LABELS: Record<string, string> = {
 export function assembleReport(assessment: Assessment): Report {
   const { answers, derived, costs, deadlines, partnerships } = assessment;
 
-  const verdictInput = buildVerdictInput(answers, derived, costs);
+  // Le partenariat confirmé le plus avantageux pèse sur l'adéquation financière.
+  const costAdvantage = bestCostAdvantage(partnerships);
+  const verdictInput = buildVerdictInput(answers, derived, costs, costAdvantage !== null);
   const { verdict, shiftIntake } = computeVerdict(verdictInput);
   const scores = verdictInput.scores;
 
   const variables: ReportVariables = {
     firstName: answers.firstName ?? "",
-    university: answers.university ?? "votre université",
+    university: universityName(answers.university),
     intakeDate: deadlines[0]?.date ?? "",
     totalCostLow: formatUsd(costs.total.lowUsd),
     totalCostHigh: formatUsd(costs.total.highUsd),
-    partnershipCount: String(partnerships.matches.length),
+    partnershipCount: String(partnerships.confirmed.length),
     phase: derived.currentPhase ? PHASE_LABELS[derived.currentPhase] : "clarification",
     journeyType: derived.journeyType ? JOURNEY_LABELS[derived.journeyType] : "",
   };
@@ -145,7 +149,7 @@ export function assembleReport(assessment: Assessment): Report {
     pathLabel: PATH_LABELS[assessment.path],
     pathText: assessment.textBlocks,
     partnerships: fill(
-      partnerships.matches.length > 0
+      partnerships.confirmed.length > 0
         ? REPORT_STATIC.partnershipsFound
         : REPORT_STATIC.partnershipsNone,
       variables

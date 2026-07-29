@@ -96,6 +96,13 @@ check("Disclaimer affiché", /ne constitue pas un conseil juridique/i.test(body)
 // Le test d'anglais étant déjà passé, l'échéance correspondante doit disparaître.
 check("Échéance sans objet écartée", !/Test d'anglais passé/.test(body));
 
+// Partenariats (CDC §27) : détectés par université ET par niveau d'études.
+check(
+  "Partenariats détectés pour une université couverte",
+  /accords? confirmés? concernent? votre université|accord confirmé concerne votre université/i.test(body)
+);
+check("Fiabilité rendue lisible", !/partenariat garanti/i.test(body));
+
 check("Aucune erreur console", consoleErrors.length === 0, consoleErrors.join(" | "));
 
 await browser.close();

@@ -476,7 +476,8 @@ Points contrôlés :
 | **Phase 1B — Diagnostic payant + emails** | Consentement marketing distinct, séquence J+0 → J+25 avec bases légales séparées, catalogue d'offres, déduction de 79 € sur trente jours, tunnel de paiement à six mentions obligatoires, Stripe et webhook signé | **Fait**, en attente des clés |
 | **Phase 2 — Espace payant (cœur)** | Accès signé avec reprise du profil sans ressaisie, feuille de route par parcours type et par phases, Next Best Action à cinq composantes, progression, statistiques et Milestone Challenges | **Fait** |
 | **Phase 2 — Simulateur de coût** | Dix-sept postes, six sorties, préréglages par ville, jusqu'à trois scénarios comparés, aucun retour sur investissement annoncé | **Fait** |
-| Phase 2 — Compléments | Contenus des modules (§25), document vault (§29), base de partenariats renseignée (§27) | À faire |
+| **Phase 2 — Base de partenariats** | 42 accords France ↔ États-Unis importés depuis `corentinsg/llm-partnerships`, détection par université ET par niveau d'études, effet sur la fourchette de coût et sur l'axe financier, back-office avec taux de détection | **Fait** |
+| Phase 2 — Compléments | Contenus des modules (§25), document vault (§29) | À faire |
 
 **Deux réserves explicites sur le Sprint 3**, à lever avant la bêta :
 

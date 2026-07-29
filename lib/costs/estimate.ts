@@ -1,4 +1,5 @@
 import type { Answers } from "@/lib/questionnaire/types";
+import type { Partnership } from "@/lib/partnerships/types";
 
 /**
  * Première fourchette de coût affichée dans le résultat immédiat (CDC §15).
@@ -41,7 +42,7 @@ const add = (a: CostRange, b: CostRange): CostRange => ({
  * partenariats, et par le haut lorsqu'il vise exclusivement les États-Unis
  * (période sans revenu plus longue, coût de bar preparation complet).
  */
-export function estimateCosts(answers: Answers): CostEstimate {
+export function estimateCosts(answers: Answers, costAdvantage?: Partnership | null): CostEstimate {
   const academic = { ...ACADEMIC };
   const living = { ...LIVING };
   const bar = { ...BAR };
@@ -49,6 +50,18 @@ export function estimateCosts(answers: Answers): CostEstimate {
   // Une recherche de financement engagée abaisse le plancher du coût net.
   if (answers.funding === "SCHOLARSHIPS" || answers.funding === "BOTH") {
     academic.lowUsd = Math.round(academic.lowUsd * 0.6);
+  }
+
+  // Un partenariat confirmé de l'université d'origine abaisse le plancher
+  // académique — c'est son intérêt principal. L'effet dépend du type d'accord ;
+  // il ne touche jamais le plafond, l'utilisateur pouvant viser une autre école.
+  if (costAdvantage) {
+    const facteur = {
+      no_tuition: 0.1,
+      fixed_fee: 0.25,
+      reduced_tuition: 0.6,
+    }[costAdvantage.tuitionCategory as "no_tuition" | "fixed_fee" | "reduced_tuition"];
+    if (facteur) academic.lowUsd = Math.round(academic.lowUsd * facteur);
   }
 
   // Rester aux États-Unis suppose de tenir plus longtemps sans revenu.

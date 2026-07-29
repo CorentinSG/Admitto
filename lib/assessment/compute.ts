@@ -1,7 +1,11 @@
 import { runEngineA } from "@/lib/engine-a/run";
 import { RULES } from "@/lib/engine-a/rules.seed";
 import { deriveProfile, flattenForRules, type DerivedProfile } from "@/lib/profile/derive";
-import { detectPartnerships, type PartnershipDetection } from "@/lib/partnerships/detect";
+import {
+  bestCostAdvantage,
+  detectPartnerships,
+  type PartnershipDetection,
+} from "@/lib/partnerships/detect";
 import { estimateCosts, type CostEstimate } from "@/lib/costs/estimate";
 import { computeDeadlines, type Deadline } from "@/lib/deadlines/compute";
 import type { Answers } from "@/lib/questionnaire/types";
@@ -33,6 +37,11 @@ export function computeAssessment(answers: Answers, reference: Date, id: string)
   const derived = deriveProfile(answers, reference);
   const engineA = runEngineA(flattenForRules(answers, derived), RULES);
 
+  // La détection croise l'université d'origine ET le niveau atteint : un
+  // partenariat réservé aux M2 n'est pas proposé à un étudiant en licence.
+  const partnerships = detectPartnerships(answers.university, answers.education);
+  const costAdvantage = bestCostAdvantage(partnerships);
+
   return {
     id,
     createdAt: reference.toISOString(),
@@ -40,8 +49,8 @@ export function computeAssessment(answers: Answers, reference: Date, id: string)
     derived,
     path: engineA.path,
     textBlocks: engineA.textBlocks,
-    partnerships: detectPartnerships(answers.university),
-    costs: estimateCosts(answers),
+    partnerships,
+    costs: estimateCosts(answers, costAdvantage),
     deadlines: computeDeadlines(answers, reference),
     rulesSnapshot: engineA.firedRules,
   };

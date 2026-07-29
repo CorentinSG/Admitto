@@ -71,6 +71,12 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   un promotionnel ne part jamais sans consentement, `sendGuarded` est le dernier verrou.
 - `lib/payments/` — catalogue, déduction 30 jours, Stripe. Sans clé, le paiement est
   désactivé et le webhook inerte : la bascule Phase 1A → 1B se fait par configuration.
+- `lib/partnerships/` + `content/partnerships.generated.ts` — 42 accords importés depuis
+  `corentinsg/llm-partnerships` (`npm run import:partnerships <chemin>`). Le fichier généré
+  est commité. Une fiche non « confirmed » n'est jamais présentée comme acquise, et un
+  niveau requis inconnu n'exclut jamais un candidat.
+- `content/universities.ts` — liste unique des universités. Le questionnaire stocke
+  l'IDENTIFIANT, jamais le libellé : comparer à un libellé casserait la détection.
 - `lib/simulator/` — simulateur de coût (CDC §26). Les valeurs de départ sont dans
   `defaults.ts`, séparées du calcul : les réviser ne touche à aucune logique.
 - `lib/roadmap/` — feuille de route (CDC §22), Next Best Action (§23), progression et

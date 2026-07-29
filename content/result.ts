@@ -28,7 +28,21 @@ export const result = {
     limits: "Limites de cette analyse",
   },
   partnershipsNone:
-    "Aucun partenariat vérifié n'est enregistré pour votre université à ce jour. Cela ne signifie pas qu'il n'en existe pas : la base est enrichie et vérifiée au fil des diagnostics, et le point sera repris dans votre rapport.",
+    "Aucun partenariat n'est enregistré pour votre université à ce jour. Cela ne signifie pas qu'il n'en existe pas : la base est enrichie et vérifiée au fil des diagnostics, et le point sera repris dans votre rapport.",
+  partnershipsFound: (n: number) =>
+    n === 1
+      ? "Un accord confirmé concerne votre université et votre niveau d'études. Ses conditions relèvent de l'université et de la law school, qui décident seules de l'admission."
+      : `${n} accords confirmés concernent votre université et votre niveau d'études. Leurs conditions relèvent des universités et des law schools, qui décident seules de l'admission.`,
+  partnershipsNoneAtLevel:
+    "Des accords existent pour votre université, mais aucun ne correspond au niveau d'études que vous avez indiqué. Ils sont listés ci-dessous à titre d'information.",
+  partnershipsToConfirm: (n: number) =>
+    n === 1
+      ? "Un autre accord est mentionné pour votre université, sans que l'information soit encore suffisamment fiable pour être présentée comme acquise. À confirmer auprès de votre faculté :"
+      : `${n} autres accords sont mentionnés pour votre université, sans que l'information soit encore suffisamment fiable pour être présentée comme acquise. À confirmer auprès de votre faculté :`,
+  partnershipsAboveLevel: (n: number) =>
+    n === 1
+      ? "Un accord supplémentaire existe, ouvert à un niveau d'études plus avancé que le vôtre aujourd'hui."
+      : `${n} accords supplémentaires existent, ouverts à un niveau d'études plus avancé que le vôtre aujourd'hui.`,
   immigration: {
     LIKELY:
       "Un statut étudiant sera probablement nécessaire pour suivre un LL.M. aux États-Unis. Les conditions, les délais et les pièces relèvent des autorités migratoires américaines, seules compétentes pour se prononcer.",

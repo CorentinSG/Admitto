@@ -1,4 +1,4 @@
-import { FRENCH_UNIVERSITIES } from "@/lib/partnerships/data";
+import { UNIVERSITIES } from "./universities";
 import type { ScreenId } from "@/lib/questionnaire/types";
 
 /**
@@ -77,7 +77,7 @@ export const SCREENS: Screen[] = [
     id: "university",
     question: "Dans quelle université avez-vous étudié ?",
     helper: "Certaines universités françaises ont des accords avec des law schools américaines.",
-    options: FRENCH_UNIVERSITIES.map((u) => ({ value: u, label: u })),
+    options: UNIVERSITIES.map((u) => ({ value: u.id, label: u.name })),
   },
   {
     id: "foreignBar",

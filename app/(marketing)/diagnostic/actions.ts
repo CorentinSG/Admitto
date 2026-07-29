@@ -19,7 +19,7 @@ import {
   US_STATUS,
   type Answers,
 } from "@/lib/questionnaire/types";
-import { FRENCH_UNIVERSITIES } from "@/lib/partnerships/data";
+import { UNIVERSITY_IDS } from "@/content/universities";
 
 /**
  * Soumission du questionnaire. Les réponses arrivent du client : elles sont
@@ -39,8 +39,7 @@ function parseAnswers(raw: Record<string, unknown>): Answers {
     status: oneOf(JOURNEY_STATUS, raw.status),
     education: oneOf(EDUCATION, raw.education),
     university:
-      typeof raw.university === "string" &&
-      (FRENCH_UNIVERSITIES as readonly string[]).includes(raw.university)
+      typeof raw.university === "string" && UNIVERSITY_IDS.includes(raw.university)
         ? raw.university
         : undefined,
     foreignBar: oneOf(FOREIGN_BAR, raw.foreignBar),
