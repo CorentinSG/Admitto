@@ -54,7 +54,7 @@ export type UsStatus = (typeof US_STATUS)[number];
 export interface Answers {
   status?: JourneyStatus;
   education?: Education;
-  university?: string; // libellé issu de la liste, ou "AUTRE"
+  university?: string; // IDENTIFIANT de content/universities.ts, jamais le libellé
   foreignBar?: ForeignBar;
   foreignBarYear?: number;
   foreignBarActive?: boolean;

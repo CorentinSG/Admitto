@@ -5,7 +5,9 @@ import { colors, fonts, alpha } from "@/design/tokens";
 import { reportStore } from "@/lib/store/reports";
 import { assessmentStore } from "@/lib/store/assessments";
 import { assembleReport } from "@/lib/report/assemble";
+import { canSend, reviewChecklist } from "@/lib/report/review";
 import { ReportControls } from "./ReportControls";
+import { ReviewChecklist } from "./ReviewChecklist";
 
 export const metadata: Metadata = {
   title: "Rapport — Admitto",
@@ -26,6 +28,8 @@ export default async function AdminReportPage({ params }: { params: Promise<{ id
   if (!record || !assessment) notFound();
 
   const report = assembleReport(assessment);
+  const points = reviewChecklist(assessment, report);
+  const sendable = canSend(points, record.acknowledged);
 
   return (
     <div>
@@ -75,7 +79,11 @@ export default async function AdminReportPage({ params }: { params: Promise<{ id
         </Link>
       </div>
 
-      <ReportControls id={id} status={record.status} />
+      <ReportControls id={id} status={record.status} sendBlocked={!sendable.ok} />
+
+      <Section title="Revue avant envoi">
+        <ReviewChecklist id={id} points={points} acknowledged={record.acknowledged} />
+      </Section>
 
       {/* Sorties des moteurs */}
       <Section title="Sorties des moteurs">

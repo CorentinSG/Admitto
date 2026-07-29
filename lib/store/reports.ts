@@ -30,6 +30,13 @@ export interface ReportRecord {
   corrections: CorrectionEntry[];
   /** Fenêtre de déduction ouverte par le paiement du diagnostic (CDC §16.2). */
   deduction: Deduction | null;
+  /**
+   * Points de revue traités (CDC §17). Ce sont des identifiants dérivés du
+   * profil : ils sont recalculés à chaque affichage, jamais stockés en dur.
+   * Un acquittement qui ne correspond plus à aucun point disparaît donc de
+   * lui-même — un profil corrigé rouvre sa revue.
+   */
+  acknowledged: string[];
 }
 
 const globalStore = globalThis as typeof globalThis & {
@@ -48,6 +55,7 @@ export const reportStore = {
       sentAt: null,
       corrections: [],
       deduction: null,
+      acknowledged: [],
     };
     memory.set(record.id, record);
     return record;
@@ -79,6 +87,21 @@ export const reportStore = {
     if (!record) return null;
     record.status = status;
     if (status === "SENT") record.sentAt = at;
+    return record;
+  },
+
+  /** Acquittement d'un point de revue. Idempotent : un double clic ne duplique rien. */
+  async acknowledge(id: string, pointId: string): Promise<ReportRecord | null> {
+    const record = memory.get(id);
+    if (!record) return null;
+    if (!record.acknowledged.includes(pointId)) record.acknowledged.push(pointId);
+    return record;
+  },
+
+  async unacknowledge(id: string, pointId: string): Promise<ReportRecord | null> {
+    const record = memory.get(id);
+    if (!record) return null;
+    record.acknowledged = record.acknowledged.filter((p) => p !== pointId);
     return record;
   },
 

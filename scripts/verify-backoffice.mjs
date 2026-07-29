@@ -96,6 +96,51 @@ check(
   await page.getByRole("button", { name: "En relecture" }).isDisabled()
 );
 
+// ── Revue avant envoi (CDC §17) ────────────────────────────────────────────
+// innerText renvoie le texte rendu : le titre de section est en capitales.
+const review = (await page.locator("body").innerText()).toLowerCase();
+check("Bloc de revue présent", has(review, "Revue avant envoi"));
+
+const boxes = page.locator("input[type='checkbox']");
+const pointCount = await boxes.count();
+const blocked = /point\(s\) bloquant\(s\)/i.test(review);
+check("Points de revue dérivés du profil", pointCount > 0, `${pointCount} point(s)`);
+
+if (blocked) {
+  check(
+    "Envoi fermé tant que la revue n'est pas faite",
+    await page.getByRole("button", { name: "Envoyé" }).isDisabled()
+  );
+
+  // Le verrou doit tenir hors interface : l'action serveur est appelée
+  // directement, sans passer par le bouton grisé.
+  const forced = await page.evaluate(async () => {
+    const res = await fetch(location.href, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=UTF-8", "Next-Action": "forced" },
+      body: "[]",
+    });
+    return res.status;
+  });
+  check("Appel direct rejeté par le serveur", forced >= 400, `HTTP ${forced}`);
+
+  // Acquittement de chaque point bloquant. `click` plutôt que `check` : la case
+  // est pilotée par le serveur, `check` exigerait un basculement synchrone.
+  for (let i = 0; i < pointCount; i++) {
+    const box = boxes.nth(i);
+    if (!(await box.isChecked())) {
+      await box.click();
+      await page.waitForTimeout(900);
+    }
+  }
+  const after = await page.locator("body").innerText();
+  check("Revue close une fois les points traités", /l'envoi est ouvert/i.test(after));
+  check(
+    "Envoi ouvert après revue",
+    !(await page.getByRole("button", { name: "Envoyé" }).isDisabled())
+  );
+}
+
 // ── Journal des corrections ────────────────────────────────────────────────
 await page.locator("textarea").fill("Fourchette de coût ajustée après vérification.");
 await page.getByRole("button", { name: "Consigner" }).click();

@@ -4,6 +4,8 @@ import { colors, fonts, alpha } from "@/design/tokens";
 import { reportStore } from "@/lib/store/reports";
 import { assessmentStore } from "@/lib/store/assessments";
 import { announcedDelay, isSaturated } from "@/lib/capacity/delay";
+import { assembleReport } from "@/lib/report/assemble";
+import { canSend, reviewChecklist } from "@/lib/report/review";
 import { STATUS_LABELS } from "@/content/admin";
 
 export const metadata: Metadata = {
@@ -23,10 +25,15 @@ export default async function AdminQueuePage() {
   const saturated = isSaturated(active);
 
   const rows = await Promise.all(
-    queue.map(async (report) => ({
-      report,
-      assessment: await assessmentStore.get(report.assessmentId),
-    }))
+    queue.map(async (report) => {
+      const assessment = await assessmentStore.get(report.assessmentId);
+      // La file annonce ce qui reste à arbitrer : sans cela, on ouvre chaque
+      // rapport pour découvrir lesquels sont réellement prêts à partir.
+      const pending = assessment
+        ? canSend(reviewChecklist(assessment, assembleReport(assessment)), report.acknowledged)
+        : { ok: false as const, pending: [] };
+      return { report, assessment, blocking: pending.ok ? 0 : pending.pending.length };
+    })
   );
 
   return (
@@ -118,13 +125,13 @@ export default async function AdminQueuePage() {
         </p>
       ) : (
         <div style={{ marginTop: 20 }}>
-          {rows.map(({ report, assessment }) => (
+          {rows.map(({ report, assessment, blocking }) => (
             <Link
               key={report.id}
               href={`/admin/rapports/${report.id}`}
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 130px 110px 120px",
+                gridTemplateColumns: "1fr 130px 110px 120px 130px",
                 gap: 16,
                 alignItems: "center",
                 padding: "16px 0",
@@ -145,6 +152,15 @@ export default async function AdminQueuePage() {
               </span>
               <span style={{ fontFamily: fonts.sans, fontSize: "0.78rem", color: colors.navy900 }}>
                 {STATUS_LABELS[report.status]}
+              </span>
+              <span
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: "0.78rem",
+                  color: blocking > 0 ? colors.gold : colors.slate,
+                }}
+              >
+                {blocking > 0 ? `${blocking} à arbitrer` : "Revue faite"}
               </span>
             </Link>
           ))}

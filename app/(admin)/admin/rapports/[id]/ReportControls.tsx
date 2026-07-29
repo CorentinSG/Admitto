@@ -6,8 +6,21 @@ import { addCorrection, setReportStatus } from "../../actions";
 import { REPORT_STATUSES, type ReportStatus } from "@/lib/store/reports";
 import { STATUS_LABELS } from "@/content/admin";
 
-/** Transitions de statut et journal des corrections (CDC §18, §33). */
-export function ReportControls({ id, status }: { id: string; status: ReportStatus }) {
+/**
+ * Transitions de statut et journal des corrections (CDC §18, §33).
+ *
+ * `sendBlocked` grise le bouton d'envoi, mais ne le protège pas : le refus
+ * réel est côté serveur. Ce n'est qu'un moyen d'éviter un clic inutile.
+ */
+export function ReportControls({
+  id,
+  status,
+  sendBlocked,
+}: {
+  id: string;
+  status: ReportStatus;
+  sendBlocked: boolean;
+}) {
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -24,21 +37,24 @@ export function ReportControls({ id, status }: { id: string; status: ReportStatu
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
         {REPORT_STATUSES.map((candidate) => {
           const current = candidate === status;
+          const blocked = candidate === "SENT" && sendBlocked;
           return (
             <button
               key={candidate}
               type="button"
-              disabled={current || pending}
+              disabled={current || pending || blocked}
+              title={blocked ? "Revue incomplète : traitez les points bloquants." : undefined}
               onClick={() => run(() => setReportStatus(id, candidate))}
               style={{
                 padding: "12px 20px",
                 fontFamily: fonts.sans,
                 fontSize: "0.8rem",
                 letterSpacing: "0.04em",
-                cursor: current ? "default" : "pointer",
+                cursor: current || blocked ? "default" : "pointer",
                 border: `1px solid ${current ? colors.gold : alpha.cardGridGap}`,
                 background: current ? gradients.goldButton : "transparent",
                 color: current ? colors.navy900 : colors.slate,
+                opacity: blocked ? 0.45 : 1,
               }}
             >
               {STATUS_LABELS[candidate]}
