@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { colors, fonts, alpha } from "@/design/tokens";
 import { dashboard } from "@/content/dashboard";
+import { LEGAL_DOCUMENTS } from "@/content/legal";
 import { SignOutButton } from "./SignOutButton";
 
 /**
@@ -55,7 +56,38 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
 
-      <main style={{ padding: "44px 6% 96px", maxWidth: 1120 }}>{children}</main>
+      <main style={{ padding: "44px 6% 48px", maxWidth: 1120 }}>{children}</main>
+
+      {/*
+        Liens légaux au pied de l'espace payant aussi, et pas seulement sur le
+        site public : c'est ici que se trouvent les personnes qui ont payé,
+        donc celles qui ont un intérêt concret aux conditions et à la politique
+        de confidentialité.
+      */}
+      <footer
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 22,
+          padding: "0 6% 48px",
+          maxWidth: 1120,
+        }}
+      >
+        {LEGAL_DOCUMENTS.map((document) => (
+          <Link
+            key={document.slug}
+            href={`/${document.slug}`}
+            style={{
+              fontFamily: fonts.sans,
+              fontSize: "0.78rem",
+              color: colors.slate,
+              textDecoration: "none",
+            }}
+          >
+            {document.title}
+          </Link>
+        ))}
+      </footer>
     </div>
   );
 }

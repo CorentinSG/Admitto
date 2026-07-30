@@ -10,15 +10,15 @@
 
 ## 1. Ce qui fonctionne (vérifié, pas déclaré)
 
-| Domaine | Preuve |
-|---|---|
-| Parcours diagnostic → résultat → rapport | `verify:questionnaire`, `verify:backoffice` conformes |
-| Espace payant complet (dashboard, roadmap, simulateur, coffre, modules, consultations) | 5 suites conformes |
-| Comptes et rôles (lien email, ADMIN/REVIEWER/CLIENT, 404 hors rôle) | `verify:backoffice` + 12 tests rôles |
-| Persistance : les données survivent au redémarrage | test kill/restart, résultat 200, progression conservée |
-| Design et contrat d'animation | `verify:animations` conforme (keyframes réellement injectées) |
-| Garde-fous CDC (vocabulaire, palette, sourçage des règles) | hooks git + CI |
-| Paiement/webhook/emails : fermés par défaut, bascule par configuration | `verify:checkout` + tests |
+| Domaine                                                                                | Preuve                                                        |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Parcours diagnostic → résultat → rapport                                               | `verify:questionnaire`, `verify:backoffice` conformes         |
+| Espace payant complet (dashboard, roadmap, simulateur, coffre, modules, consultations) | 5 suites conformes                                            |
+| Comptes et rôles (lien email, ADMIN/REVIEWER/CLIENT, 404 hors rôle)                    | `verify:backoffice` + 12 tests rôles                          |
+| Persistance : les données survivent au redémarrage                                     | test kill/restart, résultat 200, progression conservée        |
+| Design et contrat d'animation                                                          | `verify:animations` conforme (keyframes réellement injectées) |
+| Garde-fous CDC (vocabulaire, palette, sourçage des règles)                             | hooks git + CI                                                |
+| Paiement/webhook/emails : fermés par défaut, bascule par configuration                 | `verify:checkout` + tests                                     |
 
 Mesures : page d'accueil statique, TTFB ~3 ms en local, HTML ~73 Ko,
 First Load JS 102–124 Ko selon la route, middleware Edge 87 Ko (Auth.js).
@@ -33,15 +33,16 @@ First Load JS 102–124 Ko selon la route, middleware Edge 87 Ko (Auth.js).
 Le questionnaire collecte prénom + email + profil depuis la Phase 1A. Il n'existe
 ni mentions légales, ni politique de confidentialité, ni CGV, ni aucun moyen pour
 une personne d'exercer ses droits (accès, suppression, export). Le pied de page
-n'a aucun lien légal. C'est le seul point *juridiquement* bloquant.
+n'a aucun lien légal. C'est le seul point _juridiquement_ bloquant.
 
 **A2. Aucune protection anti-abus sur les deux formulaires publics.**
+
 - `POST diagnostic` : chaque soumission écrit en base, crée un rapport en file
   **et envoie un email J0 à l'adresse fournie** — vecteur de bombardement
   d'email d'autrui et de saturation de la file (le délai annoncé §18 bascule à
   25 rapports actifs : atteignable en une minute de script).
 - `requestSignIn` : chaque appel déclenche un email de connexion — même vecteur.
-Aucune limitation de débit, aucun honeypot, aucune vérification d'origine.
+  Aucune limitation de débit, aucun honeypot, aucune vérification d'origine.
 
 **A3. Aucun en-tête de sécurité HTTP.**
 Pas de `X-Frame-Options`/`frame-ancestors` (clickjacking du back-office), pas de
@@ -131,20 +132,39 @@ négligeable en volume, simple `deleteMany` périodique.
 Cinq lots, ordonnés par le rapport risque/effort. Chaque lot est livrable et
 vérifiable indépendamment.
 
-### Lot 1 — Conformité légale (bloquant, ~1 sprint)
-1. Pages : mentions légales, politique de confidentialité, CGV — structure et
-   copie générées, **les éléments qui engagent (raison sociale, hébergeur,
-   médiation) complétés par le fondateur**.
-2. Parcours de droits : page « Vos données » (accès, export JSON, suppression),
-   suppression en cascade déjà garantie par le schéma (`onDelete: Cascade`).
-3. Politique de rétention : purge automatique des diagnostics jamais rattachés
-   à un compte après N mois (décision produit), documentée dans la politique.
-4. Liens légaux au pied de chaque page + case de consentement reliée à la
-   politique.
-   *Vérification : nouvelle suite `verify:legal` (liens présents, export
-   fonctionne, suppression efface réellement — contrôle en base).*
+### Lot 1 — Conformité légale — **FAIT**, sauf les mentions qui engagent le fondateur
+
+1. Les trois pages sont servies aux adresses que le pied de page citait déjà —
+   elles rendaient 404 jusqu'ici. Ce que le produit fait est écrit à partir du
+   schéma : le tableau des traitements de la politique de confidentialité a une
+   ligne par modèle Prisma, avec sa base légale. Ce qui engage l'éditeur
+   — raison sociale, immatriculation, siège, hébergeur, sous-traitants,
+   médiateur de la consommation — reste marqué « À COMPLÉTER » et **s'affiche
+   comme tel en haut de page**. Une raison sociale plausible inventée ne serait
+   pas un brouillon : ce serait une fausse mention, et elle passerait inaperçue
+   précisément parce qu'elle aurait l'air complète.
+2. Page « Vos données » dans l'espace payant : ce qui est détenu, export JSON
+   immédiat, suppression définitive derrière un mot de confirmation vérifié
+   côté serveur. Correction au passage : `Assessment.userId` porte
+   `onDelete: SetNull`, **pas** `Cascade` — supprimer le compte seul aurait
+   détaché les diagnostics au lieu de les effacer, laissant en base un prénom,
+   une adresse email et un profil complet que plus personne n'aurait pu
+   supprimer. L'effacement supprime donc les diagnostics d'abord.
+3. Rétention : les diagnostics jamais rattachés à un compte sont effacés au
+   bout de douze mois, greffé sur le déclencheur cron existant. C'est le seul
+   effacement du produit que personne ne peut demander — le titulaire n'a pas
+   de compte depuis lequel le faire.
+4. Liens légaux au pied du site public et de l'espace payant.
+   _Vérification : `npm run check:legal` (tout modèle Prisma nouveau doit
+   apparaître dans la politique, chaque document doit avoir sa page) et
+   `npm run verify:legal` (46 points, dont la suppression contrôlée en base :
+   un diagnostic effacé rend 404 sur son adresse de résultat)._
+
+Reste au fondateur : fournir les mentions marquées « À COMPLÉTER » avant toute
+mise en ligne publique — elles sont listées en tête de chaque page concernée.
 
 ### Lot 2 — Durcissement — **FAIT**
+
 ### Lot 3 — Fiabilité de la vérification — **FAIT**
 
 Voir la section 4 pour ce que ces deux lots ont révélé.
@@ -152,35 +172,39 @@ Voir la section 4 pour ce que ces deux lots ont révélé.
 <details><summary>Contenu prévu (conservé pour mémoire)</summary>
 
 ### Lot 2 — Durcissement (avant toute URL publique, ~2-3 jours)
+
 1. Limitation de débit sur `POST diagnostic` et `requestSignIn` (fenêtre
    glissante par IP + par adresse email, en base — pas de dépendance externe).
 2. En-têtes de sécurité dans `next.config.ts` : `frame-ancestors 'none'`,
    `nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, HSTS.
 3. Décision sur `/resultat/[id]` (B1) : session exigée si rattaché à un compte.
 4. Purge périodique des `VerificationToken` expirés (greffée sur la route cron).
-   *Vérification : tests de débit (11e requête refusée), en-têtes assertés dans
-   une suite.*
+   _Vérification : tests de débit (11e requête refusée), en-têtes assertés dans
+   une suite._
 
 ### Lot 3 — Fiabilité de la vérification (~2 jours)
+
 1. Remplacer les `waitForTimeout` fixes par des attentes sur condition
    (`expect.poll` / `waitForSelector`).
 2. Un retry unique par suite en cas de crash (pas par assertion : un vrai échec
    doit rester rouge).
 3. Réchauffage : un `GET` sur chaque zone avant la première assertion.
 4. Orchestrateur `verify:all` qui lance les huit suites en série et résume.
-   *Critère : trois exécutions complètes consécutives vertes départ à froid.*
+   _Critère : trois exécutions complètes consécutives vertes départ à froid._
 
 </details>
 
 ### Lot 4 — Cycle de vie email (~2-3 jours)
+
 1. Route cron pour la séquence J+2 → J+25 (même modèle que les rappels :
    fermée sans secret, idempotente par clé composée, un passage = un envoi max).
 2. État « déduction expirée » affiché sur la page de paiement.
 3. Événements produit minimaux (§36) : démarrage/complétion questionnaire,
    ouverture du résultat — stockés en base, affichés dans /admin/metriques.
-   *Vérification : passage cron rejoué = zéro doublon ; métriques alimentées.*
+   _Vérification : passage cron rejoué = zéro doublon ; métriques alimentées._
 
 ### Lot 5 — Croissance (quand les lots 1-2 sont en production)
+
 1. Pages marketing autonomes /offres, /faq, /a-propos + `sitemap.ts`,
    `robots.ts`, `metadataBase`, OpenGraph.
 2. Accessibilité : lien d'évitement, focus géré entre écrans du questionnaire,
@@ -190,11 +214,11 @@ Voir la section 4 pour ce que ces deux lots ont révélé.
 4. Observabilité : capture d'erreurs serveur + logs structurés.
 
 ### Hors plan (décisions du fondateur, aucune tâche de code)
+
 - Vérifier et activer R-NY-001 / R-NY-002 / R-ALT-001 (sources officielles).
 - Clés de production : DATABASE_URL, AUTH_SECRET, RESEND, STRIPE, VAULT.
 - Rédaction des modules 1 à 10.
 - Périmètre exact des matrices éditables.
-
 
 ---
 

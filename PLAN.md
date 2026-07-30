@@ -27,19 +27,19 @@
 
 ## 1. Stack technique
 
-| Couche | Choix | Justification |
-|---|---|---|
-| Framework | **Next.js (App Router) + React 19 + TypeScript** | Identique au site existant (le design doit être reproduit à l'identique) ; SSR pour le SEO (CDC §35). |
-| Styling | **Styles inline dans le JSX** + Tailwind v4 pour le reset/preflight uniquement | Convention du site existant. Pas de librairie UI, pas de classes utilitaires dans le markup marketing. Pour l'app privée (dashboard), on peut factoriser via des objets de style partagés (`styles.ts`), mais on garde la même palette/typo. |
-| Animations | **Aucune librairie** (ni Framer Motion, ni GSAP, ni Lenis). IntersectionObserver + useState + transitions CSS inline + 2 @keyframes (`shimmer`, `pulse-gold`) | Contrat strict du document d'animations (voir §3). |
-| Polices | `Cormorant Garamond` (titres, italiques) + `DM Sans` (corps) via `next/font` | Identique au site. |
-| Base de données | **PostgreSQL** (Neon ou Supabase) + **Prisma** | Modèle relationnel riche (règles versionnées, partenariats, roadmap). |
-| Auth | **Auth.js (NextAuth)** — email magic link + mot de passe | Compte créé seulement à l'achat (CDC §10) ; le questionnaire reste sans compte. |
-| Paiement | **Stripe Checkout + webhooks** (Phase 1B) | Paiement 3–4×, déduction des 79 € via coupon/credit automatisé. |
-| Emails | **Resend** (transactionnel) + templates React Email | Séquence J+0 → J+25 (CDC §19) ; séparation stricte transactionnel / marketing. |
-| PDF du rapport | Rendu HTML → PDF (page `@react-pdf` ou Playwright print) avec la charte Admitto | Rapport 3–4 pages signé « Founder » (CDC §7, §17). |
-| Hébergement | **Vercel** (comme le site actuel `*.nanocorp.app`) | Continuité de déploiement. |
-| Analytics | Plausible ou Vercel Analytics + tables d'événements internes | Métriques du CDC §36 sans cookies invasifs. |
+| Couche          | Choix                                                                                                                                                         | Justification                                                                                                                                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework       | **Next.js (App Router) + React 19 + TypeScript**                                                                                                              | Identique au site existant (le design doit être reproduit à l'identique) ; SSR pour le SEO (CDC §35).                                                                                                                                        |
+| Styling         | **Styles inline dans le JSX** + Tailwind v4 pour le reset/preflight uniquement                                                                                | Convention du site existant. Pas de librairie UI, pas de classes utilitaires dans le markup marketing. Pour l'app privée (dashboard), on peut factoriser via des objets de style partagés (`styles.ts`), mais on garde la même palette/typo. |
+| Animations      | **Aucune librairie** (ni Framer Motion, ni GSAP, ni Lenis). IntersectionObserver + useState + transitions CSS inline + 2 @keyframes (`shimmer`, `pulse-gold`) | Contrat strict du document d'animations (voir §3).                                                                                                                                                                                           |
+| Polices         | `Cormorant Garamond` (titres, italiques) + `DM Sans` (corps) via `next/font`                                                                                  | Identique au site.                                                                                                                                                                                                                           |
+| Base de données | **PostgreSQL** (Neon ou Supabase) + **Prisma**                                                                                                                | Modèle relationnel riche (règles versionnées, partenariats, roadmap).                                                                                                                                                                        |
+| Auth            | **Auth.js (NextAuth)** — email magic link + mot de passe                                                                                                      | Compte créé seulement à l'achat (CDC §10) ; le questionnaire reste sans compte.                                                                                                                                                              |
+| Paiement        | **Stripe Checkout + webhooks** (Phase 1B)                                                                                                                     | Paiement 3–4×, déduction des 79 € via coupon/credit automatisé.                                                                                                                                                                              |
+| Emails          | **Resend** (transactionnel) + templates React Email                                                                                                           | Séquence J+0 → J+25 (CDC §19) ; séparation stricte transactionnel / marketing.                                                                                                                                                               |
+| PDF du rapport  | Rendu HTML → PDF (page `@react-pdf` ou Playwright print) avec la charte Admitto                                                                               | Rapport 3–4 pages signé « Founder » (CDC §7, §17).                                                                                                                                                                                           |
+| Hébergement     | **Vercel** (comme le site actuel `*.nanocorp.app`)                                                                                                            | Continuité de déploiement.                                                                                                                                                                                                                   |
+| Analytics       | Plausible ou Vercel Analytics + tables d'événements internes                                                                                                  | Métriques du CDC §36 sans cookies invasifs.                                                                                                                                                                                                  |
 
 **Arborescence cible du repo :**
 
@@ -92,7 +92,7 @@ reprend le système du site existant.
 ```
 
 - Sections sombres : dégradés navy `linear-gradient(160deg, #0A1628 0%, #142240 …, #0E1D3A …)`
-  + radial-gradients navy/gold en couches (cf. hero et CTA finale du site).
+  - radial-gradients navy/gold en couches (cf. hero et CTA finale du site).
 - Sections claires : fond `#FAFAF7`, texte `#0A1628`, secondaire `#3D4F6B`.
 - Accent unique : l'or `#C9A84C` → `#E8C87A` (boutons, labels, pastilles, filets).
 
@@ -136,7 +136,10 @@ function useInView(threshold = 0.12) {
     if (!node) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) { setInView(true); io.disconnect(); } // one-shot
+        if (entry.isIntersecting) {
+          setInView(true);
+          io.disconnect();
+        } // one-shot
       },
       { threshold }
     );
@@ -162,13 +165,13 @@ Opacité écrite `opacity: +!!flag`, transform `flag ? "translateY(0)" : "transl
 
 ### 3.3 Cadences par section (thresholds & delays)
 
-| Section | threshold | Pattern |
-|---|---|---|
-| Hero | 0.05 | Cascade badge → h1 → p → CTAs : delays 0/0.1/0.2/0.3 s, durées 0.8–0.9 s (total 1.2 s). Shimmer indépendant du scroll. Indicateur « défiler » statique. |
-| Le Défi | 0.08 | Label (opacity 0.8s) puis h2 (0.8s +0.1s, translateY 20px). **Quirk à conserver** : les cartes n'animent que `background-color 0.3s` → opacité/transform basculent instantanément malgré les delays 0.1–0.4 s. |
-| La Solution | 0.08 | Colonne gauche en cascade 0→0.3 s ; colonne droite = **le conteneur entier** glisse de `translateX(40px)` (0.8s ease 0.2s), aucun stagger interne. |
-| Le Parcours | 0.05 | 5 lignes en stagger horizontal depuis la gauche (−24 px, 0.7 s, delays 0.10/0.22/0.34/0.46/0.58 s). Pastilles : `pulse-gold 2.5s ease infinite ${0.4*i}s` — `animation: none` tant que la section n'est pas vue. Fil vertical statique. |
-| CTA finale | 0.08 | Badge → h2 → p → CTA (translateY 24px) → disclaimer : delays 0/0.1/0.2/0.3/0.45 s. |
+| Section     | threshold | Pattern                                                                                                                                                                                                                                 |
+| ----------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero        | 0.05      | Cascade badge → h1 → p → CTAs : delays 0/0.1/0.2/0.3 s, durées 0.8–0.9 s (total 1.2 s). Shimmer indépendant du scroll. Indicateur « défiler » statique.                                                                                 |
+| Le Défi     | 0.08      | Label (opacity 0.8s) puis h2 (0.8s +0.1s, translateY 20px). **Quirk à conserver** : les cartes n'animent que `background-color 0.3s` → opacité/transform basculent instantanément malgré les delays 0.1–0.4 s.                          |
+| La Solution | 0.08      | Colonne gauche en cascade 0→0.3 s ; colonne droite = **le conteneur entier** glisse de `translateX(40px)` (0.8s ease 0.2s), aucun stagger interne.                                                                                      |
+| Le Parcours | 0.05      | 5 lignes en stagger horizontal depuis la gauche (−24 px, 0.7 s, delays 0.10/0.22/0.34/0.46/0.58 s). Pastilles : `pulse-gold 2.5s ease infinite ${0.4*i}s` — `animation: none` tant que la section n'est pas vue. Fil vertical statique. |
+| CTA finale  | 0.08      | Badge → h2 → p → CTA (translateY 24px) → disclaimer : delays 0/0.1/0.2/0.3/0.45 s.                                                                                                                                                      |
 
 ### 3.4 Micro-interactions
 
@@ -235,6 +238,7 @@ AuditLog        journal des corrections humaines et des dérogations            
 ```
 
 Points structurants :
+
 - **`rulesSnapshot`** sur chaque Assessment : la version exacte des règles utilisées est figée
   (traçabilité exigée CDC §14.1 — identifiant, condition, source, date de vérification, version).
 - Les **règles et blocs de texte sont en base**, éditables depuis le back-office **sans code** (CDC §33).
@@ -246,6 +250,7 @@ Points structurants :
 ## 5. Les deux moteurs (lib/engine-a, lib/engine-b)
 
 ### Moteur A — faits objectifs & voie préliminaire (100 % automatique dès le lancement)
+
 - Entrées : formation, durée d'études, statut pro, partenariats, calendrier, visa, coûts.
 - Sorties : une voie parmi **6 catégories** (NY via LL.M. sous réserve BOLE / voie directe à
   examiner / formation probablement insuffisante / alternative à examiner / revue humaine /
@@ -255,6 +260,7 @@ Points structurants :
 - **Jamais de conclusion d'éligibilité définitive.**
 
 ### Moteur B — viabilité (5 axes, notés 1–4)
+
 1. Solidité académique (l'université n'est pas le seul critère)
 2. Adéquation financière (budget faible → déclenche d'abord une recherche de financement)
 3. Réalisme professionnel
@@ -277,12 +283,12 @@ changement de règle doit faire tourner la suite et produire un diff des verdict
 
 **Objectif : 15–20 rapports gratuits pour calibrer** (CDC §16.1). Paiement non activé.
 
-| Sprint | Livrables |
-|---|---|
-| **S1 — Socle & design system** | Init Next.js App Router + TS + Prisma + Postgres. Portage exact du design system (`tokens.ts`, `animations.tsx`, nav, boutons, cartes, timeline). Storybook léger ou page `/dev/ui` pour valider pixel par pixel contre le site existant. Checklist d'animation §3 validée au navigateur. |
-| **S2 — Homepage** | Les 10 blocs du CDC §11 dans la structure du site actuel : Hero (promesse + nom + photo + phrase parcours + CTA « Start Your Free Preliminary Assessment »), Le problème (cartes à inversion navy), La solution (2 colonnes, liste glissant de droite), Le diagnostic (2 temps), Le parcours couvert (timeline 5+ étapes avec pulse-gold), Aperçu dashboard, Modules intégrés à la roadmap, Offres (prix transparents, paiement en plusieurs fois visible), Parcours du fondateur, FAQ (6 questions du CDC §11.10). SEO de base (métadonnées, sitemap). |
-| **S3 — Questionnaire + profil + Moteur A** | 12 écrans max, 1 question/écran, barre de progression, boutons/listes/cases (aucun champ libre obligatoire, 1 facultatif final), cible 3–4 min. Logique conditionnelle (§12.4 : inscrit LL.M., national US, licence « trop tôt », avocat). Persistance Lead+Questionnaire+Profile, champs inférés. Moteur A + règles seed + page **résultat immédiat** (voie préliminaire, partenariats, échéances, éléments migratoires, fourchette de coût, limites de l'analyse + rappel autorités compétentes). Email transactionnel J+0. |
-| **S4 — Moteur B + rapport + mini back-office** | Moteur B (5 axes + plafonnement). Assemblage du rapport 3–4 pages depuis les blocs (variables : prénom, université, dates, coûts, partenariats, phase, parcours type). Rendu PDF charte Admitto, signature « Prepared by Corentin Saint-Girons, Founder… » + disclaimer exact du CDC §7. Back-office minimal : file de rapports, édition des blocs avant envoi, marquage revu/envoyé, journal des corrections. File de capacité (délais 48 h / 3 j ouvrés / limitation, CDC §18). Bandeau « bêta » + demande de feedback. |
+| Sprint                                         | Livrables                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **S1 — Socle & design system**                 | Init Next.js App Router + TS + Prisma + Postgres. Portage exact du design system (`tokens.ts`, `animations.tsx`, nav, boutons, cartes, timeline). Storybook léger ou page `/dev/ui` pour valider pixel par pixel contre le site existant. Checklist d'animation §3 validée au navigateur.                                                                                                                                                                                                                                                               |
+| **S2 — Homepage**                              | Les 10 blocs du CDC §11 dans la structure du site actuel : Hero (promesse + nom + photo + phrase parcours + CTA « Start Your Free Preliminary Assessment »), Le problème (cartes à inversion navy), La solution (2 colonnes, liste glissant de droite), Le diagnostic (2 temps), Le parcours couvert (timeline 5+ étapes avec pulse-gold), Aperçu dashboard, Modules intégrés à la roadmap, Offres (prix transparents, paiement en plusieurs fois visible), Parcours du fondateur, FAQ (6 questions du CDC §11.10). SEO de base (métadonnées, sitemap). |
+| **S3 — Questionnaire + profil + Moteur A**     | 12 écrans max, 1 question/écran, barre de progression, boutons/listes/cases (aucun champ libre obligatoire, 1 facultatif final), cible 3–4 min. Logique conditionnelle (§12.4 : inscrit LL.M., national US, licence « trop tôt », avocat). Persistance Lead+Questionnaire+Profile, champs inférés. Moteur A + règles seed + page **résultat immédiat** (voie préliminaire, partenariats, échéances, éléments migratoires, fourchette de coût, limites de l'analyse + rappel autorités compétentes). Email transactionnel J+0.                           |
+| **S4 — Moteur B + rapport + mini back-office** | Moteur B (5 axes + plafonnement). Assemblage du rapport 3–4 pages depuis les blocs (variables : prénom, université, dates, coûts, partenariats, phase, parcours type). Rendu PDF charte Admitto, signature « Prepared by Corentin Saint-Girons, Founder… » + disclaimer exact du CDC §7. Back-office minimal : file de rapports, édition des blocs avant envoi, marquage revu/envoyé, journal des corrections. File de capacité (délais 48 h / 3 j ouvrés / limitation, CDC §18). Bandeau « bêta » + demande de feedback.                               |
 
 **Données à observer pendant la bêta** : temps de production, questions ambiguës, cas non prévus,
 qualité perçue, intérêt pour les offres, prix acceptable, fréquence des corrections (CDC §16.1).
@@ -350,6 +356,7 @@ les barreaux.
 ## 7. Spécifications page par page (V1)
 
 ### 7.1 Homepage (`/`)
+
 Structure = site Admitto actuel étendu aux 10 blocs du CDC §11, dans cet ordre :
 nav fixe → Hero (fond 3 couches radial/linear navy-gold, cercles décoratifs statiques, badge ✦,
 h1 avec italique shimmer, photo + nom + phrase du fondateur, CTA principal pulse « Start Your
@@ -363,6 +370,7 @@ raison d'être) → FAQ (accordéon sobre) → CTA finale (`#commencer`) → foo
 Chaque contenu conduit vers le **diagnostic gratuit**, pas vers les offres chères (CDC §35).
 
 ### 7.2 Questionnaire (`/diagnostic`)
+
 - 12 écrans max (§12.3), une question par écran, barre de progression dorée sur navy,
   transitions entre écrans = fade/translateY aux cadences du hero (0.8–0.9 s ease).
 - Boutons de réponse = style « item liste Solution » (bordure dorée 0.14 → 0.42 au hover/sélection).
@@ -370,16 +378,18 @@ Chaque contenu conduit vers le **diagnostic gratuit**, pas vers les offres chèr
 - Sauvegarde progressive (reprise possible), validation côté serveur, honeypot anti-spam.
 
 ### 7.3 Résultat immédiat (`/resultat`)
+
 Page navy/ivory : voie préliminaire (badge), partenariats détectés, échéances principales,
 éléments migratoires généraux, fourchette de coût, **limites de l'analyse** + rappel que seules
 les autorités compétentes décident + annonce du délai du rapport (dynamique selon la file §18).
 
 ### 7.4 Dashboard (`/dashboard`)
+
 Hiérarchie : 1) carte « Phase actuelle » ; 2) carte **Next Best Action** (la plus proéminente,
-CTA doré) ; 3) échéances ; 4) barre de progression par phase ; 5) tâches du moment ;
-6) documents ; 7) module recommandé. Impression immédiate de clarté, contrôle, priorisation.
+CTA doré) ; 3) échéances ; 4) barre de progression par phase ; 5) tâches du moment ; 6) documents ; 7) module recommandé. Impression immédiate de clarté, contrôle, priorisation.
 
 ### 7.5 Back-office (`/(admin)`)
+
 Utilisateurs, questionnaires, file de rapports (avec capacité/alertes/délai dynamique), éditeur
 de règles versionnées (activer/désactiver, sources, dates de vérification), blocs de texte,
 matrices, partenariats, roadmaps types, modules, offres, paiements, emails, consultations,
@@ -454,39 +464,40 @@ Points contrôlés :
 
 ## 11. Risques & points de vigilance
 
-| Risque | Mitigation |
-|---|---|
-| Dérive vers l'automatisation prématurée | Gate explicite : Phase 2 ne démarre qu'après 15–20 rapports bêta et validation des règles. |
-| Règles juridiques obsolètes (BOLE, visas) | Dates de vérification obligatoires sur chaque règle/partenariat + alerte back-office au-delà de N mois. |
-| Pic de demandes de rapports | File de capacité + délai affiché dynamique + limitation temporaire (CDC §18). |
-| Divergence de design entre marketing et app | Tokens/animations centralisés, checklist §10 en revue de PR. |
-| Confusion service éducatif / conseil juridique | Disclaimers systématiques + checklist vocabulaire + revue humaine de chaque rapport. |
-| Ambiguïté d'une règle ou d'un cas utilisateur | Catégorie « revue humaine » du Moteur A + signalement explicite (jamais d'improvisation). |
+| Risque                                         | Mitigation                                                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Dérive vers l'automatisation prématurée        | Gate explicite : Phase 2 ne démarre qu'après 15–20 rapports bêta et validation des règles.              |
+| Règles juridiques obsolètes (BOLE, visas)      | Dates de vérification obligatoires sur chaque règle/partenariat + alerte back-office au-delà de N mois. |
+| Pic de demandes de rapports                    | File de capacité + délai affiché dynamique + limitation temporaire (CDC §18).                           |
+| Divergence de design entre marketing et app    | Tokens/animations centralisés, checklist §10 en revue de PR.                                            |
+| Confusion service éducatif / conseil juridique | Disclaimers systématiques + checklist vocabulaire + revue humaine de chaque rapport.                    |
+| Ambiguïté d'une règle ou d'un cas utilisateur  | Catégorie « revue humaine » du Moteur A + signalement explicite (jamais d'improvisation).               |
 
 ---
 
 ## 12. État d'avancement
 
-| Sprint | Périmètre | État |
-|---|---|---|
-| **S1 — Socle & design system** | Scaffold Next.js/React 19/TS, `design/tokens.ts`, `design/animations.tsx`, `design/global-css.ts`, reset, garde-fous, CI, graphe Graphify | **Fait** |
-| **S2 — Homepage** | Les 10 blocs du CDC §11, nav fixe, footer, copie centralisée, checklist animations automatisée et conforme | **Fait** |
-| **S3 — Questionnaire + Moteur A + résultat immédiat** | 12 écrans typés, logique conditionnelle §12.4, profil inféré, règles versionnées, résultat immédiat à six blocs, paliers de délai §18 | **Fait**, sauf les deux réserves ci-dessous |
-| **S4 — Moteur B + rapport + back-office** | Notation des 5 axes, assemblage du rapport depuis les blocs, version imprimable et PDF, file de rapports, transitions de statut, journal des corrections | **Fait** |
-| **Phase 1B — Diagnostic payant + emails** | Consentement marketing distinct, séquence J+0 → J+25 avec bases légales séparées, catalogue d'offres, déduction de 79 € sur trente jours, tunnel de paiement à six mentions obligatoires, Stripe et webhook signé | **Fait**, en attente des clés |
-| **Phase 2 — Espace payant (cœur)** | Accès signé avec reprise du profil sans ressaisie, feuille de route par parcours type et par phases, Next Best Action à cinq composantes, progression, statistiques et Milestone Challenges | **Fait** |
-| **Phase 2 — Simulateur de coût** | Dix-sept postes, six sorties, préréglages par ville, jusqu'à trois scénarios comparés, aucun retour sur investissement annoncé | **Fait** |
-| **Phase 2 — Base de partenariats** | 42 accords France ↔ États-Unis importés depuis `corentinsg/llm-partnerships`, détection par université ET par niveau d'études, effet sur la fourchette de coût et sur l'axe financier, back-office avec taux de détection | **Fait** |
-| **Phase 2 — Document vault** | Cinq types fermés, refus des pièces sensibles décidé avant toute écriture, images écartées, quota par type, stockage désactivé par défaut (le coffre bascule alors en suivi de documents) | **Fait** |
-| **Phase 2 — Modules** | Onze modules, ordre de production §25.1, contenu du Module 0 rédigé et publié, plan des dix autres, publication conditionnée au sourçage des sections officielles | **Fait**, contenu des modules 1 à 10 à écrire |
-| **Phase 3 — Semi-automatisation du rapport** | Revue structurée dérivée du profil, points bloquants et points d'attention, envoi verrouillé côté serveur tant qu'un point bloquant subsiste, file annonçant ce qui reste à arbitrer | **Fait** |
-| **Phase 3 — Rappels d'échéance** | Quatre paliers plus le dépassement, un seul rappel par tâche et par passage, jamais de retour vers un palier moins urgent, un message unique par destinataire, base contractuelle, déclencheur fermé par défaut | **Fait** |
-| **Phase 3 — Milestone Challenges actifs** | Date de première acquisition enregistrée au moment de l'accomplissement, état toujours recalculé depuis les tâches | **Fait** |
-| **Phase 3 — Coaching intégré** | Quatre types de séance avec durée, inclusions et exclusions, solde fini toujours affiché, créneaux ouverts depuis le back-office, délai de prévenance de 48 h, attribution au cas par cas bornée | **Fait** |
-| **Phase 3 — Métriques** | Tableau de bord §36 : conversion rapport → achat et temps humain présentés ensemble, délai médian de production, détection de partenariats, activation des feuilles de route ; chaque chiffre porte son nombre d'observations | **Fait** |
-| **Persistance PostgreSQL** | Schéma Prisma des onze entités, migration initiale, huit stores rebasculés, contrat de store unique rejoué contre la base en CI ; sans `DATABASE_URL` le régime mémoire reste jouable | **Fait** |
-| **Comptes (Auth.js)** | Connexion par lien email sans mot de passe, rôles CLIENT / REVIEWER / ADMIN, back-office 404 hors rôle, reprise du profil sans ressaisie par rattachement des diagnostics à la première connexion | **Fait** |
-| Phase 3 — Matrices éditables sans code | Édition des règles et blocs de texte depuis le back-office | À faire (la persistance qui le bloquait est en place) |
+| Sprint                                                | Périmètre                                                                                                                                                                                                                                                                                                                                                              | État                                                  |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| **S1 — Socle & design system**                        | Scaffold Next.js/React 19/TS, `design/tokens.ts`, `design/animations.tsx`, `design/global-css.ts`, reset, garde-fous, CI, graphe Graphify                                                                                                                                                                                                                              | **Fait**                                              |
+| **S2 — Homepage**                                     | Les 10 blocs du CDC §11, nav fixe, footer, copie centralisée, checklist animations automatisée et conforme                                                                                                                                                                                                                                                             | **Fait**                                              |
+| **S3 — Questionnaire + Moteur A + résultat immédiat** | 12 écrans typés, logique conditionnelle §12.4, profil inféré, règles versionnées, résultat immédiat à six blocs, paliers de délai §18                                                                                                                                                                                                                                  | **Fait**, sauf les deux réserves ci-dessous           |
+| **S4 — Moteur B + rapport + back-office**             | Notation des 5 axes, assemblage du rapport depuis les blocs, version imprimable et PDF, file de rapports, transitions de statut, journal des corrections                                                                                                                                                                                                               | **Fait**                                              |
+| **Phase 1B — Diagnostic payant + emails**             | Consentement marketing distinct, séquence J+0 → J+25 avec bases légales séparées, catalogue d'offres, déduction de 79 € sur trente jours, tunnel de paiement à six mentions obligatoires, Stripe et webhook signé                                                                                                                                                      | **Fait**, en attente des clés                         |
+| **Phase 2 — Espace payant (cœur)**                    | Accès signé avec reprise du profil sans ressaisie, feuille de route par parcours type et par phases, Next Best Action à cinq composantes, progression, statistiques et Milestone Challenges                                                                                                                                                                            | **Fait**                                              |
+| **Phase 2 — Simulateur de coût**                      | Dix-sept postes, six sorties, préréglages par ville, jusqu'à trois scénarios comparés, aucun retour sur investissement annoncé                                                                                                                                                                                                                                         | **Fait**                                              |
+| **Phase 2 — Base de partenariats**                    | 42 accords France ↔ États-Unis importés depuis `corentinsg/llm-partnerships`, détection par université ET par niveau d'études, effet sur la fourchette de coût et sur l'axe financier, back-office avec taux de détection                                                                                                                                              | **Fait**                                              |
+| **Phase 2 — Document vault**                          | Cinq types fermés, refus des pièces sensibles décidé avant toute écriture, images écartées, quota par type, stockage désactivé par défaut (le coffre bascule alors en suivi de documents)                                                                                                                                                                              | **Fait**                                              |
+| **Phase 2 — Modules**                                 | Onze modules, ordre de production §25.1, contenu du Module 0 rédigé et publié, plan des dix autres, publication conditionnée au sourçage des sections officielles                                                                                                                                                                                                      | **Fait**, contenu des modules 1 à 10 à écrire         |
+| **Phase 3 — Semi-automatisation du rapport**          | Revue structurée dérivée du profil, points bloquants et points d'attention, envoi verrouillé côté serveur tant qu'un point bloquant subsiste, file annonçant ce qui reste à arbitrer                                                                                                                                                                                   | **Fait**                                              |
+| **Phase 3 — Rappels d'échéance**                      | Quatre paliers plus le dépassement, un seul rappel par tâche et par passage, jamais de retour vers un palier moins urgent, un message unique par destinataire, base contractuelle, déclencheur fermé par défaut                                                                                                                                                        | **Fait**                                              |
+| **Phase 3 — Milestone Challenges actifs**             | Date de première acquisition enregistrée au moment de l'accomplissement, état toujours recalculé depuis les tâches                                                                                                                                                                                                                                                     | **Fait**                                              |
+| **Phase 3 — Coaching intégré**                        | Quatre types de séance avec durée, inclusions et exclusions, solde fini toujours affiché, créneaux ouverts depuis le back-office, délai de prévenance de 48 h, attribution au cas par cas bornée                                                                                                                                                                       | **Fait**                                              |
+| **Phase 3 — Métriques**                               | Tableau de bord §36 : conversion rapport → achat et temps humain présentés ensemble, délai médian de production, détection de partenariats, activation des feuilles de route ; chaque chiffre porte son nombre d'observations                                                                                                                                          | **Fait**                                              |
+| **Persistance PostgreSQL**                            | Schéma Prisma des onze entités, migration initiale, huit stores rebasculés, contrat de store unique rejoué contre la base en CI ; sans `DATABASE_URL` le régime mémoire reste jouable                                                                                                                                                                                  | **Fait**                                              |
+| **Comptes (Auth.js)**                                 | Connexion par lien email sans mot de passe, rôles CLIENT / REVIEWER / ADMIN, back-office 404 hors rôle, reprise du profil sans ressaisie par rattachement des diagnostics à la première connexion                                                                                                                                                                      | **Fait**                                              |
+| **Conformité légale**                                 | Mentions légales, politique de confidentialité et conditions générales servies aux trois adresses du pied de page ; tableau des traitements dérivé du schéma Prisma, une ligne par modèle avec sa base légale ; page « Vos données » (accès, export JSON, effacement définitif) ; effacement automatique des diagnostics jamais rattachés à un compte après douze mois | **Fait**, mentions engageant l'éditeur à compléter    |
+| Phase 3 — Matrices éditables sans code                | Édition des règles et blocs de texte depuis le back-office                                                                                                                                                                                                                                                                                                             | À faire (la persistance qui le bloquait est en place) |
 
 **Deux réserves explicites sur le Sprint 3**, à lever avant la bêta :
 
@@ -519,7 +530,7 @@ Points contrôlés :
    opaque — le nom d'origine n'entre jamais dans le chemin. Un répertoire local ne
    survit pas à un déploiement sans volume persistant : à remplacer par un stockage
    objet chiffré au repos avant la bêta.
-7. **Matrices éditables sans code.** Le CDC §33 veut que les règles et les blocs de texte
+6. **Matrices éditables sans code.** Le CDC §33 veut que les règles et les blocs de texte
    soient modifiables depuis le back-office. La persistance qui bloquait ce chantier est en
    place : les règles peuvent désormais passer en base sans qu'une correction disparaisse au
    redémarrage. Reste à décider ce qui bascule. Une règle du Moteur A porte source, date de
@@ -528,7 +539,7 @@ Points contrôlés :
    une règle juridique non vérifiée. `rules.seed.ts` reste donc la source jusqu'à ce que
    l'écran porte les mêmes garde-fous.
 
-6. **Contenu des modules 1 à 10.** Seul le Module 0 est rédigé et publié. Les dix autres
+7. **Contenu des modules 1 à 10.** Seul le Module 0 est rédigé et publié. Les dix autres
    portent leur plan de sections, dont celles qui énonceront une règle officielle : le
    type `ModuleSection` rend impossible d'écrire une telle section sans indiquer sa
    source et sa date de vérification, et `isPublishable` retire de la bibliothèque tout
@@ -541,8 +552,12 @@ transparent dans `public/`, décliné en médaillon circulaire dans le hero
 (`founder-avatar.png`) et en portrait dans la section « Le parcours du fondateur »
 (`founder-portrait.png`).
 
-Reste à produire : les pages légales cibles des liens du footer (mentions légales,
-confidentialité, CGV) — reportées à plus tard par décision du fondateur.
+Les pages légales cibles des liens du footer (mentions légales, confidentialité,
+CGV) sont servies. Ce que le produit fait y est écrit à partir du schéma Prisma ;
+ce qui engage l'éditeur — raison sociale, immatriculation, siège, hébergeur,
+sous-traitants, médiateur de la consommation — reste marqué « À COMPLÉTER » et
+s'affiche comme tel : ces mentions ne peuvent venir que du fondateur, et une
+valeur plausible inventée serait une fausse mention légale.
 
 ## 13. Prochaines actions immédiates
 

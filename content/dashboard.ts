@@ -44,9 +44,9 @@ export const dashboard = {
     { label: "Simulateur", href: "/app/simulateur" },
     { label: "Documents", href: "/app/documents" },
     { label: "Consultations", href: "/app/consultations" },
+    { label: "Vos données", href: "/app/donnees" },
   ],
-  greeting: (firstName?: string) =>
-    firstName ? `Bonjour ${firstName}.` : "Bonjour.",
+  greeting: (firstName?: string) => (firstName ? `Bonjour ${firstName}.` : "Bonjour."),
   sections: {
     phase: "Phase actuelle",
     nextBestAction: "Prochaine action",

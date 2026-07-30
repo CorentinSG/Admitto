@@ -13,13 +13,15 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run check:vocabulary` — vocabulaire interdit (CDC §5–7)
 - `npm run check:tokens` — couleurs hors palette Admitto
 - `npm run check:rules` — règles du Moteur A : source + date de vérification obligatoires
-- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations <url>`
+- `npm run check:legal` — tout modèle Prisma doit figurer dans la politique de
+  confidentialité, et chaque document légal avoir sa page
+- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations|legal <url>`
   — checklists design, diagnostic, back-office, paiement, espace payant, simulateur, coffre,
   modules et consultations au navigateur (serveur lancé + Playwright ; `verify:backoffice` exige
   `AUTH_SECRET`, `DATABASE_URL` et `ADMITTO_MAIL_LOG` ; les suites du back-office exigent en
   plus `ADMITTO_ADMIN_EMAIL`. **Passer la même origine que celle vue par Auth.js** :
   un écart 127.0.0.1 / localhost fait tomber le cookie de session)
-- `npm run verify:all <url>` — enchaîne les huit suites et résume. Une seule reprise par
+- `npm run verify:all <url>` — enchaîne les neuf suites et résume. Une seule reprise par
   suite, et seulement sur plantage : un échec d'assertion reste rouge.
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run db:migrate` / `db:deploy` / `db:studio` — migrations Prisma (dev / prod / inspection)
@@ -110,6 +112,15 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   pas de valeur « illimité » à écrire, et un plafond oublié vaut zéro séance. Chaque type
   porte ses exclusions dans son type — un périmètre qui n'énonce que ses inclusions se lit
   comme ouvert.
+- `lib/legal/` + `content/legal.ts` — mentions légales, confidentialité, CGV. Ce que
+  le produit fait est écrit à partir du schéma ; ce qui engage l'éditeur (raison
+  sociale, hébergeur, médiateur) reste `PENDING` et s'affiche comme manquant. Une
+  valeur plausible inventée serait une fausse mention légale, et elle passerait
+  inaperçue parce qu'elle aurait l'air complète. `personal-data.ts` efface les
+  diagnostics AVANT le compte : `Assessment.userId` porte `onDelete: SetNull`, donc
+  supprimer le compte seul détacherait le profil au lieu de l'effacer.
+  `retention.ts` efface les diagnostics jamais rattachés après douze mois — le seul
+  effacement que personne ne peut demander, faute de compte d'où le faire.
 - `lib/security/rate-limit.ts` — plafonds des formulaires publics. Deux clés aux rôles
   distincts : par email STRICT (protège une personne d'un envoi massif), par IP LARGE
   (une IP est partagée — campus, cabinet — et n'identifie personne). Les tentatives
