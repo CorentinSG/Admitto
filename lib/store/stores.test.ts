@@ -7,6 +7,7 @@ import { documentStore } from "./documents";
 import { noticeStore } from "./notifications";
 import { milestoneStore } from "./milestones";
 import { consultationStore } from "./consultations";
+import { schoolStore } from "./schools";
 import { prisma, usingDatabase } from "@/lib/db/client";
 import { computeAssessment } from "@/lib/assessment/compute";
 import { defaultInputs } from "@/lib/simulator/defaults";
@@ -405,6 +406,67 @@ describe("consultations", () => {
 
     await consultationStore.setEntitlement(assessment.id, { offer: null, granted: 0 });
     expect(await consultationStore.entitlement(assessment.id)).toEqual({ offer: null, granted: 0 });
+  });
+});
+
+describe("schoolStore", () => {
+  const choice = (assessmentId: string, id: string, name = "Fordham") => ({
+    id,
+    assessmentId,
+    name,
+    partnershipId: null,
+    ambition: "TARGET" as const,
+    status: "CONSIDERING" as const,
+    applicationDeadline: "2027-01-15",
+    notes: null,
+    addedAt: "2026-07-30T10:00:00.000Z",
+  });
+
+  it("enregistre et relit une école, date sans heure", async () => {
+    const assessment = await newAssessment();
+    await schoolStore.add(choice(assessment.id, `${assessment.id}-s1`));
+
+    const [stored] = await schoolStore.list(assessment.id);
+    expect(stored.name).toBe("Fordham");
+    // Une date limite de candidature n'a pas d'heure : en transporter une
+    // inventerait un fuseau, et la date affichée basculerait d'un jour.
+    expect(stored.applicationDeadline).toBe("2027-01-15");
+  });
+
+  it("modifie sur place et rend false pour une école inconnue", async () => {
+    const assessment = await newAssessment();
+    await schoolStore.add(choice(assessment.id, `${assessment.id}-s2`));
+
+    expect(
+      await schoolStore.update(assessment.id, `${assessment.id}-s2`, { status: "SHORTLISTED" })
+    ).toBe(true);
+    expect(await schoolStore.update(assessment.id, "inconnue", { status: "SUBMITTED" })).toBe(false);
+
+    const [stored] = await schoolStore.list(assessment.id);
+    expect(stored.status).toBe("SHORTLISTED");
+  });
+
+  it("efface une date limite quand elle est remise à vide", async () => {
+    const assessment = await newAssessment();
+    await schoolStore.add(choice(assessment.id, `${assessment.id}-s3`));
+    await schoolStore.update(assessment.id, `${assessment.id}-s3`, { applicationDeadline: null });
+
+    expect((await schoolStore.list(assessment.id))[0].applicationDeadline).toBeNull();
+  });
+
+  it("ne touche pas à la liste d'une autre évaluation", async () => {
+    const a = await newAssessment();
+    const b = await newAssessment();
+    await schoolStore.add(choice(a.id, `${a.id}-secret`));
+
+    // Un identifiant deviné ne doit rien atteindre : les deux opérations
+    // filtrent sur l'évaluation, jamais sur l'identifiant seul.
+    expect(await schoolStore.update(b.id, `${a.id}-secret`, { status: "DISCARDED" })).toBe(false);
+    expect(await schoolStore.remove(b.id, `${a.id}-secret`)).toBe(false);
+    expect(await schoolStore.list(a.id)).toHaveLength(1);
+
+    expect(await schoolStore.remove(a.id, `${a.id}-secret`)).toBe(true);
+    expect(await schoolStore.list(a.id)).toHaveLength(0);
   });
 });
 

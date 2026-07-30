@@ -225,6 +225,11 @@ const CONFIDENTIALITE: LegalDocument = {
               "Exécution du contrat (art. 6.1.b)",
             ],
             [
+              "Votre liste d'écoles : nom des programmes visés, classement que vous leur donnez, avancement, date limite et vos notes",
+              "Vous permettre de constituer et de suivre votre sélection de programmes.",
+              "Exécution du contrat (art. 6.1.b)",
+            ],
+            [
               "Documents déposés dans le coffre et leurs métadonnées (type, nom du fichier, taille, date)",
               "Conserver vos pièces de candidature au même endroit que votre feuille de route.",
               "Exécution du contrat (art. 6.1.b)",

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { colors, fonts, alpha } from "@/design/tokens";
@@ -170,6 +171,26 @@ export default async function RoadmapPage() {
                 >
                   {task.explanation}
                 </p>
+
+                {task.toolHref && task.toolLabel ? (
+                  // La tâche mène à l'outil qui l'accomplit. Sans ce lien, la
+                  // feuille de route demande un travail que le produit sait
+                  // faire, et laisse l'utilisateur le chercher — ou le faire
+                  // ailleurs, donc hors des échéances et hors de la relecture.
+                  <Link
+                    href={task.toolHref}
+                    style={{
+                      display: "inline-block",
+                      fontFamily: fonts.sans,
+                      fontSize: "0.82rem",
+                      color: colors.gold,
+                      textDecoration: "none",
+                      margin: "0 0 16px",
+                    }}
+                  >
+                    {task.toolLabel} →
+                  </Link>
+                ) : null}
 
                 <TaskStatusControl taskId={task.id} status={task.status} />
               </div>

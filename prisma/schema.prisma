@@ -148,6 +148,7 @@ model Assessment {
   milestones   MilestoneAward[]
   bookings     Booking[]
   entitlement  Entitlement?
+  schools      SchoolChoice[]
 
   @@index([createdAt])
   @@index([email])
@@ -230,6 +231,36 @@ model Document {
   assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 
   @@index([assessmentId, type])
+}
+
+/// École de la liste de sélection (tâche T-SEL-03).
+///
+/// `ambition` et `status` restent des `String` porteurs d'unions fermées côté
+/// TypeScript, comme partout ailleurs dans ce schéma : une enum Postgres exige
+/// une migration pour ajouter une valeur, là où la liste du CDC doit pouvoir
+/// évoluer avec le contenu.
+///
+/// `partnershipId` n'est PAS une clé étrangère : les accords vivent dans un
+/// fichier généré, réimporté depuis un dépôt externe. Une contrainte
+/// référentielle ferait échouer un import qui retire une fiche, alors que la
+/// bonne conduite est de garder l'école choisie et de cesser d'afficher
+/// l'accord.
+model SchoolChoice {
+  id                 String   @id
+  assessmentId       String
+  name               String
+  partnershipId      String?
+  ambition           String
+  status             String
+  /// Date limite notée par l'utilisateur, pas celle de l'accord : c'est la
+  /// sienne qui l'engage, et elle peut différer du programme visé.
+  applicationDeadline DateTime?
+  notes              String?
+  addedAt            DateTime
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId])
 }
 
 /// Rappel d'échéance déjà envoyé (CDC §22). La clé composée EST le mécanisme

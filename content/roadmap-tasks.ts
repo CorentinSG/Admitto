@@ -37,6 +37,8 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     estimatedMinutes: 120,
     monthsBeforeIntake: 14,
     journeyTypes: ["PRE_LLM_EXPLORER", "LLM_APPLICANT", "FOREIGN_QUALIFIED_LAWYER"],
+    toolHref: "/app/simulateur",
+    toolLabel: "Ouvrir le simulateur de coût",
     delayRisk: "Un budget découvert tardivement invalide une liste d'écoles déjà constituée.",
   },
   {
@@ -65,6 +67,8 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     monthsBeforeIntake: 12,
     journeyTypes: ["PRE_LLM_EXPLORER", "LLM_APPLICANT"],
     moduleSlug: "module-2-choisir",
+    toolHref: "/app/ecoles",
+    toolLabel: "Voir les accords de votre université",
     delayRisk: "Les accords ont leurs propres dates limites, souvent antérieures aux candidatures.",
   },
   {
@@ -91,6 +95,8 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     journeyTypes: ["PRE_LLM_EXPLORER", "LLM_APPLICANT"],
     moduleSlug: "module-2-choisir",
     milestone: "SCHOOL_LIST_COMPLETED",
+    toolHref: "/app/ecoles",
+    toolLabel: "Ouvrir votre liste d'écoles",
     delayRisk: "Une liste arrêtée tard comprime la rédaction des dossiers.",
   },
 
@@ -131,6 +137,8 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     estimatedMinutes: 180,
     monthsBeforeIntake: 10,
     journeyTypes: ["LLM_APPLICANT", "PRE_LLM_EXPLORER"],
+    toolHref: "/app/documents",
+    toolLabel: "Ouvrir votre coffre de documents",
     delayRisk: "Une pièce manquante bloque un dossier par ailleurs complet.",
   },
   {
@@ -144,6 +152,8 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     monthsBeforeIntake: 9,
     journeyTypes: ["LLM_APPLICANT"],
     milestone: "APPLICATIONS_READY",
+    toolHref: "/app/documents",
+    toolLabel: "Ouvrir votre coffre de documents",
     delayRisk: "Un dossier incomplet est écarté sans examen au fond.",
   },
 
@@ -171,6 +181,8 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     estimatedMinutes: 90,
     monthsBeforeIntake: 9,
     journeyTypes: ["PRE_LLM_EXPLORER", "LLM_APPLICANT"],
+    toolHref: "/app/simulateur",
+    toolLabel: "Ouvrir le simulateur de coût",
     delayRisk: "Sans limite fixée à froid, une admission prestigieuse fait accepter n'importe quel coût.",
   },
 
@@ -203,6 +215,8 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     journeyTypes: ["CURRENT_LLM_STUDENT", "BAR_CANDIDATE"],
     moduleSlug: "module-5-bole",
     milestone: "BOLE_FILE_PREPARED",
+    toolHref: "/app/documents",
+    toolLabel: "Ouvrir votre coffre de documents",
     delayRisk: "Un dossier déposé tard décale l'examen d'une session entière.",
   },
   {

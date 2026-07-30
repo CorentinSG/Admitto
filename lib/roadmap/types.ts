@@ -61,6 +61,18 @@ export interface TaskTemplate {
   journeyTypes: JourneyType[];
   /** Module pédagogique associé, le cas échéant. */
   moduleSlug?: string;
+  /**
+   * Outil du produit qui accomplit cette tâche, le cas échéant.
+   *
+   * La feuille de route demandait « finalisez votre liste d'écoles » ou
+   * « établissez votre coût net » sans jamais dire que le produit contient
+   * exactement l'outil pour le faire. L'utilisateur allait le chercher dans le
+   * menu, ou faisait le travail ailleurs — donc hors du produit, hors des
+   * échéances et hors de ce que la relecture peut voir.
+   */
+  toolHref?: string;
+  /** Libellé du lien vers l'outil. Obligatoire dès que `toolHref` est défini. */
+  toolLabel?: string;
   /** Challenge auquel la tâche contribue. */
   milestone?: Milestone;
   /** Risque encouru en cas de retard — affiché par le Next Best Action. */

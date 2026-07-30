@@ -41,6 +41,7 @@ const COVERED = {
   TaskStatus: "statut de vos tâches",
   Scenario: "scénarios de simulation",
   MilestoneAward: "jalons atteints",
+  SchoolChoice: "Votre liste d'écoles",
   Document: "Documents déposés dans le coffre",
   SentNotice: "Rappels d'échéance déjà envoyés",
   Booking: "Séances réservées",

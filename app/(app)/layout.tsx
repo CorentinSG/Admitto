@@ -8,6 +8,11 @@ import { SignOutButton } from "./SignOutButton";
  * Layout de l'espace payant. Fond clair : c'est un outil de travail consulté
  * longuement, pas une page de séduction. La charte reste la même — mêmes
  * tokens, mêmes typographies, filets dorés.
+ *
+ * L'en-tête n'est PAS de hauteur fixe : à huit entrées de menu, une hauteur
+ * bloquée à 68 px poussait les derniers liens hors de l'écran sur un téléphone,
+ * sans aucun moyen de les atteindre. Le menu passe donc à la ligne, et
+ * l'en-tête grandit avec lui.
  */
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,9 +22,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 24,
-          padding: "0 6%",
-          height: 68,
+          flexWrap: "wrap",
+          gap: 16,
+          padding: "14px 6%",
+          minHeight: 68,
           backgroundColor: colors.navy900,
         }}
       >
@@ -36,7 +42,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           ADMITTO
         </Link>
 
-        <nav style={{ display: "flex", alignItems: "center", gap: 28 }}>
+        <nav style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
           {dashboard.nav.map((item) => (
             <Link
               key={item.href}

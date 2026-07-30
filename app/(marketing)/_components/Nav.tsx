@@ -10,9 +10,18 @@ import { nav } from "@/content/homepage";
  * Quirk à conserver : border-bottom n'est PAS dans la liste des propriétés
  * animées — la bordure apparaît sèchement à 40 px pendant que le fond fond
  * en 0,4 s.
+ *
+ * Sous 900 px, les liens étaient masqués et rien ne les remplaçait : la
+ * navigation disparaissait, et il ne restait que le bouton d'appel à l'action.
+ * Le panneau ajouté ici n'existe QU'À cette largeur ; au-dessus, le rendu est
+ * inchangé au pixel près — ce que vérifie `verify:animations`.
+ *
+ * Aucune transition sur le panneau : le contrat interdit toute animation de
+ * sortie, et un menu qui se ferme en fondu en serait une.
  */
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -42,6 +51,7 @@ export function Nav() {
     >
       <a
         href="#top"
+        className="nav-brand"
         style={{
           fontFamily: fonts.serif,
           fontSize: "1.4rem",
@@ -53,7 +63,7 @@ export function Nav() {
         {nav.brand}
       </a>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 36 }}>
+      <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: 36 }}>
         <div className="nav-links" style={{ display: "flex", gap: 32 }}>
           {nav.links.map((link) => (
             <a
@@ -79,8 +89,33 @@ export function Nav() {
           ))}
         </div>
 
+        <button
+          type="button"
+          className="nav-burger"
+          aria-expanded={menuOpen}
+          aria-controls="nav-panel"
+          aria-label={menuOpen ? nav.menuClose : nav.menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            width: 40,
+            height: 40,
+            padding: 0,
+            fontFamily: fonts.sans,
+            fontSize: "1.1rem",
+            color: colors.ivory,
+            backgroundColor: "transparent",
+            border: `1px solid ${alpha.whiteCtaBorder}`,
+            cursor: "pointer",
+          }}
+        >
+          <span aria-hidden>{menuOpen ? "\u2715" : "\u2261"}</span>
+        </button>
+
         <a
           href="#commencer"
+          className="nav-cta"
           style={{
             background: gradients.goldButton,
             color: colors.navy900,
@@ -103,6 +138,48 @@ export function Nav() {
         >
           {nav.cta}
         </a>
+      </div>
+
+      {/*
+        Panneau déroulant, hors du flux : il recouvre le haut de la page au
+        lieu de pousser le contenu, la nav étant en position fixed.
+        Toujours rendu, jamais monté conditionnellement — `data-open` pilote son
+        affichage, ce qui garde l'attribut aria-controls valide en permanence.
+      */}
+      <div
+        id="nav-panel"
+        className="nav-panel"
+        data-open={menuOpen}
+        style={{
+          position: "absolute",
+          top: layout.navHeight,
+          left: 0,
+          right: 0,
+          padding: "20px 8% 28px",
+          backgroundColor: alpha.navScrolledBg,
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          borderBottom: `1px solid ${alpha.goldBorderFaint}`,
+        }}
+      >
+        {nav.links.map((link) => (
+          <a
+            key={link.href}
+            href={link.href}
+            onClick={() => setMenuOpen(false)}
+            style={{
+              display: "block",
+              padding: "12px 0",
+              fontFamily: fonts.sans,
+              fontSize: "0.95rem",
+              letterSpacing: "0.04em",
+              color: alpha.whiteCtaText,
+              textDecoration: "none",
+            }}
+          >
+            {link.label}
+          </a>
+        ))}
       </div>
     </nav>
   );

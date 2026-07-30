@@ -15,13 +15,13 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run check:rules` — règles du Moteur A : source + date de vérification obligatoires
 - `npm run check:legal` — tout modèle Prisma doit figurer dans la politique de
   confidentialité, et chaque document légal avoir sa page
-- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations|legal <url>`
+- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations|ecoles|legal <url>`
   — checklists design, diagnostic, back-office, paiement, espace payant, simulateur, coffre,
   modules et consultations au navigateur (serveur lancé + Playwright ; `verify:backoffice` exige
   `AUTH_SECRET`, `DATABASE_URL` et `ADMITTO_MAIL_LOG` ; les suites du back-office exigent en
   plus `ADMITTO_ADMIN_EMAIL`. **Passer la même origine que celle vue par Auth.js** :
   un écart 127.0.0.1 / localhost fait tomber le cookie de session)
-- `npm run verify:all <url>` — enchaîne les neuf suites et résume. Une seule reprise par
+- `npm run verify:all <url>` — enchaîne les dix suites et résume. Une seule reprise par
   suite, et seulement sur plantage : un échec d'assertion reste rouge.
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run db:migrate` / `db:deploy` / `db:studio` — migrations Prisma (dev / prod / inspection)
@@ -62,7 +62,10 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
 - `design/tokens.ts` — palette/typos/gradients : SEULE source de couleurs autorisée.
 - `design/animations.tsx` — contrat d'animation strict (useInView one-shot,
   easing `ease` uniquement). Ne JAMAIS ajouter de librairie d'animation.
-- `design/global-css.ts` — règles globales + les 4 keyframes. Module SERVEUR
+- `design/global-css.ts` — règles globales, les 4 keyframes et la nav sous 900 px
+  (`.nav-links` / `.nav-burger` / `.nav-panel`) : ces règles vivaient dans la page
+  d'accueil, si bien que toute autre page perdait ses liens sans rien mettre à la place.
+  Module SERVEUR
   volontairement : une constante exportée d'un module `"use client"` arrive au
   layout comme référence client, et les keyframes ne sont jamais injectées.
 - `content/homepage.ts` — toute la copie de la page d'accueil, source unique.
@@ -87,9 +90,16 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   l'IDENTIFIANT, jamais le libellé : comparer à un libellé casserait la détection.
 - `lib/simulator/` — simulateur de coût (CDC §26). Les valeurs de départ sont dans
   `defaults.ts`, séparées du calcul : les réviser ne touche à aucune logique.
+- `lib/schools/` + `content/ecoles.ts` — sélecteur d'écoles (tâche T-SEL-03). Le produit
+  ne classe JAMAIS une école : l'ambition est déclarée par l'utilisateur, sans quoi le
+  produit énoncerait une chance d'admission. `balance.ts` constate ce qui a été déclaré,
+  il ne recommande rien. Les candidats viennent des accords déjà détectés, relus depuis
+  le diagnostic enregistré et non recalculés.
 - `lib/roadmap/` — feuille de route (CDC §22), Next Best Action (§23), progression et
   Milestone Challenges (§24). Rien n'est coché à la place de l'utilisateur : présumer une
   tâche accomplie gonflerait la progression et offrirait un challenge non mérité.
+  `toolHref` relie une tâche à l'outil qui l'accomplit : sans lui, la feuille de route
+  demande un travail que le produit sait faire et laisse l'utilisateur le faire ailleurs.
 - `lib/vault/` + `content/vault.ts` — coffre de documents (CDC §29). Cinq types fermés :
   la liste EST le contrôle de minimisation. `policy.ts` décide avant toute écriture, et
   refuse les images — un scan de pièce d'identité en est une. Sans `ADMITTO_VAULT_DIR`,

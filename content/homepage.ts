@@ -6,6 +6,8 @@
  */
 
 export const nav = {
+  menuOpen: "Ouvrir le menu",
+  menuClose: "Fermer le menu",
   brand: "ADMITTO",
   links: [
     { label: "Le défi", href: "#problematique" },

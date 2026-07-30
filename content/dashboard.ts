@@ -40,6 +40,7 @@ export const dashboard = {
   nav: [
     { label: "Tableau de bord", href: "/app/dashboard" },
     { label: "Feuille de route", href: "/app/roadmap" },
+    { label: "Écoles", href: "/app/ecoles" },
     { label: "Modules", href: "/app/modules" },
     { label: "Simulateur", href: "/app/simulateur" },
     { label: "Documents", href: "/app/documents" },

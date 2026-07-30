@@ -58,6 +58,7 @@ export const HELD_DATA = [
   "Votre voie préliminaire, les blocs de votre rapport, les partenariats retenus, les coûts estimés et les échéances.",
   "Votre rapport et les corrections qui y ont été apportées avant envoi.",
   "L'état de vos tâches, vos scénarios de simulation et les jalons atteints.",
+  "Votre liste d'écoles : programmes visés, classement, avancement, dates limites et notes.",
   "Les métadonnées des documents déposés : type, nom, taille et date. Le contenu des fichiers reste dans le coffre.",
   "Les rappels d'échéance déjà envoyés, pour ne pas vous les renvoyer.",
   "Vos séances réservées et le solde de séances de votre offre.",
