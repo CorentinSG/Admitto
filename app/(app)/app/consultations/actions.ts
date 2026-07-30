@@ -34,13 +34,17 @@ export async function bookConsultation(type: string, slotId: string) {
 
   if (!decision.ok) return { error: REFUSAL_MESSAGES[decision.reason] };
 
-  await consultationStore.addBooking({
+  // C'est l'écriture qui arbitre, pas la vérification : entre `decideBooking`
+  // et ici, quelqu'un d'autre a pu prendre le même créneau. Le refus emprunte
+  // le message déjà prévu pour ce cas.
+  const claimed = await consultationStore.addBooking({
     id: randomUUID(),
     assessmentId,
     slotId: decision.slot.id,
     type: decision.type,
     bookedAt: now.toISOString(),
   });
+  if (!claimed) return { error: REFUSAL_MESSAGES.SLOT_TAKEN };
 
   revalidatePath("/app/consultations");
   return { ok: true };

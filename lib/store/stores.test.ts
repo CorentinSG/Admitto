@@ -394,6 +394,46 @@ describe("consultations", () => {
     await consultationStore.removeSlot(slotId);
   });
 
+  it("refuse un second créneau déjà réservé, sur les deux backends", async () => {
+    const a = await newAssessment();
+    const b = await newAssessment();
+    const slotId = `${a.id}-race`;
+    await consultationStore.addSlot({
+      id: slotId,
+      startsAt: new Date(Date.now() + 8 * 86_400_000).toISOString(),
+      minutes: 45,
+    });
+
+    // `decideBooking` a vu le créneau libre pour les deux : entre sa lecture
+    // et l'écriture, l'autre a réservé. C'est l'écriture qui doit trancher.
+    expect(
+      await consultationStore.addBooking({
+        id: `${a.id}-first`,
+        assessmentId: a.id,
+        slotId,
+        type: "ORIENTATION",
+        bookedAt: new Date().toISOString(),
+      })
+    ).toBe(true);
+
+    expect(
+      await consultationStore.addBooking({
+        id: `${b.id}-second`,
+        assessmentId: b.id,
+        slotId,
+        type: "ORIENTATION",
+        bookedAt: new Date().toISOString(),
+      })
+    ).toBe(false);
+
+    // Le créneau n'appartient qu'au premier : sans ce contrôle, la mémoire
+    // acceptait un double achat que la base refusait par une erreur serveur.
+    expect(await consultationStore.bookingsOf(b.id)).toHaveLength(0);
+
+    await consultationStore.removeBooking(a.id, `${a.id}-first`);
+    await consultationStore.removeSlot(slotId);
+  });
+
   it("n'accorde aucun droit par défaut", async () => {
     const assessment = await newAssessment();
     expect(await consultationStore.entitlement(assessment.id)).toEqual({ offer: null, granted: 0 });

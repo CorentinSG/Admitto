@@ -52,6 +52,13 @@ const ANSWERS: Answers = {
 const SUBMITTED = new Date("2026-07-01T09:00:00.000Z");
 const later = (days: number) => new Date(SUBMITTED.getTime() + days * 86_400_000);
 
+/**
+ * Suffixe unique par exécution : avec `DATABASE_URL`, les lignes survivent
+ * d'un run à l'autre. Des identifiants déterministes rejouaient donc un
+ * journal déjà rempli, et plus aucun email n'était dû — la suite passait au
+ * vert en ne testant rien.
+ */
+const RUN = Math.floor(Date.now() % 1_000_000).toString(36);
 let counter = 0;
 
 /**
@@ -65,7 +72,7 @@ async function seed(options: {
   /** Diagnostic payé : ouvre la déduction de trente jours. */
   paid?: boolean;
 } = {}) {
-  const id = `seq-${++counter}`;
+  const id = `seq-${RUN}-${++counter}`;
   const email = `${id}@example.com`;
   const assessment = computeAssessment(
     { ...ANSWERS, email, consentMarketing: options.consent ?? true },
@@ -112,10 +119,12 @@ describe("séquence J+0 → J+25", () => {
     // Le rapport est rédigé à la main : à J+2 il peut ne pas être prêt.
     // « Votre rapport est prêt » serait alors une fausse affirmation.
     const { email } = await seed({ paid: true });
-    const summary = await runEmailSequence(later(2));
+    await runEmailSequence(later(2));
 
+    // Assertion portée par l'adresse et non par le compteur du résumé : le
+    // passage balaie tous les diagnostics de la base, et un compteur global
+    // serait satisfait par n'importe quel autre profil.
     expect(to(email)).toHaveLength(0);
-    expect(summary.waiting).toBeGreaterThan(0);
   });
 
   it("envoie le J+2 dès que le rapport part, même en retard", async () => {
@@ -171,9 +180,8 @@ describe("séquence J+0 → J+25", () => {
     // d'un coup, dont un rapport annoncé « prêt » dix jours après l'être.
     // Les emails encore dans la fenêtre partent, eux : la borne écarte ce qui
     // a manqué son moment, pas la séquence entière.
-    const summary = await runEmailSequence(later(2 + MAX_LATE_DAYS + 1));
+    await runEmailSequence(later(2 + MAX_LATE_DAYS + 1));
     expect(to(email).some((m) => m.subject.includes("rapport personnalisé"))).toBe(false);
-    expect(summary.skipped).toBeGreaterThan(0);
   });
 
   it("n'écarte pas un email juste en retard", async () => {
@@ -185,11 +193,13 @@ describe("séquence J+0 → J+25", () => {
   });
 
   it("ignore un diagnostic sans adresse", async () => {
-    const id = `seq-${++counter}`;
+    const id = `seq-${RUN}-${++counter}`;
     const assessment = computeAssessment({ ...ANSWERS, email: undefined }, SUBMITTED, id);
     await assessmentStore.save({ ...assessment, createdAt: SUBMITTED.toISOString() });
 
     const summary = await runEmailSequence(later(2));
+    // Un diagnostic sans adresse est ignoré, pas compté en échec : un profil
+    // anonyme du régime mémoire ne doit pas faire échouer un passage.
     expect(summary.failed).toBe(0);
   });
 });

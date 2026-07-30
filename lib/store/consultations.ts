@@ -93,20 +93,44 @@ export const consultationStore = {
     return rows.map(bookingToDomain);
   },
 
-  async addBooking(booking: Booking): Promise<void> {
+  /**
+   * Réserve le créneau. Rend `false` s'il vient d'être pris.
+   *
+   * `decideBooking` a bien vérifié que le créneau était libre — mais entre
+   * cette lecture et cette écriture, quelqu'un d'autre a pu réserver. C'est
+   * l'écriture qui doit trancher, et elle seule : deux requêtes simultanées
+   * passent toutes deux la vérification.
+   *
+   * En base, la contrainte d'unicité sur `slotId` arbitre ; la violation est
+   * traduite en refus au lieu de remonter en erreur serveur — le message
+   * « ce créneau vient d'être réservé » existait déjà, il n'était jamais
+   * atteignable. En mémoire, la vérification est explicite : sans elle, les
+   * deux implémentations divergeaient précisément sur ce cas, l'une acceptant
+   * un double achat de créneau que l'autre refusait.
+   */
+  async addBooking(booking: Booking): Promise<boolean> {
     if (!usingDatabase()) {
+      if ([...bookings.values()].some((b) => b.slotId === booking.slotId)) return false;
       bookings.set(booking.id, booking);
-      return;
+      return true;
     }
-    await db().booking.create({
-      data: {
-        id: booking.id,
-        assessmentId: booking.assessmentId,
-        slotId: booking.slotId,
-        type: booking.type,
-        bookedAt: new Date(booking.bookedAt),
-      },
-    });
+    try {
+      await db().booking.create({
+        data: {
+          id: booking.id,
+          assessmentId: booking.assessmentId,
+          slotId: booking.slotId,
+          type: booking.type,
+          bookedAt: new Date(booking.bookedAt),
+        },
+      });
+      return true;
+    } catch (error) {
+      // P2002 : violation d'unicité, donc créneau déjà réservé. Toute autre
+      // erreur est une vraie panne et doit continuer de remonter.
+      if ((error as { code?: string }).code === "P2002") return false;
+      throw error;
+    }
   },
 
   async removeBooking(assessmentId: string, bookingId: string): Promise<boolean> {

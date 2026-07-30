@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Enchaîne les dix suites navigateur et résume (revue §B2).
+ * Enchaîne les onze suites navigateur et résume (revue §B2).
  *
  * Deux raisons d'exister plutôt que de lancer les suites à la main :
  *
@@ -32,6 +32,7 @@ const SUITES = [
   "verify-backoffice",
   "verify-consultations",
   "verify-ecoles",
+  "verify-acces",
   // En dernier : cette suite supprime le compte qu'elle a créé, donc elle ne
   // laisse rien derrière elle dont une autre pourrait dépendre.
   "verify-legal",

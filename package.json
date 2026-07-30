@@ -32,6 +32,8 @@
     "verify:espace": "node scripts/verify-espace.mjs",
     "verify:consultations": "node scripts/verify-consultations.mjs",
     "verify:ecoles": "node scripts/verify-ecoles.mjs",
+    "verify:acces": "node scripts/verify-acces.mjs",
+    "verify:degraded": "node scripts/verify-degraded.mjs",
     "verify:legal": "node scripts/verify-legal.mjs",
     "verify:all": "node scripts/verify-all.mjs",
     "report:pdf": "node scripts/render-report-pdf.mjs",

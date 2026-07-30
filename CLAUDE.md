@@ -17,13 +17,16 @@ que pour des changements durables (stabilité = cache prompt efficace).
   confidentialité, et chaque document légal avoir sa page
 - `npm run check:suites` — chaque suite navigateur importe exactement les helpers
   qu'elle utilise (un oubli ne se voyait qu'après trois minutes d'exécution)
-- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations|ecoles|legal <url>`
+- `npm run verify:degraded <url> --regime=minimal|complet` — toutes les routes,
+  sans navigateur : aucune 5xx, aucune zone ouverte par erreur. À lancer contre un
+  serveur démarré SANS aucune variable d'environnement pour le régime minimal.
+- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations|ecoles|acces|legal <url>`
   — checklists design, diagnostic, back-office, paiement, espace payant, simulateur, coffre,
   modules et consultations au navigateur (serveur lancé + Playwright ; `verify:backoffice` exige
   `AUTH_SECRET`, `DATABASE_URL` et `ADMITTO_MAIL_LOG` ; les suites du back-office exigent en
   plus `ADMITTO_ADMIN_EMAIL`. **Passer la même origine que celle vue par Auth.js** :
   un écart 127.0.0.1 / localhost fait tomber le cookie de session)
-- `npm run verify:all <url>` — enchaîne les dix suites et résume. Une seule reprise par
+- `npm run verify:all <url>` — enchaîne les onze suites et résume. Une seule reprise par
   suite, et seulement sur plantage : un échec d'assertion reste rouge.
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run db:migrate` / `db:deploy` / `db:studio` — migrations Prisma (dev / prod / inspection)
@@ -72,6 +75,10 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   layout comme référence client, et les keyframes ne sont jamais injectées.
 - `content/homepage.ts` — toute la copie de la page d'accueil, source unique.
 - `lib/questionnaire/` — 12 écrans (types fermés) + logique conditionnelle CDC §12.4.
+  `limits.ts` borne les trois champs libres : le prénom est repris dans le sujet de
+  chaque email et le titre du rapport, l'adresse sert de clé au compteur de tentatives.
+  Le prénom est TRONQUÉ (une limite qu'on ne peut pas deviner ne doit pas bloquer),
+  l'adresse REFUSÉE (tronquée, elle ne serait plus la sienne).
 - `lib/profile/derive.ts` — champs inférés. Les calculs de date prennent une date de
   référence en paramètre : jamais de `Date.now()` implicite (déterminisme des tests).
 - `lib/engine-a/` — Moteur A : règles déterministes versionnées → voie préliminaire (6 catégories).
@@ -177,6 +184,10 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   actif ; la CI le rejoue sur PostgreSQL. Ne jamais importer de module `node:*`
   dans `lib/store/` : ces fichiers sont atteints depuis des composants clients
   via les actions serveur, et le bundle client ne résout pas `node:`.
+- `lib/assessment/exhaustive.test.ts` — balaie 7 560 profils (produit cartésien des
+  cinq champs décisifs, les autres en rotation) plus tous les profils partiels. Une
+  seule assertion porte le verdict : `expect` coûte trop cher pour être appelé
+  200 000 fois.
 - `scripts/` — garde-fous exécutés par les hooks git (`.githooks/`) et la CI.
 
 ## Règles non négociables (résumé — détail dans PLAN.md)

@@ -23,6 +23,12 @@ import {
 import { UNIVERSITY_IDS } from "@/content/universities";
 import { callerIp, checkRateLimit } from "@/lib/security/rate-limit";
 import { security } from "@/content/security";
+import {
+  boundedText,
+  validEmail,
+  MAX_COMMENT,
+  MAX_FIRST_NAME,
+} from "@/lib/questionnaire/limits";
 
 /**
  * Soumission du questionnaire. Les réponses arrivent du client : elles sont
@@ -34,9 +40,12 @@ const oneOf = <T extends string>(list: readonly T[], value: unknown): T | undefi
   typeof value === "string" && (list as readonly string[]).includes(value) ? (value as T) : undefined;
 
 function parseAnswers(raw: Record<string, unknown>): Answers {
-  const email = typeof raw.email === "string" ? raw.email.trim() : "";
-  const firstName = typeof raw.firstName === "string" ? raw.firstName.trim() : "";
-  const comment = typeof raw.comment === "string" ? raw.comment.trim() : "";
+  // Bornes dans lib/ : le prénom est repris dans le sujet de chaque email et
+  // dans le titre du rapport, l'adresse sert de clé au compteur de tentatives.
+  // Ni l'un ni l'autre n'était borné, sur un formulaire public et anonyme.
+  const email = validEmail(raw.email);
+  const firstName = boundedText(raw.firstName, MAX_FIRST_NAME);
+  const comment = boundedText(raw.comment, MAX_COMMENT);
 
   return {
     status: oneOf(JOURNEY_STATUS, raw.status),
@@ -53,11 +62,11 @@ function parseAnswers(raw: Record<string, unknown>): Answers {
     intake: oneOf(INTAKE, raw.intake),
     english: oneOf(ENGLISH, raw.english),
     usStatus: oneOf(US_STATUS, raw.usStatus),
-    firstName: firstName || undefined,
-    email: email || undefined,
+    firstName,
+    email,
     // Minimisation : le champ libre est plafonné, il n'a pas vocation à
     // recueillir de données sensibles (CDC §29, §34).
-    comment: comment ? comment.slice(0, 800) : undefined,
+    comment,
     // Consentement marketing : accepté seulement s'il vaut littéralement true.
     // Toute autre valeur (absente, chaîne, 0) vaut refus (CDC §34).
     consentMarketing: raw.consentMarketing === true,
@@ -67,7 +76,11 @@ function parseAnswers(raw: Record<string, unknown>): Answers {
 export async function submitQuestionnaire(raw: Record<string, unknown>) {
   const answers = parseAnswers(raw);
 
-  if (!answers.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(answers.email)) {
+  // `validEmail` a déjà écarté ce qui n'a pas la forme d'une adresse ou
+  // dépasse la longueur admise par la RFC : il ne reste qu'à constater
+  // l'absence, et le message est le même dans les deux cas — dire « trop
+  // longue » à quelqu'un qui a fait une faute de frappe n'aiderait personne.
+  if (!answers.email) {
     return { error: "Merci d'indiquer une adresse email valide." };
   }
   if (!answers.firstName) {
