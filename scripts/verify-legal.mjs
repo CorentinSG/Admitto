@@ -34,7 +34,7 @@ try {
 }
 
 const { signInByEmail } = await import("./lib/sign-in.mjs");
-const { waitFor, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
+const { waitFor, waitForText, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
 const { answerScreens } = await import("./lib/questionnaire.mjs");
 
 const failures = [];
@@ -100,6 +100,23 @@ text = await page.locator("body").innerText();
 check("Droit de rétractation exposé", contains(text, "quatorze jours"));
 check("Périmètre exclu énoncé", contains(text, "ne comprend en aucun cas"));
 check("Aucun résultat promis", contains(text, "aucun résultat n'est promis"));
+
+// ── Désinscription : le lien porté par chaque email promotionnel ──────────
+// Cette adresse figurait dans les emails avant d'exister. Un lien de
+// désinscription qui rend 404 est la seule sortie offerte à quelqu'un qui ne
+// veut plus être écrit : l'annoncer sans la fournir est pire que se taire.
+{
+  const response = await page.goto(`${BASE}/desinscription/inexistant`, {
+    waitUntil: "domcontentloaded",
+  });
+  check("Page de désinscription servie", response?.status() === 200, String(response?.status()));
+  const body = await page.locator("body").innerText();
+  check("Lien périmé traité calmement", contains(body, "vous ne recevez plus"));
+  check(
+    "Les emails du service sont annoncés comme maintenus",
+    contains(body, "lien de connexion")
+  );
+}
 
 // ── Espace des droits : fermé par défaut ───────────────────────────────────
 await page.goto(`${BASE}/app/donnees`, { waitUntil: "domcontentloaded" });
@@ -168,6 +185,24 @@ check(
 );
 check("Export porte les réponses au questionnaire", Boolean(payload?.assessments?.[0]?.answers));
 check("Export dit ce qu'il ne contient pas", (payload?.notIncluded?.length ?? 0) > 0);
+
+// ── Retrait du consentement, sur un diagnostic réel ───────────────────────
+await page.goto(`${BASE}/desinscription/${assessmentId}`, { waitUntil: "domcontentloaded" });
+check(
+  "Retrait proposé, jamais exécuté au chargement",
+  (await page.getByRole("button", { name: "Confirmer ma désinscription" }).count()) === 1
+);
+await page.getByRole("button", { name: "Confirmer ma désinscription" }).click();
+check("Retrait enregistré", Boolean(await waitForText(page, "C'est fait")));
+
+// Rechargée, la page constate l'état au lieu de reproposer le geste.
+await page.reload({ waitUntil: "domcontentloaded" });
+check(
+  "Retrait constaté au rechargement",
+  (await page.getByRole("button", { name: "Confirmer ma désinscription" }).count()) === 0
+);
+
+await page.goto(`${BASE}/app/donnees`, { waitUntil: "networkidle" });
 
 // ── Effacement : refusé sans confirmation exacte ───────────────────────────
 await page.getByLabel("Pour confirmer, saisissez SUPPRIMER").fill("supprimer");

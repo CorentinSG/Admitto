@@ -3,7 +3,7 @@ import { announcedDelay } from "@/lib/capacity/delay";
 import { PATH_LABELS } from "@/content/result";
 import { renderEmail, type EmailVariables } from "./render";
 import { getTransport, sendGuarded } from "./transport";
-import type { EmailKind } from "./types";
+import type { EmailKind, LegalBasis } from "./types";
 
 /**
  * Envoi d'un email de la séquence à partir d'une évaluation (CDC §19).
@@ -40,11 +40,15 @@ export async function dispatchEmail(
   to: string,
   variables: EmailVariables,
   consentMarketing: boolean
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string; skipped?: LegalBasis }> {
   try {
     const rendered = renderEmail(kind, variables);
     const result = await sendGuarded(getTransport(), { ...rendered, to }, consentMarketing);
-    return { ok: result.ok, error: result.error };
+    // `skipped` est remonté : un envoi écarté faute de consentement rend
+    // `ok: true` sans avoir rien envoyé. L'appelant qui ne verrait que `ok`
+    // le noterait comme envoyé dans son journal, et l'email ne partirait
+    // jamais si le consentement revenait ensuite.
+    return { ok: result.ok, error: result.error, skipped: result.skipped };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
   }

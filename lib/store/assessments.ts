@@ -25,6 +25,19 @@ export interface AssessmentStore {
   save(assessment: Assessment): Promise<void>;
   get(id: string): Promise<Assessment | null>;
   all(): Promise<Assessment[]>;
+  /**
+   * Retrait du consentement marketing (CDC §34).
+   *
+   * Stocké à part de `answers.consentMarketing`, qui reste figé : cette
+   * réponse est la preuve de ce qui a été consenti, et l'écraser pour
+   * matérialiser un retrait effacerait cette preuve. Le consentement effectif
+   * est donc « a répondu oui » ET « n'a pas retiré ».
+   *
+   * `unsubscribe` est idempotent : cliquer deux fois sur le lien d'un email ne
+   * doit pas produire d'erreur, seulement le même résultat.
+   */
+  unsubscribe(id: string): Promise<boolean>;
+  isUnsubscribed(id: string): Promise<boolean>;
 }
 
 /**
@@ -36,6 +49,9 @@ const globalStore = globalThis as typeof globalThis & {
   __admittoAssessments?: Map<string, Assessment>;
 };
 const memory = (globalStore.__admittoAssessments ??= new Map<string, Assessment>());
+
+const globalUnsub = globalThis as typeof globalThis & { __admittoUnsubscribed?: Set<string> };
+const unsubscribed = (globalUnsub.__admittoUnsubscribed ??= new Set<string>());
 
 interface AssessmentRow {
   id: string;
@@ -107,5 +123,29 @@ export const assessmentStore: AssessmentStore = {
     if (!usingDatabase()) return [...memory.values()];
     const rows = await db().assessment.findMany({ orderBy: { createdAt: "asc" } });
     return rows.map(toDomain);
+  },
+
+  async unsubscribe(id) {
+    if (!usingDatabase()) {
+      if (!memory.has(id)) return false;
+      unsubscribed.add(id);
+      return true;
+    }
+    // `updateMany` plutôt que `update` : un identifiant inconnu rend 0 au lieu
+    // de lever, et le lien d'un email périmé affiche alors une page calme.
+    const { count } = await db().assessment.updateMany({
+      where: { id },
+      data: { unsubscribedAt: new Date() },
+    });
+    return count > 0;
+  },
+
+  async isUnsubscribed(id) {
+    if (!usingDatabase()) return unsubscribed.has(id);
+    const row = await db().assessment.findUnique({
+      where: { id },
+      select: { unsubscribedAt: true },
+    });
+    return row?.unsubscribedAt != null;
   },
 };

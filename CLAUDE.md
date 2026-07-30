@@ -15,6 +15,8 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run check:rules` — règles du Moteur A : source + date de vérification obligatoires
 - `npm run check:legal` — tout modèle Prisma doit figurer dans la politique de
   confidentialité, et chaque document légal avoir sa page
+- `npm run check:suites` — chaque suite navigateur importe exactement les helpers
+  qu'elle utilise (un oubli ne se voyait qu'après trois minutes d'exécution)
 - `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations|ecoles|legal <url>`
   — checklists design, diagnostic, back-office, paiement, espace payant, simulateur, coffre,
   modules et consultations au navigateur (serveur lancé + Playwright ; `verify:backoffice` exige
@@ -80,6 +82,12 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   toute variable hors de la liste du CDC §17 : c'est ce qui empêche un texte produit librement.
 - `lib/email/` — séquence J+0 → J+25. `types.ts` fixe la base légale de chaque email :
   un promotionnel ne part jamais sans consentement, `sendGuarded` est le dernier verrou.
+  `run.ts` exécute la séquence (déclencheur cron) ; `eligibility.ts` conditionne chaque
+  envoi au fait qu'il énonce — le J+2 annonce un rapport, il attend donc que le rapport
+  soit marqué envoyé ; le J+25 annonce une expiration, il exige une déduction réelle.
+  Un email non éligible n'est PAS journalisé : sa condition peut devenir vraie plus tard.
+  Le consentement effectif est la réponse ET l'absence de retrait : `answers.consentMarketing`
+  reste figé (c'est la preuve), `Assessment.unsubscribedAt` porte le retrait.
 - `lib/payments/` — catalogue, déduction 30 jours, Stripe. Sans clé, le paiement est
   désactivé et le webhook inerte : la bascule Phase 1A → 1B se fait par configuration.
 - `lib/partnerships/` + `content/partnerships.generated.ts` — 42 accords importés depuis

@@ -88,7 +88,14 @@ check("Back-office ouvert au rôle ADMIN", page.url().endsWith("/admin"), page.u
 
 const queueText = await page.locator("body").innerText();
 check("File affichée avec le demandeur", /Camille/.test(queueText));
-check("Délai annoncé affiché (CDC §18)", /sous 48 heures|sous 3 jours/.test(queueText));
+// Les trois paliers, pas deux : le libellé dépend du nombre de rapports en
+// file, qui s'accumule d'une exécution à l'autre. N'accepter que les deux
+// premiers faisait échouer la suite dès que la file de test dépassait
+// vingt-cinq entrées — alors que le troisième palier est le comportement voulu.
+check(
+  "Délai annoncé affiché (CDC §18)",
+  /sous 48 heures|sous 3 jours|délai actuellement allongé/.test(queueText)
+);
 
 // ── Fiche rapport ──────────────────────────────────────────────────────────
 await page.goto(`${BASE}/admin/rapports/${assessmentId}`, { waitUntil: "networkidle" });

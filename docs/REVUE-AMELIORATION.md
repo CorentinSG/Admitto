@@ -194,14 +194,43 @@ Voir la section 4 pour ce que ces deux lots ont révélé.
 
 </details>
 
-### Lot 4 — Cycle de vie email (~2-3 jours)
+### Lot 4 — Cycle de vie email — **point 1 FAIT**
 
-1. Route cron pour la séquence J+2 → J+25 (même modèle que les rappels :
-   fermée sans secret, idempotente par clé composée, un passage = un envoi max).
-2. État « déduction expirée » affiché sur la page de paiement.
-3. Événements produit minimaux (§36) : démarrage/complétion questionnaire,
-   ouverture du résultat — stockés en base, affichés dans /admin/metriques.
-   _Vérification : passage cron rejoué = zéro doublon ; métriques alimentées._
+1. **Fait.** La séquence J+2 → J+25 est branchée sur le déclencheur cron
+   existant, journalisée par clé composée, idempotente.
+
+   Le diagnostic était plus grave que « il manque un cron ». `scheduleSequence`
+   et `dueEmails` existaient, étaient testés, et personne ne les appelait :
+   seul le J+0 partait, depuis la soumission du questionnaire. **Et même
+   branchés, les quatre suivants n'auraient pas pu s'afficher** :
+   `emailVariables` ne fournissait ni `verdictTitle`, ni `mainRisk`, ni
+   `offerName`, ni `deductionAmount`, ni `deductionExpiry`, ni `resourceUrl`,
+   que les gabarits réclament. `renderEmail` aurait levé sur chacun. La
+   séquence était doublement morte.
+
+   Deux règles ajoutées, qui vont au-delà du cron :
+
+   - **Un email n'est envoyé que si ce qu'il affirme est vrai**
+     (`lib/email/eligibility.ts`). Le J+2 dit « votre rapport est prêt » : il
+     attend que le rapport soit marqué envoyé depuis le back-office, ce qui à
+     J+2 n'est pas garanti — le rapport est rédigé à la main. Le J+25 annonce
+     l'expiration d'une déduction : sans diagnostic payé, il n'y a rien à faire
+     expirer et l'email ne part pas. Un email non éligible n'est pas journalisé :
+     sa condition peut devenir vraie plus tard.
+   - **Aucun rattrapage en masse.** Au-delà de sept jours de retard, un email a
+     manqué son moment. Sans cette borne, brancher le déclencheur pour la
+     première fois expédiait d'un coup toute la séquence à des mois d'anciens
+     diagnostics.
+
+   La page `/desinscription/[id]`, citée dans chaque email promotionnel, a été
+   créée : elle rendait 404. Le retrait n'est pas exécuté au chargement — les
+   aperçus de lien et les antivirus de messagerie visitent les URL des emails et
+   désinscriraient à la place du destinataire. `answers.consentMarketing` reste
+   figé (c'est la preuve du consentement) ; `Assessment.unsubscribedAt` porte le
+   retrait.
+
+2. À faire : état « déduction expirée » affiché sur la page de paiement.
+3. À faire : événements produit minimaux (§36).
 
 ### Lot 5 — Croissance (quand les lots 1-2 sont en production)
 

@@ -140,6 +140,15 @@ model Assessment {
   /// Version exacte des règles utilisées — traçabilité CDC §14.1.
   rulesSnapshot Json
 
+  /// Retrait du consentement marketing (CDC §34).
+  ///
+  /// Séparé de `answers.consentMarketing`, qui reste figé : cette réponse est
+  /// la PREUVE de ce qui a été consenti, à la date où ça l'a été. L'écraser
+  /// pour matérialiser un retrait effacerait cette preuve, et il deviendrait
+  /// impossible de démontrer que le consentement avait bien été recueilli.
+  /// Le consentement effectif est donc la réponse ET l'absence de retrait.
+  unsubscribedAt DateTime?
+
   report       Report?
   taskStatuses TaskStatus[]
   scenarios    Scenario[]

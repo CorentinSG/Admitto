@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { timingSafeEqualString } from "@/lib/access/constant-time";
 import { runDeadlineNotifications } from "@/lib/notifications/run";
+import { runEmailSequence } from "@/lib/email/run";
 import { purgeTechnicalData } from "@/lib/security/purge";
 
 /**
@@ -26,8 +27,13 @@ export async function POST(request: Request) {
 
   const now = new Date();
   const summary = await runDeadlineNotifications(now);
+  // La séquence J+0 → J+25 suit le même déclencheur. Elle était écrite,
+  // testée, et personne ne l'appelait : seul le J+0 partait, depuis la
+  // soumission du questionnaire. Les quatre suivants — dont le J+2 qui porte
+  // le rapport — n'ont jamais quitté le produit.
+  const sequence = await runEmailSequence(now);
   // La purge suit le même déclencheur : un cron de moins à configurer, et
   // l'un ne va pas sans l'autre en production (revue §B2 et §C6).
   const purged = await purgeTechnicalData(now);
-  return NextResponse.json({ ...summary, purged });
+  return NextResponse.json({ ...summary, sequence, purged });
 }
