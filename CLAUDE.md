@@ -120,6 +120,11 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
 - Aucun composant client ne formate de date. Le serveur formate en UTC, le navigateur
   dans le fuseau de l'utilisateur : à cheval sur minuit les deux rendus divergent et
   React régénère l'arbre. Passer un libellé déjà formaté (cf. `DocumentView`).
+- `app/_components/ReportDocument.tsx` — rendu unique du rapport, partagé par la
+  version imprimable du back-office et par `/rapport/[id]`, la page que lit le
+  destinataire. Deux rendus séparés divergeraient sans que rien ne le signale.
+  La page n'affiche RIEN tant que le rapport n'est pas marqué envoyé : montrer un
+  brouillon court-circuiterait la relecture humaine qu'impose le CDC §17.
 - `lib/report/review.ts` — revue avant envoi (CDC §17). Les points sont dérivés du
   profil ; `canSend` vit dans lib/ et non dans l'interface, pour qu'une action serveur
   appelée directement ne saute pas la relecture.

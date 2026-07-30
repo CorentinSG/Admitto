@@ -11,7 +11,9 @@ import { NOT_ACTIONABLE } from "@/lib/roadmap/types";
 import { dashboard, MILESTONE_LABELS, PHASE_LABELS, STATUS_LABELS } from "@/content/dashboard";
 import { findModule, isModulePublished } from "@/content/modules";
 import { DOCUMENT_TYPE_LABELS, vault } from "@/content/vault";
+import { rapport } from "@/content/rapport";
 import { documentStore } from "@/lib/store/documents";
+import { reportStore } from "@/lib/store/reports";
 import { milestoneStore } from "@/lib/store/milestones";
 import { TaskStatusControl } from "../_components/TaskStatusControl";
 
@@ -45,6 +47,8 @@ export default async function DashboardPage() {
   const { assessment, tasks } = loaded;
   const documents = await documentStore.list(assessmentId);
   const milestoneDates = await milestoneStore.dates(assessmentId);
+  // L'identifiant du rapport EST celui du diagnostic (voir `reportStore.create`).
+  const reportReady = (await reportStore.get(assessmentId))?.status === "SENT";
   const nba = selectNextBestAction(tasks, now);
   const progress = computeProgress(tasks);
   const stats = personalStats(tasks, now);
@@ -432,6 +436,24 @@ export default async function DashboardPage() {
           >
             {recommendedModule.published ? "" : dashboard.modulePlaceholder}
           </p>
+        </Section>
+      )}
+
+      {/* 7 bis. Rapport — le livrable central du diagnostic, qui n'était
+          accessible depuis nulle part une fois l'email archivé. */}
+      {reportReady && (
+        <Section title={rapport.navLabel}>
+          <Link
+            href={`/rapport/${assessmentId}`}
+            style={{
+              fontFamily: fonts.sans,
+              fontSize: "0.85rem",
+              color: colors.gold,
+              textDecoration: "none",
+            }}
+          >
+            {rapport.navLabel} →
+          </Link>
         </Section>
       )}
 

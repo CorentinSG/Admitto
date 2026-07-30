@@ -197,6 +197,45 @@ check("Signé « Founder », jamais « Esq. »", /founder/.test(printed) && !/es
 check("Disclaimer présent", /not legal advice/i.test(printed));
 check("Aucune éligibilité affirmée", !/vous êtes éligible/i.test(printed));
 
+// ── Le rapport, du côté de celui qui l'a demandé ───────────────────────────
+// Il n'existait aucun écran où le destinataire puisse le lire : l'email
+// « votre rapport est prêt » menait au résultat préliminaire gratuit.
+{
+  // Tant qu'il n'est pas marqué envoyé, la page annonce l'attente : afficher
+  // un rapport non relu court-circuiterait la revue humaine du CDC §17.
+  const fresh = await anonPage.goto(`${BASE}/rapport/${assessmentId}`, {
+    waitUntil: "domcontentloaded",
+  });
+  check("Page du rapport servie", fresh?.status() === 200, String(fresh?.status()));
+
+  await page.goto(`${BASE}/admin/rapports/${assessmentId}`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Envoyé" }).click();
+
+  // Attendre le texte « Envoyé » ne prouverait rien : c'est le libellé du
+  // bouton lui-même, présent avant comme après. Le seul signal confirmé par
+  // le serveur est la bascule de la page du lecteur, qui n'affiche le
+  // document qu'une fois le statut réellement enregistré.
+  const readerReady = await waitFor(async () => {
+    await anonPage.goto(`${BASE}/rapport/${assessmentId}`, { waitUntil: "domcontentloaded" });
+    const body = await anonPage.locator("body").innerText();
+    return /synthèse/i.test(body) ? body : null;
+  });
+  check("Rapport marqué envoyé et publié au lecteur", Boolean(readerReady));
+
+  const readerView = (readerReady ?? "").toLowerCase();
+  check("Le destinataire lit la synthèse", has(readerView, "Synthèse"));
+  check("Le destinataire lit les cinq axes", has(readerView, "Viabilité du projet"));
+  check("Le destinataire lit les sources", has(readerView, "Sources et dates de vérification"));
+  check("Aucune éligibilité affirmée au lecteur", !/vous êtes éligible/i.test(readerView));
+
+  // Le résultat préliminaire mène désormais au rapport plutôt qu'à un délai.
+  await anonPage.goto(`${BASE}/resultat/${assessmentId}`, { waitUntil: "networkidle" });
+  check(
+    "Le résultat mène au rapport une fois celui-ci envoyé",
+    (await anonPage.locator(`a[href="/rapport/${assessmentId}"]`).count()) > 0
+  );
+}
+
 await browser.close();
 
 if (failures.length) {

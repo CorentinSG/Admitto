@@ -7,6 +7,7 @@ import { announcedDelay } from "@/lib/capacity/delay";
 import { reportStore } from "@/lib/store/reports";
 import { formatUsd } from "@/lib/costs/estimate";
 import { PATH_LABELS, result } from "@/content/result";
+import { rapport } from "@/content/rapport";
 import { usingDatabase } from "@/lib/db/client";
 import { resultAccess } from "@/lib/access/result";
 import { AccessButton } from "./AccessButton";
@@ -44,6 +45,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
 
   // Délai annoncé calculé sur la file réelle (CDC §18).
   const activeReports = await reportStore.activeCount();
+  const reportReady = (await reportStore.get(id))?.status === "SENT";
 
   const { answers, derived, path, textBlocks, partnerships, costs, deadlines } = assessment;
 
@@ -289,16 +291,34 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
             {result.nextTitle}
           </h2>
           <Paragraph>{result.nextBody}</Paragraph>
-          <p
-            style={{
-              fontFamily: fonts.sans,
-              fontSize: "0.88rem",
-              margin: "14px 0 0",
-              color: colors.goldLight,
-            }}
-          >
-            {result.nextDelay(announcedDelay(activeReports))}
-          </p>
+          {reportReady ? (
+            // Le rapport est parti : annoncer encore un délai serait faux, et
+            // la personne cherche le document, pas une estimation d'attente.
+            <Link
+              href={`/rapport/${id}`}
+              style={{
+                display: "inline-block",
+                marginTop: 14,
+                fontFamily: fonts.sans,
+                fontSize: "0.88rem",
+                color: colors.goldLight,
+                textDecoration: "none",
+              }}
+            >
+              {rapport.navLabel} →
+            </Link>
+          ) : (
+            <p
+              style={{
+                fontFamily: fonts.sans,
+                fontSize: "0.88rem",
+                margin: "14px 0 0",
+                color: colors.goldLight,
+              }}
+            >
+              {result.nextDelay(announcedDelay(activeReports))}
+            </p>
+          )}
           <Link
             href={`/diagnostic/paiement/${id}`}
             style={{

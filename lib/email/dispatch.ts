@@ -23,7 +23,10 @@ export function emailVariables(
   return {
     firstName: assessment.answers.firstName ?? "",
     resultUrl: `${url}/resultat/${assessment.id}`,
-    reportUrl: `${url}/resultat/${assessment.id}`,
+    // Le rapport a sa propre page depuis qu'il en a une : `reportUrl` pointait
+    // vers le résultat préliminaire, si bien que l'email « votre rapport est
+    // prêt » menait à la version gratuite du document.
+    reportUrl: `${url}/rapport/${assessment.id}`,
     unsubscribeUrl: `${url}/desinscription/${assessment.id}`,
     delay: announcedDelay(activeReports),
     pathLabel: PATH_LABELS[assessment.path],
