@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { reportStore, REPORT_STATUSES, type ReportStatus } from "@/lib/store/reports";
 import { assessmentStore } from "@/lib/store/assessments";
-import { assembleReport } from "@/lib/report/assemble";
+import { assembleReportLive } from "@/lib/matrices/load";
 import { canSend, reviewChecklist } from "@/lib/report/review";
 
 /**
@@ -26,7 +26,7 @@ export async function setReportStatus(id: string, status: string) {
     if (!assessment) return { error: "Évaluation introuvable." };
 
     const verdict = canSend(
-      reviewChecklist(assessment, assembleReport(assessment)),
+      reviewChecklist(assessment, await assembleReportLive(assessment)),
       record.acknowledged
     );
     if (!verdict.ok) {

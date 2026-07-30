@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { computeAssessment } from "@/lib/assessment/compute";
+import { liveMatrices } from "@/lib/matrices/load";
 import { assessmentStore } from "@/lib/store/assessments";
 import { reportStore } from "@/lib/store/reports";
 import { dispatchEmail, emailVariables } from "@/lib/email/dispatch";
@@ -96,7 +97,10 @@ export async function submitQuestionnaire(raw: Record<string, unknown>) {
   if (!limit.ok) return { error: security.tooManyAttempts(limit.retryAfterMinutes) };
 
   const id = randomUUID();
-  const assessment = computeAssessment(answers, new Date(), id);
+  // Règles et blocs de voie en vigueur MAINTENANT (CDC §33) : une règle
+  // activée depuis le back-office gouverne le diagnostic suivant sans commit.
+  const now = new Date();
+  const assessment = computeAssessment(answers, now, id, await liveMatrices(now));
   await assessmentStore.save(assessment);
   // Le rapport entre en file dès la soumission : c'est ce compteur qui pilote
   // le délai annoncé à l'utilisateur (CDC §18). Priorité « gratuit » en phase

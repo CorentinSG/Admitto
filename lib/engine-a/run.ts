@@ -24,7 +24,9 @@ const PATH_PRIORITY: PreliminaryPath[] = [
 
 export function runEngineA(
   profile: StructuredProfile,
-  rules: Rule[] = RULES
+  rules: Rule[] = RULES,
+  // Blocs de voie éditables sans code (CDC §33) : le défaut reste le fichier.
+  blocks: Record<string, string> = TEXT_BLOCKS
 ): EngineAOutput & { textBlocks: string[] } {
   const fired = fireRules(rules, profile);
 
@@ -37,7 +39,7 @@ export function runEngineA(
 
   const textBlocks = fired
     .filter((f) => f.fact === path)
-    .map((f) => TEXT_BLOCKS[f.textBlockId])
+    .map((f) => blocks[f.textBlockId] ?? TEXT_BLOCKS[f.textBlockId])
     .filter(Boolean);
 
   return {
@@ -46,7 +48,9 @@ export function runEngineA(
     // Traçabilité exigée par le CDC : identifiant + version de chaque règle
     // déclenchée, figés dans l'évaluation.
     firedRules: fired.map((f) => ({ id: f.id, version: f.version })),
-    textBlocks: textBlocks.length ? textBlocks : [TEXT_BLOCKS["TB-HUMAN-REVIEW"]],
+    textBlocks: textBlocks.length
+      ? textBlocks
+      : [blocks["TB-HUMAN-REVIEW"] ?? TEXT_BLOCKS["TB-HUMAN-REVIEW"]],
   };
 }
 

@@ -8,6 +8,7 @@ import { noticeStore } from "./notifications";
 import { milestoneStore } from "./milestones";
 import { consultationStore } from "./consultations";
 import { schoolStore } from "./schools";
+import { blockRevisionStore, ruleRevisionStore } from "./matrices";
 import { prisma, usingDatabase } from "@/lib/db/client";
 import { computeAssessment } from "@/lib/assessment/compute";
 import { defaultInputs } from "@/lib/simulator/defaults";
@@ -507,6 +508,66 @@ describe("schoolStore", () => {
 
     expect(await schoolStore.remove(a.id, `${a.id}-secret`)).toBe(true);
     expect(await schoolStore.list(a.id)).toHaveLength(0);
+  });
+});
+
+describe("matrices — révisions append-only", () => {
+  // Identifiants uniques par exécution : avec base, les révisions survivent
+  // d'un run à l'autre, et un identifiant fixe relirait l'historique du
+  // run précédent.
+  const RUN = `t-${Date.now().toString(36)}`;
+
+  it("numérote les révisions de règle en séquence et rend la dernière", async () => {
+    // JAMAIS une clé réelle : le store écrit dans la base partagée du
+    // développement, et une révision sur R-NY-001 y ACTIVERAIT une règle de
+    // droit pour tous les diagnostics suivants — c'est arrivé, et toutes les
+    // suites navigateur en aval ont changé de voie préliminaire.
+    // `effectiveRules` ignore un identifiant hors du code : ces lignes de
+    // test sont inertes.
+    const ruleId = `R-TEST-${RUN}`;
+    const first = await ruleRevisionStore.add({
+      ruleId,
+      active: false,
+      sourceUrl: `https://example.com/${RUN}/a`,
+      verifiedAt: null,
+    });
+    const second = await ruleRevisionStore.add({
+      ruleId,
+      active: true,
+      sourceUrl: `https://example.com/${RUN}/b`,
+      verifiedAt: "2026-07-30",
+    });
+
+    expect(second.revision).toBe(first.revision + 1);
+
+    const latest = (await ruleRevisionStore.latest()).get(ruleId);
+    expect(latest?.revision).toBe(second.revision);
+    expect(latest?.sourceUrl).toBe(`https://example.com/${RUN}/b`);
+    // Date sans heure : c'est un jour de vérification, pas un instant.
+    expect(latest?.verifiedAt).toBe("2026-07-30");
+
+    // L'historique est complet et ordonné : rien n'a été écrasé.
+    const history = await ruleRevisionStore.history(ruleId);
+    const mine = history.filter((row) => row.sourceUrl.includes(RUN));
+    expect(mine.map((row) => row.revision)).toEqual([first.revision, second.revision]);
+  });
+
+  it("numérote les révisions de bloc et les rend dans l'ordre", async () => {
+    // Même règle : une clé hors registre est ignorée par `resolveBlocksAsOf`,
+    // donc inoffensive pour les rendus réels.
+    const key = `TEST:${RUN}`;
+    const first = await blockRevisionStore.add(key, { kind: "TEXT", text: `${RUN} v1` });
+    const second = await blockRevisionStore.add(key, { kind: "TEXT", text: `${RUN} v2` });
+    expect(second.revision).toBe(first.revision + 1);
+
+    const all = await blockRevisionStore.all();
+    const mine = all.filter(
+      (row) => row.payload.kind === "TEXT" && row.payload.text.startsWith(RUN)
+    );
+    expect(mine).toHaveLength(2);
+    // `all` est ordonné par date de création : la résolution « à la date »
+    // s'appuie dessus.
+    expect(mine[0].createdAt <= mine[1].createdAt).toBe(true);
   });
 });
 

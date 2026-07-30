@@ -95,7 +95,7 @@ export async function runEmailSequence(reference: Date): Promise<SequenceSummary
       }
 
       const kind = scheduled.kind as SequenceKind;
-      const verdict = eligibility(kind, {
+      const verdict = await eligibility(kind, {
         assessment,
         // L'identifiant du rapport EST celui du diagnostic (voir
         // `reportStore.create`) : pas de recherche par relation à ajouter.

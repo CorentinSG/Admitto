@@ -35,7 +35,7 @@ itérations sans commit.
 
 ## Piste code
 
-### Lot A — Autonomie du fondateur : matrices éditables (§33) — ~1 sprint, priorité 1
+### Lot A — Autonomie du fondateur : matrices éditables (§33) — **FAIT**
 
 Le dernier « À faire » du plan de construction. Objectif : que F1 et F3 ne
 passent plus par un dépôt Git.

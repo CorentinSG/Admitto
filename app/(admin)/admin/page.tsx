@@ -4,7 +4,7 @@ import { colors, fonts, alpha } from "@/design/tokens";
 import { reportStore } from "@/lib/store/reports";
 import { assessmentStore } from "@/lib/store/assessments";
 import { announcedDelay, isSaturated } from "@/lib/capacity/delay";
-import { assembleReport } from "@/lib/report/assemble";
+import { assembleReportLive } from "@/lib/matrices/load";
 import { canSend, reviewChecklist } from "@/lib/report/review";
 import { STATUS_LABELS } from "@/content/admin";
 
@@ -30,7 +30,7 @@ export default async function AdminQueuePage() {
       // La file annonce ce qui reste à arbitrer : sans cela, on ouvre chaque
       // rapport pour découvrir lesquels sont réellement prêts à partir.
       const pending = assessment
-        ? canSend(reviewChecklist(assessment, assembleReport(assessment)), report.acknowledged)
+        ? canSend(reviewChecklist(assessment, await assembleReportLive(assessment)), report.acknowledged)
         : { ok: false as const, pending: [] };
       return { report, assessment, blocking: pending.ok ? 0 : pending.pending.length };
     })
@@ -82,6 +82,17 @@ export default async function AdminQueuePage() {
           }}
         >
           Métriques →
+        </Link>
+        <Link
+          href="/admin/matrices"
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: "0.82rem",
+            color: colors.gold,
+            textDecoration: "none",
+          }}
+        >
+          Matrices →
         </Link>
       </div>
 

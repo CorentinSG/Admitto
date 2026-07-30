@@ -272,6 +272,46 @@ model SchoolChoice {
   @@index([assessmentId])
 }
 
+/// Révision d'une règle du Moteur A (CDC §33 — matrices éditables).
+///
+/// APPEND-ONLY : chaque modification crée une révision, rien n'est écrasé.
+/// La règle effective est la dernière révision par-dessus la règle du code ;
+/// `rulesSnapshot` continue de figer id + version dans chaque évaluation, et
+/// la version effective est `version_code + révision` — la traçabilité du
+/// CDC §14.1 survit donc à l'édition sans code.
+///
+/// Seules les MÉTADONNÉES sont éditables (activation, source, date de
+/// vérification). La condition reste dans le code : une logique de règle se
+/// teste, elle ne s'improvise pas depuis un formulaire.
+model RuleRevision {
+  ruleId     String
+  revision   Int
+  active     Boolean
+  sourceUrl  String
+  /// Date à laquelle le fondateur a confronté la règle à sa source.
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@id([ruleId, revision])
+}
+
+/// Révision d'un bloc de texte du rapport (CDC §33 — matrices éditables).
+///
+/// APPEND-ONLY, comme RuleRevision. Un rapport rouvert doit citer les blocs
+/// tels qu'ils étaient à sa génération : l'assemblage résout les blocs « à la
+/// date de l'évaluation » (dernière révision antérieure), ce qui rend le
+/// gel automatique sans figer quoi que ce soit dans l'évaluation elle-même.
+model BlockRevision {
+  key       String
+  revision  Int
+  /// Contenu, dont la forme dépend du bloc (texte, titre+corps, risque).
+  /// Validé par `decideBlockRevision` AVANT toute écriture.
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@id([key, revision])
+}
+
 /// Rappel d'échéance déjà envoyé (CDC §22). La clé composée EST le mécanisme
 /// d'idempotence : un second envoi du même rappel viole la contrainte.
 model SentNotice {

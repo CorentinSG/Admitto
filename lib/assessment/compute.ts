@@ -1,5 +1,6 @@
 import { runEngineA } from "@/lib/engine-a/run";
 import { RULES } from "@/lib/engine-a/rules.seed";
+import type { Rule } from "@/lib/engine-a/types";
 import { deriveProfile, flattenForRules, type DerivedProfile } from "@/lib/profile/derive";
 import {
   bestCostAdvantage,
@@ -33,9 +34,21 @@ export interface Assessment {
   rulesSnapshot: Array<{ id: string; version: number }>;
 }
 
-export function computeAssessment(answers: Answers, reference: Date, id: string): Assessment {
+export function computeAssessment(
+  answers: Answers,
+  reference: Date,
+  id: string,
+  // Matrices vivantes (CDC §33) : règles et blocs de voie résolus par
+  // l'appelant. Le défaut est le contenu du code — les tests et le régime
+  // mémoire ne changent pas.
+  matrices?: { rules?: Rule[]; voieBlocks?: Record<string, string> }
+): Assessment {
   const derived = deriveProfile(answers, reference);
-  const engineA = runEngineA(flattenForRules(answers, derived), RULES);
+  const engineA = runEngineA(
+    flattenForRules(answers, derived),
+    matrices?.rules ?? RULES,
+    matrices?.voieBlocks
+  );
 
   // La détection croise l'université d'origine ET le niveau atteint : un
   // partenariat réservé aux M2 n'est pas proposé à un étudiant en licence.

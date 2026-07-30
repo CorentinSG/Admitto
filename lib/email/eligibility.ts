@@ -1,6 +1,6 @@
 import type { Assessment } from "@/lib/assessment/compute";
 import type { ReportRecord } from "@/lib/store/reports";
-import { assembleReport } from "@/lib/report/assemble";
+import { assembleReportLive } from "@/lib/matrices/load";
 import { formatEuros } from "@/lib/payments/offers";
 import { isDeductionValid } from "@/lib/payments/deduction";
 import { isModulePublished } from "@/content/modules";
@@ -53,13 +53,16 @@ export interface SequenceContext {
 }
 
 /** Le risque principal : le premier axe faible du rapport, ou rien. */
-function mainRisk(context: SequenceContext): string | null {
-  const assembled = assembleReport(context.assessment);
+async function mainRisk(context: SequenceContext): Promise<string | null> {
+  const assembled = await assembleReportLive(context.assessment);
   return assembled.risks[0]?.title ?? null;
 }
 
-function reportVariables(context: SequenceContext): EmailVariables {
-  const assembled = assembleReport(context.assessment);
+async function reportVariables(context: SequenceContext): Promise<EmailVariables> {
+  // Blocs résolus à la date de l'évaluation, comme le rapport lui-même : un
+  // email qui citerait un titre de verdict révisé après coup ne décrirait plus
+  // le document que son destinataire va ouvrir.
+  const assembled = await assembleReportLive(context.assessment);
   return {
     verdictTitle: assembled.verdictTitle,
     mainRisk: assembled.risks[0]?.title ?? "",
@@ -85,7 +88,10 @@ function deductionVariables(context: SequenceContext): EmailVariables | null {
   };
 }
 
-export function eligibility(kind: SequenceKind, context: SequenceContext): Eligibility {
+export async function eligibility(
+  kind: SequenceKind,
+  context: SequenceContext
+): Promise<Eligibility> {
   const reportSent = context.report?.status === "SENT";
 
   switch (kind) {
@@ -100,7 +106,7 @@ export function eligibility(kind: SequenceKind, context: SequenceContext): Eligi
       // rendu. Un texte alternatif sans déduction reste à rédiger — d'ici là,
       // l'email attend plutôt que de partir à trou.
       if (!deduction) return { ok: false, reason: "NO_ACTIVE_DEDUCTION" };
-      return { ok: true, variables: { ...reportVariables(context), ...deduction } };
+      return { ok: true, variables: { ...(await reportVariables(context)), ...deduction } };
     }
 
     case "J5_FOLLOWUP":
@@ -110,7 +116,7 @@ export function eligibility(kind: SequenceKind, context: SequenceContext): Eligi
       return { ok: true, variables: {} };
 
     case "J12_CONTENT": {
-      const risk = mainRisk(context);
+      const risk = await mainRisk(context);
       const slug = risk ? resourceFor(context) : null;
       if (!risk || !slug) return { ok: false, reason: "NO_PUBLISHED_RESOURCE" };
       return {
@@ -122,7 +128,7 @@ export function eligibility(kind: SequenceKind, context: SequenceContext): Eligi
     case "J25_DEDUCTION_EXPIRY": {
       const deduction = deductionVariables(context);
       if (!deduction) return { ok: false, reason: "NO_ACTIVE_DEDUCTION" };
-      return { ok: true, variables: { ...reportVariables(context), ...deduction } };
+      return { ok: true, variables: { ...(await reportVariables(context)), ...deduction } };
     }
   }
 }

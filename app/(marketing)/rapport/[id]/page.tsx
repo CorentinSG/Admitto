@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { colors, fonts, alpha } from "@/design/tokens";
 import { reportStore } from "@/lib/store/reports";
 import { assessmentStore } from "@/lib/store/assessments";
-import { assembleReport } from "@/lib/report/assemble";
+import { assembleReportLive } from "@/lib/matrices/load";
 import { resultAccess } from "@/lib/access/result";
 import { announcedDelay } from "@/lib/capacity/delay";
 import { rapport } from "@/content/rapport";
@@ -128,7 +128,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       </div>
 
       <ReportDocument
-        report={assembleReport(assessment)}
+        report={await assembleReportLive(assessment)}
         assessment={assessment}
         dateFr={dateFr}
       />

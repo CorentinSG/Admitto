@@ -33,6 +33,9 @@ const FORBIDDEN = [
 // Fichiers où les termes apparaissent légitimement (docs internes, ce script).
 const ALLOWLIST = new Set([
   "scripts/check-vocabulary.mjs",
+  // Le miroir d'exécution de ce script : il PORTE la liste des motifs pour
+  // refuser un bloc édité au back-office. Même statut que le script lui-même.
+  "lib/matrices/vocabulary.ts",
   "PLAN.md",
   "CLAUDE.md",
 ]);

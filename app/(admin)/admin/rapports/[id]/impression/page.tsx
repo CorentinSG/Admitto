@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { reportStore } from "@/lib/store/reports";
 import { assessmentStore } from "@/lib/store/assessments";
-import { assembleReport } from "@/lib/report/assemble";
+import { assembleReportLive } from "@/lib/matrices/load";
 import { ReportDocument } from "@/app/_components/ReportDocument";
 
 export const metadata: Metadata = {
@@ -49,7 +49,7 @@ export default async function PrintableReportPage({
     <>
       <style>{printCss}</style>
       <ReportDocument
-        report={assembleReport(assessment)}
+        report={await assembleReportLive(assessment)}
         assessment={assessment}
         dateFr={dateFr}
       />

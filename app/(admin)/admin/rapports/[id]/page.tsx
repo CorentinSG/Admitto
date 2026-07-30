@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { colors, fonts, alpha } from "@/design/tokens";
 import { reportStore } from "@/lib/store/reports";
 import { assessmentStore } from "@/lib/store/assessments";
-import { assembleReport } from "@/lib/report/assemble";
+import { assembleReportLive } from "@/lib/matrices/load";
 import { canSend, reviewChecklist } from "@/lib/report/review";
 import { ReportControls } from "./ReportControls";
 import { ReviewChecklist } from "./ReviewChecklist";
@@ -27,7 +27,7 @@ export default async function AdminReportPage({ params }: { params: Promise<{ id
   const assessment = record ? await assessmentStore.get(record.assessmentId) : null;
   if (!record || !assessment) notFound();
 
-  const report = assembleReport(assessment);
+  const report = await assembleReportLive(assessment);
   const points = reviewChecklist(assessment, report);
   const sendable = canSend(points, record.acknowledged);
 

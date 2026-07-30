@@ -104,8 +104,24 @@ const JOURNEY_LABELS: Record<string, string> = {
   FOREIGN_QUALIFIED_LAWYER: "Foreign-Qualified Lawyer",
 };
 
-export function assembleReport(assessment: Assessment): Report {
+/**
+ * Blocs substituables sans code (CDC §33). Le défaut est le contenu du
+ * fichier ; `assembleReportLive` (lib/matrices) fournit les blocs en vigueur
+ * À LA DATE de l'évaluation, si bien qu'un rapport rouvert cite les blocs
+ * tels qu'ils étaient à sa génération.
+ */
+export interface ReportBlockOverrides {
+  verdicts?: Record<Verdict, { title: string; body: string }>;
+  risks?: Record<Axis, { title: string; body: string; actions: string[] }>;
+}
+
+export function assembleReport(
+  assessment: Assessment,
+  overrides: ReportBlockOverrides = {}
+): Report {
   const { answers, derived, costs, deadlines, partnerships } = assessment;
+  const verdictBlocks = overrides.verdicts ?? VERDICT_BLOCKS;
+  const riskBlocks = overrides.risks ?? RISK_BLOCKS;
 
   // Le partenariat confirmé le plus avantageux pèse sur l'adéquation financière.
   const costAdvantage = bestCostAdvantage(partnerships);
@@ -135,7 +151,7 @@ export function assembleReport(assessment: Assessment): Report {
   // « inventé » pour étoffer le rapport.
   const risks: ReportRisk[] = AXES.filter((axis) => scores[axis] <= 2).map((axis) => ({
     axis,
-    ...RISK_BLOCKS[axis],
+    ...riskBlocks[axis],
   }));
 
   const offer = recommendOffer(verdict, derived.journeyType);
@@ -156,8 +172,8 @@ export function assembleReport(assessment: Assessment): Report {
     ),
     axes,
     verdict,
-    verdictTitle: VERDICT_BLOCKS[verdict].title,
-    verdictBody: VERDICT_BLOCKS[verdict].body,
+    verdictTitle: verdictBlocks[verdict].title,
+    verdictBody: verdictBlocks[verdict].body,
     shiftIntake,
     risks,
     nextSteps: derived.journeyType ? NEXT_STEPS[derived.journeyType] : [],

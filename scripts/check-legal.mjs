@@ -54,7 +54,13 @@ const COVERED = {
 };
 
 /** Modèles délibérément hors du tableau, avec le motif. */
-const OUT_OF_SCOPE = {};
+const OUT_OF_SCOPE = {
+  // Contenu éditorial du produit (règles et blocs de texte, CDC §33) : aucune
+  // donnée personnelle n'y entre — pas de colonne libre rattachable à une
+  // personne, pas d'auteur stocké.
+  RuleRevision: "matrices éditoriales, aucune donnée personnelle",
+  BlockRevision: "matrices éditoriales, aucune donnée personnelle",
+};
 
 const failures = [];
 const fail = (message) => failures.push(message);

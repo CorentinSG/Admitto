@@ -20,13 +20,13 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run verify:degraded <url> --regime=minimal|complet` — toutes les routes,
   sans navigateur : aucune 5xx, aucune zone ouverte par erreur. À lancer contre un
   serveur démarré SANS aucune variable d'environnement pour le régime minimal.
-- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations|ecoles|acces|legal <url>`
+- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations|ecoles|acces|matrices|legal <url>`
   — checklists design, diagnostic, back-office, paiement, espace payant, simulateur, coffre,
   modules et consultations au navigateur (serveur lancé + Playwright ; `verify:backoffice` exige
   `AUTH_SECRET`, `DATABASE_URL` et `ADMITTO_MAIL_LOG` ; les suites du back-office exigent en
   plus `ADMITTO_ADMIN_EMAIL`. **Passer la même origine que celle vue par Auth.js** :
   un écart 127.0.0.1 / localhost fait tomber le cookie de session)
-- `npm run verify:all <url>` — enchaîne les onze suites et résume. Une seule reprise par
+- `npm run verify:all <url>` — enchaîne les douze suites et résume. Une seule reprise par
   suite, et seulement sur plantage : un échec d'assertion reste rouge.
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run db:migrate` / `db:deploy` / `db:studio` — migrations Prisma (dev / prod / inspection)
@@ -142,6 +142,17 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   pas de valeur « illimité » à écrire, et un plafond oublié vaut zéro séance. Chaque type
   porte ses exclusions dans son type — un périmètre qui n'énonce que ses inclusions se lit
   comme ouvert.
+- `lib/matrices/` + `lib/store/matrices.ts` — matrices éditables (CDC §33) : activation,
+  source et date des règles du Moteur A (la CONDITION reste dans le code — une logique
+  de règle se teste), et blocs de texte voie/verdict/risque. Révisions APPEND-ONLY :
+  l'assemblage résout les blocs à la date de l'évaluation, donc un rapport rouvert cite
+  les blocs de sa génération sans rien figer de plus. `vocabulary.ts` est le miroir
+  d'exécution de `check:vocabulary` (un bloc édité au back-office échappe au script) ;
+  un test de parité lit le script pour empêcher la divergence. Version effective =
+  version du code + révision, ce qui garde `rulesSnapshot` traçable.
+  Dans les tests qui touchent la base, JAMAIS de clé réelle (règle ou bloc) : une
+  révision sur `R-NY-001` activerait une règle de droit pour tous les diagnostics
+  suivants du serveur de développement — c'est arrivé.
 - `lib/legal/` + `content/legal.ts` — mentions légales, confidentialité, CGV. Ce que
   le produit fait est écrit à partir du schéma ; ce qui engage l'éditeur (raison
   sociale, hébergeur, médiateur) reste `PENDING` et s'affiche comme manquant. Une

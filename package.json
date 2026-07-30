@@ -33,6 +33,7 @@
     "verify:consultations": "node scripts/verify-consultations.mjs",
     "verify:ecoles": "node scripts/verify-ecoles.mjs",
     "verify:acces": "node scripts/verify-acces.mjs",
+    "verify:matrices": "node scripts/verify-matrices.mjs",
     "verify:degraded": "node scripts/verify-degraded.mjs",
     "verify:legal": "node scripts/verify-legal.mjs",
     "verify:all": "node scripts/verify-all.mjs",
