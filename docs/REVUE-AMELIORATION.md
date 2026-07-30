@@ -1,5 +1,9 @@
 # Revue complète du site — juillet 2026
 
+> **Plan suivant : `PLAN-AMELIORATION-V2.md`** — les lots 1 à 3 de ce document
+> sont livrés, le lot 4 aux deux tiers ; la V2 réordonne ce qui reste autour du
+> constat que le code n'est plus le chemin critique.
+
 > État constaté, pas supposé : 295 tests unitaires verts (avec et sans base),
 > les huit suites navigateur conformes contre un serveur complet
 > (PostgreSQL + comptes + coffre + rappels), build propre.
