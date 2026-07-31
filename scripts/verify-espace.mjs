@@ -184,12 +184,30 @@ check("Document retirable", Boolean(await waitForTextGone(page, "cv-alix.pdf")))
 await page.goto(`${BASE}/app/modules`, { waitUntil: "networkidle" });
 const library = await page.locator("body").innerText();
 
+/*
+ * Les cinq modules rédigés sont lisibles, les six autres annoncés en
+ * production. Ces nombres sont écrits en toutes lettres plutôt que déduits de
+ * la page : une assertion qui compte ce qu'elle voit ne vérifie rien, elle
+ * décrit. Ils changent à chaque module écrit, et c'est voulu — publier demande
+ * alors de le dire ici aussi, en connaissance de cause.
+ *
+ * Ils doivent rester d'accord avec la liste `LISIBLES` de
+ * `lib/modules/modules.test.ts`, qui porte la même vérité côté unitaire.
+ */
+const LISIBLES = 5;
+const TOTAL = 11;
+
 const moduleCount = (library.match(/MODULE \d+/gi) ?? []).length;
-check("Onze modules listés", moduleCount === 11, `${moduleCount}`);
+check("Onze modules listés", moduleCount === TOTAL, `${moduleCount}`);
 check("Module 0 lisible", contains(library, "Lire le module"));
 const inProduction = (library.match(/En cours de production/gi) ?? []).length;
-check("Modules non rédigés annoncés en production", inProduction === 10, `${inProduction}`);
-check("Un seul module lié", (await page.locator('a[href^="/app/modules/"]').count()) === 1);
+check(
+  "Modules non rédigés annoncés en production",
+  inProduction === TOTAL - LISIBLES,
+  `${inProduction}`
+);
+const lies = await page.locator('a[href^="/app/modules/"]').count();
+check(`Les ${LISIBLES} modules rédigés sont liés`, lies === LISIBLES, `${lies}`);
 
 // Un module non rédigé ne s'ouvre pas non plus par URL directe. La navigation
 // vers un 404 journalise une erreur réseau attendue : on borne la fenêtre

@@ -15,6 +15,13 @@ import { isPublishable, publicationBlockers } from "@/lib/modules/types";
  * Les modules non encore rédigés portent déjà leur plan de sections. Le plan
  * n'est pas de la décoration : il fixe, avant l'écriture, quelles sections
  * énonceront une règle officielle et devront donc être sourcées.
+ *
+ * `readingMinutes` suit la convention qu'établit le Module 0 : environ deux
+ * fois le temps de lecture brut (200 mots/minute), parce qu'un module se lit
+ * un document ouvert à côté et se termine par des réponses à écrire. Les
+ * chiffres des modules encore en plan sont des estimations d'auteur — les
+ * recalculer sur le texte réel au moment de la rédaction, sans quoi on annonce
+ * vingt minutes pour un quart d'heure qui n'existe pas.
  */
 
 export type { ModuleEntry };
@@ -170,13 +177,66 @@ export const MODULES: ModuleEntry[] = [
     title: "Stratégie de carrière",
     summary:
       "Grands cabinets, niches, retour en France, entreprise, arbitrage, immigration, organisations internationales.",
-    readingMinutes: 20,
-    published: false,
+    readingMinutes: 8,
+    published: true,
     sections: [
-      { kind: "METHOD", id: "m1-marches", title: "Cartographier les marchés accessibles", body: [] },
-      { kind: "METHOD", id: "m1-cabinets", title: "Grands cabinets et pratiques de niche", body: [] },
-      { kind: "METHOD", id: "m1-retour", title: "Le retour en France comme stratégie assumée", body: [] },
-      { kind: "METHOD", id: "m1-entreprise", title: "Entreprise et organisations internationales", body: [] },
+      {
+        kind: "METHOD",
+        id: "m1-marches",
+        title: "Cartographier les marchés accessibles",
+        body: [
+          "Un LL.M. n'ouvre pas « le marché américain ». Il ouvre certains segments de certains marchés, et le travail de ce module est de nommer lesquels dans votre cas plutôt que de raisonner sur une moyenne qui ne correspond à personne.",
+          "Trois axes suffisent à dessiner la carte. Le premier est géographique : États-Unis, France, ou un troisième pays. Le second est celui de l'employeur : cabinet, entreprise, institution. Le troisième, le plus déterminant et le plus souvent oublié, est celui de la valeur que vous apportez — êtes-vous recruté parce que vous connaissez le droit français, ou malgré le fait que votre formation soit française ?",
+          "Ce troisième axe départage tout le reste. Les fonctions où votre formation d'origine est l'atout recherché vous sont largement ouvertes et le resteront. Celles où l'on cherche un juriste américain généraliste vous mettent en concurrence directe avec des diplômés de JD, sur un terrain où votre parcours ne compte pas en votre faveur. Ce ne sont pas deux niveaux de difficulté, ce sont deux marchés.",
+          "Écrivez la liste des postes que vous visez, et pour chacun, dans quelle colonne il tombe. Une liste où tout tombe dans la seconde colonne n'est pas impossible, mais elle demande un projet différent — et probablement un autre diplôme.",
+        ],
+        keyPoints: [
+          "La question n'est pas « quel marché » mais « recruté pour ma formation, ou malgré elle ».",
+          "Une liste de postes qui relèvent tous du marché généraliste américain signale un projet mal calibré.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m1-cabinets",
+        title: "Grands cabinets et pratiques de niche",
+        body: [
+          "Les grands cabinets internationaux recrutent des profils LL.M., mais rarement là où on les attend. Les postes qui vous sont réellement accessibles sont ceux des équipes qui travaillent sur des dossiers transatlantiques : opérations impliquant des groupes français, arbitrage international, contentieux transfrontalier, conformité de sociétés européennes. Votre double lecture y est un outil de travail, pas une curiosité.",
+          "À l'inverse, les équipes qui traitent des dossiers purement domestiques recrutent presque exclusivement sur le circuit des JD, avec un calendrier de recrutement propre et des critères où le LL.M. pèse peu. S'obstiner sur ce segment consomme la seule ressource rare de votre année de LL.M. : le temps.",
+          "Les pratiques de niche méritent une attention particulière. Un domaine étroit où la double compétence est structurellement demandée — droit de l'énergie, sanctions internationales, propriété intellectuelle sur des portefeuilles européens, droit du sport — offre un rapport bien plus favorable entre l'effort de candidature et la probabilité d'être reçu en entretien. Une niche se choisit tôt : elle oriente les cours du LL.M., les stages visés et les personnes à rencontrer.",
+        ],
+        keyPoints: [
+          "Le segment transatlantique valorise votre profil ; le segment domestique le neutralise.",
+          "Une niche choisie tôt oriente les cours, les stages et le réseau — elle ne se décide pas après coup.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m1-retour",
+        title: "Le retour en France comme stratégie assumée",
+        body: [
+          "Rentrer en France après le parcours n'est pas un repli. C'est, pour une large part des profils, la stratégie qui tire le meilleur parti de l'investissement — à condition d'être décidée à l'avance plutôt que subie au bout de dix-huit mois de recherche infructueuse.",
+          "La différence entre les deux se voit dans le dossier. Un retour préparé se construit pendant l'année : cours choisis pour leur pertinence sur le marché français, stage ou expérience orientée vers les équipes transatlantiques des cabinets parisiens, réseau entretenu des deux côtés. Un retour subi arrive sans rien de tout cela, avec une année qui se raconte mal en entretien.",
+          "Posez-vous la question franchement, et tôt : si dans dix-huit mois vous êtes à Paris, votre parcours aura-t-il servi ? Si la réponse est non, ce n'est pas le retour qu'il faut écarter, c'est la façon dont vous préparez l'année.",
+        ],
+        keyPoints: [
+          "Un retour décidé à l'avance se prépare et se raconte ; un retour subi ne se raconte pas.",
+          "Le test : « si je suis à Paris dans dix-huit mois, cette année aura-t-elle servi ? »",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m1-entreprise",
+        title: "Entreprise et organisations internationales",
+        body: [
+          "Les directions juridiques de groupes internationaux constituent un débouché que les candidats sous-estiment, parce qu'il est moins visible que les cabinets et qu'il ne recrute pas selon un calendrier public affiché. Le recrutement s'y fait davantage par le réseau et par cooptation interne, ce qui avantage ceux qui ont travaillé leurs contacts pendant l'année plutôt qu'après.",
+          "Le profil recherché y est souvent exactement le vôtre : un juriste capable de faire le lien entre un siège européen et des opérations américaines, à l'aise dans deux cultures juridiques. La contrepartie est que ces postes sont rarement ouverts à un jeune diplômé sans expérience préalable — l'expérience française acquise avant le départ compte ici davantage que le diplôme lui-même.",
+          "Les organisations internationales suivent une logique encore différente : processus de recrutement longs, exigences linguistiques précises, et une valorisation forte des parcours multi-juridictionnels. Elles méritent d'être examinées, mais leurs délais sont incompatibles avec une recherche menée dans les trois mois qui suivent le diplôme. Si ce débouché vous intéresse, il se prépare deux ans à l'avance.",
+        ],
+        keyPoints: [
+          "En entreprise, l'expérience française acquise avant le départ pèse souvent plus que le diplôme.",
+          "Les organisations internationales se préparent des années à l'avance, pas après le diplôme.",
+        ],
+      },
     ],
   },
   {
@@ -207,13 +267,72 @@ export const MODULES: ModuleEntry[] = [
     title: "Candidatures et financement",
     summary:
       "CV, personal statement, recommandations, relevés de notes, traductions, candidatures et bourses.",
-    readingMinutes: 20,
-    published: false,
+    readingMinutes: 10,
+    published: true,
     sections: [
-      { kind: "METHOD", id: "m3-cv", title: "Le CV au format américain", body: [] },
-      { kind: "METHOD", id: "m3-statement", title: "Écrire le personal statement", body: [] },
-      { kind: "METHOD", id: "m3-recommandations", title: "Demander des recommandations utiles", body: [] },
-      { kind: "METHOD", id: "m3-bourses", title: "Calendrier et stratégie de bourses", body: [] },
+      {
+        kind: "METHOD",
+        id: "m3-cv",
+        title: "Le CV au format américain",
+        body: [
+          "Le CV américain n'est pas une traduction du CV français : c'est un autre document, qui répond à d'autres attentes. Deux différences comptent plus que toutes les autres. La première : aucune donnée personnelle — ni photographie, ni date de naissance, ni nationalité, ni situation familiale. Leur présence signale un candidat qui n'a pas fait l'effort d'apprendre les codes, avant même qu'on lise le contenu.",
+          "La seconde : on y décrit des résultats, pas des fonctions. « Chargé du suivi des contrats fournisseurs » est une description de poste ; « renégocié quarante contrats fournisseurs, réduisant le délai de paiement moyen de trente jours » est une description de travail. La première laisse le lecteur deviner ce que vous avez fait, la seconde le lui dit. Cette différence de registre est ce qui distingue le plus nettement un CV retravaillé d'un CV traduit.",
+          "Tenez-vous à une page tant que votre expérience le permet, et classez du plus récent au plus ancien. Nommez vos diplômes français en français, suivis d'une explication courte entre parenthèses : chercher un équivalent américain approximatif crée une confusion que le lecteur ne peut pas lever, et vous fait perdre la spécificité qui est justement votre atout.",
+          "Le coffre de documents de la plateforme est prévu pour conserver les versions successives : un CV se réécrit pour chaque famille de postes visée, et retrouver la bonne version au bon moment évite de repartir de zéro à chaque candidature.",
+        ],
+        keyPoints: [
+          "Aucune donnée personnelle : ni photo, ni âge, ni nationalité, ni situation familiale.",
+          "On décrit des résultats chiffrés, pas des intitulés de fonction.",
+          "Les diplômes français se nomment en français, avec une explication — jamais un faux équivalent.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m3-statement",
+        title: "Écrire le personal statement",
+        body: [
+          "Le personal statement répond à une question et une seule : pourquoi vous, pourquoi ce programme, pourquoi maintenant. Tout ce qui ne sert pas cette réponse l'affaiblit. Le défaut le plus commun n'est pas la faute de langue, c'est le texte interchangeable — celui qui pourrait être envoyé à dix écoles en changeant un nom.",
+          "Une méthode qui fonctionne : commencez par écrire la dernière page, celle qui dit ce que vous ferez après. Une fois cette page écrite, le reste du texte a un point de fuite, et chaque paragraphe se juge à sa contribution à cette destination. Un texte écrit dans l'ordre inverse — parcours d'abord, projet à la fin — devient presque toujours un récit chronologique sans argument.",
+          "Ancrez chaque affirmation dans un fait vérifiable. « Je m'intéresse à l'arbitrage international » ne dit rien ; « j'ai suivi le séminaire d'arbitrage de mon M2 et travaillé six mois sur un dossier CCI dans mon cabinet » dit la même chose et la prouve. Le lecteur en reçoit des centaines : il croit ce qui est étayé et oublie le reste.",
+          "Faites relire par quelqu'un dont l'anglais est la langue maternelle, mais ne faites pas réécrire. Un texte lissé par une autre main perd la voix qui le rendait crédible, et cela s'entend.",
+        ],
+        keyPoints: [
+          "Un texte qui pourrait partir à dix écoles ne convainc aucune.",
+          "Écrire la fin d'abord donne au texte un point de fuite.",
+          "Chaque affirmation s'appuie sur un fait vérifiable, ou disparaît.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m3-recommandations",
+        title: "Demander des recommandations utiles",
+        body: [
+          "Une recommandation utile est écrite par quelqu'un qui vous a vu travailler. Le titre de son auteur compte beaucoup moins que la précision de ce qu'il peut dire. Une lettre d'un professeur qui a dirigé votre mémoire vaut mieux qu'une lettre d'un associé prestigieux qui vous a croisé trois fois — la seconde se reconnaît immédiatement à sa généralité.",
+          "Demandez tôt, et demandez bien. « Tôt » veut dire au moins deux mois avant l'échéance : un recommandant pressé écrit une lettre générique, et vous n'aurez aucun moyen de le savoir. « Bien » veut dire fournir un dossier — votre CV, le projet, les programmes visés, et deux ou trois faits précis que vous aimeriez voir mentionnés. Ce n'est pas dicter la lettre : c'est donner de la matière à quelqu'un qui vous soutient et dispose de peu de temps.",
+          "Prévoyez une recommandation de plus que le nombre demandé. Les désistements tardifs sont fréquents, et une candidature bloquée par une lettre manquante l'est pour tout le cycle. La feuille de route de la plateforme place ces demandes suffisamment en amont pour que ce délai existe réellement.",
+        ],
+        keyPoints: [
+          "La précision du recommandant compte plus que son titre.",
+          "Deux mois d'avance, plus un dossier de matière : sinon la lettre sera générique.",
+          "Toujours une lettre de plus que le nombre demandé.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m3-bourses",
+        title: "Calendrier et stratégie de bourses",
+        body: [
+          "Le financement se joue en même temps que les candidatures, jamais après. C'est l'erreur de calendrier la plus coûteuse du parcours : découvrir en avril qu'une aide se demandait en novembre ne se rattrape pas, et fait perdre un cycle entier à un dossier par ailleurs solide.",
+          "Construisez le calendrier à rebours, dans l'ordre inverse de la lecture : partez de la rentrée visée, remontez à la date de réponse des écoles, puis aux dates limites de chaque dossier de financement. Chaque source a son propre calendrier, indépendant de celui des écoles — aides des établissements, dispositifs publics français, fondations privées, prêts bancaires. Il n'existe pas de date unique à retenir, ce qui est précisément pourquoi il faut une liste écrite.",
+          "Vérifiez chaque date sur le site de l'organisme concerné, l'année où vous candidatez. Les calendriers évoluent, et une date recopiée d'un forum ou d'un témoignage de l'année précédente est une date que personne ne garantit. C'est la règle que suit la plateforme pour ses propres contenus : rien qui énonce une procédure officielle n'y figure sans sa source et sa date de vérification.",
+          "Traitez enfin les accords entre votre université et des law schools américaines comme une source de financement à part entière : ils portent parfois sur les frais de scolarité eux-mêmes, ce qui pèse davantage que la plupart des bourses. La plateforme les détecte à partir de votre université, et le simulateur de coût les intègre à ses scénarios.",
+        ],
+        keyPoints: [
+          "Le financement se prépare avec les candidatures, pas après les réponses.",
+          "Calendrier construit à rebours de la rentrée visée, une ligne par organisme.",
+          "Chaque date se vérifie à la source, pour l'année où vous candidatez.",
+        ],
+      },
     ],
   },
   {
@@ -326,13 +445,72 @@ export const MODULES: ModuleEntry[] = [
     order: 9,
     title: "Recherche de stage et d'emploi",
     summary: "Networking, alumni, cold emails, CV américain, LinkedIn, entretiens et suivi des candidatures.",
-    readingMinutes: 19,
-    published: false,
+    readingMinutes: 9,
+    published: true,
     sections: [
-      { kind: "METHOD", id: "m9-reseau", title: "Le réseau comme travail, pas comme hasard", body: [] },
-      { kind: "METHOD", id: "m9-coldmail", title: "Écrire un cold email auquel on répond", body: [] },
-      { kind: "METHOD", id: "m9-entretiens", title: "Entretiens américains : codes et préparation", body: [] },
-      { kind: "METHOD", id: "m9-suivi", title: "Tenir un suivi de candidatures", body: [] },
+      {
+        kind: "METHOD",
+        id: "m9-reseau",
+        title: "Le réseau comme travail, pas comme hasard",
+        body: [
+          "Sur le marché américain, une part importante des recrutements ne passe jamais par une annonce. Ce constat est souvent reçu comme une injustice ; c'est plutôt une information exploitable, parce qu'un canal informel se travaille méthodiquement dès lors qu'on cesse d'attendre qu'il produise de la chance.",
+          "La méthode tient en une phrase : un nombre restreint de conversations réelles vaut mieux qu'un grand nombre de contacts nominaux. Visez quelques échanges par semaine, préparés, avec des personnes dont le parcours ressemble au vôtre — des juristes formés hors des États-Unis, passés par un LL.M., et aujourd'hui à un poste qui vous intéresse. Ce sont eux qui peuvent vous dire ce qui a fonctionné, et surtout ce qui n'a pas fonctionné.",
+          "Le réseau des anciens de votre programme est le point de départ le plus rentable : l'appartenance commune suffit à justifier une prise de contact, ce qui lève l'obstacle principal. Vient ensuite le réseau français aux États-Unis — associations professionnelles, chambres de commerce, cercles d'anciens des universités françaises — dont la logique de solidarité joue en votre faveur.",
+          "Commencez pendant l'année, pas après le diplôme. Un contact pris quand vous n'avez rien à demander est un contact disponible quand vous aurez quelque chose à demander. L'ordre inverse fonctionne mal, et se voit.",
+        ],
+        keyPoints: [
+          "Quelques conversations préparées valent mieux qu'un carnet d'adresses.",
+          "Les anciens du programme sont le point d'entrée le moins coûteux.",
+          "Un contact pris sans rien demander sera disponible plus tard.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m9-coldmail",
+        title: "Écrire un cold email auquel on répond",
+        body: [
+          "Un message à un inconnu obtient une réponse quand il est court, précis, et qu'il demande peu. Trois paragraphes suffisent : qui vous êtes en une phrase, pourquoi vous écrivez à cette personne-là en particulier, et une demande unique, facile à satisfaire.",
+          "La deuxième phrase est celle qui décide. Elle doit prouver que vous avez fait un travail préalable : un article que la personne a écrit, un dossier sur lequel elle a travaillé, un parcours proche du vôtre. Sans elle, votre message est indiscernable des dizaines d'autres qu'elle reçoit, et il sera traité comme tel.",
+          "Demandez une conversation de vingt minutes, pas un emploi. La différence est décisive : la première demande est facile à accepter et coûte peu, la seconde met votre interlocuteur en position de vous refuser quelque chose — ce que la plupart des gens évitent en ne répondant pas. Un poste se propose parfois au bout de la conversation, jamais au bout du premier message.",
+          "Relancez une fois, une seule, après une dizaine de jours. L'absence de réponse est presque toujours une question de charge de travail, pas un refus ; mais deux relances transforment une non-réponse en refus explicite.",
+        ],
+        keyPoints: [
+          "Trois paragraphes : qui vous êtes, pourquoi cette personne, une demande unique.",
+          "Demander vingt minutes, jamais un emploi.",
+          "Une relance après dix jours, et pas davantage.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m9-entretiens",
+        title: "Entretiens américains : codes et préparation",
+        body: [
+          "L'entretien américain valorise ce que l'entretien français tempère : parler de ses résultats en son nom propre. Dire « j'ai obtenu » là où vous diriez spontanément « nous avons obtenu » n'est pas de l'arrogance dans ce contexte, c'est la réponse attendue à la question posée. Beaucoup de candidats français sous-performent pour cette seule raison, avec un dossier meilleur que celui du candidat retenu.",
+          "Le format le plus fréquent est comportemental : on vous demandera de raconter une situation précise — un désaccord, une erreur, un dossier difficile. Préparez cinq à six récits courts, tirés de votre expérience réelle, chacun construit de la même façon : la situation, ce que vous avez fait, le résultat. Ces récits se recombinent pour répondre à la plupart des questions ; les improviser conduit à des réponses vagues qui n'apportent rien.",
+          "Préparez aussi la question de votre parcours étranger. Elle viendra, sous une forme ou une autre, et l'hésitation qu'elle provoque est plus dommageable que la question elle-même. Votre réponse tient en deux temps : ce que votre formation d'origine vous permet de faire que les autres candidats ne peuvent pas, et pourquoi c'est utile à ce poste précis.",
+          "Ayez enfin deux questions à poser, sur le travail lui-même — pas sur l'entreprise, dont le site répond déjà. Une question précise sur les dossiers de l'équipe montre mieux votre sérieux que n'importe quelle formule de conclusion.",
+        ],
+        keyPoints: [
+          "« J'ai obtenu », pas « nous avons obtenu » : c'est la réponse attendue.",
+          "Cinq à six récits préparés — situation, action, résultat — se recombinent.",
+          "La question du parcours étranger viendra : sa réponse se prépare.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m9-suivi",
+        title: "Tenir un suivi de candidatures",
+        body: [
+          "Une recherche d'emploi menée sur plusieurs mois produit rapidement plus d'informations qu'une mémoire ne peut en tenir : qui vous avez contacté, quand, ce qui a été dit, ce que vous aviez promis d'envoyer. Sans trace écrite, deux échecs surviennent — la relance oubliée et, plus gênante, la seconde prise de contact avec quelqu'un à qui vous aviez déjà écrit.",
+          "Un tableau suffit, à condition d'y consigner la seule colonne qui compte vraiment : la prochaine action et sa date. Le reste — organisation, personne, canal, statut — est du contexte. Une ligne sans prochaine action est une piste abandonnée sans l'avoir décidé, et c'est ainsi que la plupart des pistes meurent.",
+          "Relisez ce suivi une fois par semaine, à jour fixe. Ce rendez-vous transforme une recherche subie, faite d'à-coups, en un travail régulier dont vous mesurez l'avancement — et il fournit la matière factuelle des séances de coaching, où le temps est trop court pour reconstituer de mémoire ce qui s'est passé.",
+        ],
+        keyPoints: [
+          "La colonne décisive est « prochaine action et sa date ».",
+          "Une ligne sans prochaine action est une piste abandonnée sans décision.",
+          "Une relecture hebdomadaire à jour fixe rend l'avancement mesurable.",
+        ],
+      },
     ],
   },
   {
@@ -340,12 +518,54 @@ export const MODULES: ModuleEntry[] = [
     order: 10,
     title: "Rester, rentrer ou aller ailleurs",
     summary: "Rester aux États-Unis, rentrer en France ou travailler dans un autre pays.",
-    readingMinutes: 13,
-    published: false,
+    readingMinutes: 6,
+    published: true,
     sections: [
-      { kind: "METHOD", id: "m10-rester", title: "Rester : à quelles conditions", body: [] },
-      { kind: "METHOD", id: "m10-rentrer", title: "Rentrer sans perdre le bénéfice du parcours", body: [] },
-      { kind: "METHOD", id: "m10-ailleurs", title: "Un troisième marché", body: [] },
+      {
+        kind: "METHOD",
+        id: "m10-rester",
+        title: "Rester : à quelles conditions",
+        body: [
+          "Rester aux États-Unis après le parcours suppose que trois conditions soient réunies en même temps, et c'est leur simultanéité qui fait la difficulté : un employeur qui vous veut, un statut administratif qui vous y autorise, et un calendrier où les deux coïncident. Chacune prise isolément est atteignable ; c'est leur intersection qui décide.",
+          "La conséquence pratique est que la recherche d'emploi et les démarches de statut ne sont pas deux chantiers successifs mais un seul, mené de front. Un employeur trouvé trop tard pour les échéances administratives équivaut, du point de vue du résultat, à un employeur non trouvé. Les règles applicables, leurs délais et leurs conditions relèvent du module consacré au panorama migratoire, qui les énonce avec ses sources — ce module-ci ne traite que de la stratégie.",
+          "Posez-vous la question de la durée avant celle de la possibilité. Rester deux ou trois ans pour acquérir une expérience américaine puis rentrer est un projet différent de s'installer durablement : ils n'appellent ni les mêmes employeurs, ni le même effort, ni le même arbitrage financier. Beaucoup de candidats poursuivent le second en n'ayant réfléchi qu'au premier.",
+        ],
+        keyPoints: [
+          "Trois conditions simultanées : employeur, statut, calendrier commun.",
+          "Recherche d'emploi et démarches de statut se mènent de front, jamais l'une après l'autre.",
+          "« Quelques années » et « durablement » sont deux projets distincts.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m10-rentrer",
+        title: "Rentrer sans perdre le bénéfice du parcours",
+        body: [
+          "Le risque du retour n'est pas le retour lui-même : c'est de le raconter comme un échec. Un parcours américain se valorise très bien sur le marché français, à condition d'énoncer ce qu'il vous permet de faire aujourd'hui — et non de le présenter comme une parenthèse qui n'aurait pas abouti.",
+          "Ce que le marché français achète est précis : la capacité à travailler sur des dossiers impliquant des parties américaines, la compréhension directe d'un droit que vos interlocuteurs ne connaissent que de seconde main, et un réseau outre-Atlantique réellement utilisable. Formulez ces trois éléments en une phrase chacun, avec des exemples. C'est cette formulation qui manque le plus souvent, pas l'expérience.",
+          "Deux erreurs de calendrier coûtent cher. La première : rentrer sans avoir prévenu personne, en découvrant que le marché français recrute lui aussi selon des cycles. La seconde : laisser passer plus d'un an avant de reprendre contact avec votre réseau français, délai au-delà duquel il faut le reconstruire plutôt que le réactiver. Les deux se traitent de la même façon — en entretenant ce réseau pendant l'année américaine, et non à votre retour.",
+        ],
+        keyPoints: [
+          "Le risque est le récit du retour, pas le retour.",
+          "Trois arguments à formuler par écrit : dossiers transatlantiques, droit de première main, réseau utilisable.",
+          "Le réseau français s'entretient pendant l'année américaine, pas au retour.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m10-ailleurs",
+        title: "Un troisième marché",
+        body: [
+          "Un troisième marché — Londres, Bruxelles, Genève, Singapour, Dubaï, Montréal — est une option que la plupart des candidats n'examinent jamais, alors qu'elle correspond souvent mieux à leur profil que les deux autres. La combinaison d'une formation française et d'un diplôme américain y est fréquemment un avantage plus net que dans chacun des deux pays d'origine.",
+          "Ces marchés partagent une caractéristique utile : ils recrutent des juristes précisément pour leur capacité à travailler entre plusieurs systèmes, ce qui est exactement la compétence que votre parcours construit. Là où le marché américain domestique neutralise votre formation initiale, ces places la comptent deux fois.",
+          "La contrepartie est que chacun a ses propres conditions d'exercice, ses règles d'accès à la profession et ses délais — qui ne se déduisent d'aucun des deux parcours que vous connaissez déjà. Le module consacré aux autres barreaux et équivalences traite cette question avec ses sources. Retenez ici seulement qu'écarter cette hypothèse sans l'avoir examinée revient souvent à écarter la meilleure.",
+        ],
+        keyPoints: [
+          "Un troisième marché valorise souvent mieux la double formation que la France ou les États-Unis.",
+          "Ces places recrutent pour la capacité à travailler entre systèmes — c'est votre compétence.",
+          "Les conditions d'accès y sont propres à chaque juridiction et se vérifient une par une.",
+        ],
+      },
     ],
   },
 ];

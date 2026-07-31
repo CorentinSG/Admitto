@@ -99,17 +99,43 @@ describe("sourçage (même discipline que le Moteur A)", () => {
 });
 
 describe("publication effective", () => {
+  /**
+   * Liste attendue, tenue à jour à chaque module rédigé.
+   *
+   * Une liste figée plutôt qu'un simple `filter` : elle transforme la
+   * publication d'un module en geste explicite. Sans elle, un `published: true`
+   * posé par mégarde sur un plan à moitié écrit passerait au vert dès que les
+   * sections cesseraient d'être vides, sans que personne l'ait décidé.
+   */
+  const LISIBLES = [
+    "module-0-decision",
+    "module-1-career",
+    "module-3-candidatures",
+    "module-9-recherche",
+    "module-10-suite",
+  ];
+
   it("seuls les modules rédigés sont lisibles", () => {
     const readable = MODULES.filter((m) => isModulePublished(m.slug)).map((m) => m.slug);
-    expect(readable).toEqual(["module-0-decision"]);
+    expect(readable).toEqual(LISIBLES);
   });
 
   it("les modules en production ne sont jamais annoncés comme lisibles", () => {
     // Leur plan comporte des sections vides et, le cas échéant, des sources à
     // renseigner : `published` seul ne suffirait pas à les ouvrir.
-    for (const entry of MODULES.filter((m) => m.slug !== "module-0-decision")) {
+    for (const entry of MODULES.filter((m) => !LISIBLES.includes(m.slug))) {
       expect(isModulePublished(entry.slug), entry.slug).toBe(false);
       expect(publicationBlockers(entry).length, entry.slug).toBeGreaterThan(0);
+    }
+  });
+
+  it("chaque module lisible a du contenu dans toutes ses sections", () => {
+    // Le garde-fou le vérifie déjà, mais il est appelé au rendu : ce test
+    // échoue au commit, pas devant un lecteur.
+    for (const entry of MODULES.filter((m) => LISIBLES.includes(m.slug))) {
+      for (const section of entry.sections) {
+        expect(section.body.length, `${entry.slug} / ${section.id}`).toBeGreaterThan(0);
+      }
     }
   });
 
