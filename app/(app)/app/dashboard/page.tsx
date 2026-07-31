@@ -14,6 +14,8 @@ import { DOCUMENT_TYPE_LABELS, vault } from "@/content/vault";
 import { rapport } from "@/content/rapport";
 import { documentStore } from "@/lib/store/documents";
 import { reportStore } from "@/lib/store/reports";
+import { buildTimelineView } from "@/lib/roadmap/timeline-view";
+import { Timeline } from "../roadmap/Timeline";
 import { milestoneStore } from "@/lib/store/milestones";
 import { TaskStatusControl } from "../_components/TaskStatusControl";
 
@@ -49,6 +51,11 @@ export default async function DashboardPage() {
   const milestoneDates = await milestoneStore.dates(assessmentId);
   // L'identifiant du rapport EST celui du diagnostic (voir `reportStore.create`).
   const reportReady = (await reportStore.get(assessmentId))?.status === "SENT";
+
+  // La même timeline que la feuille de route — même constructeur, donc mêmes
+  // libellés, mêmes positions, même axe. Elle vit aussi ici parce que le
+  // tableau de bord est l'écran d'arrivée : « où j'en suis » se lit avant tout.
+  const timelineView = buildTimelineView(tasks, loaded.assessment.deadlines, now);
   const nba = selectNextBestAction(tasks, now);
   const progress = computeProgress(tasks);
   const stats = personalStats(tasks, now);
@@ -222,6 +229,9 @@ export default async function DashboardPage() {
           </p>
         )}
       </section>
+
+      {/* 2 bis. Timeline — l'axe du temps, partagé avec la feuille de route */}
+      {timelineView ? <Timeline view={timelineView} /> : null}
 
       {/* 3. Progression et statistiques personnelles */}
       <Section title={dashboard.sections.progress}>

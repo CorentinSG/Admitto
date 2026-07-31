@@ -8,8 +8,8 @@ import { progressByPhase } from "@/lib/roadmap/progress";
 import { applicableTasks } from "@/lib/roadmap/generate";
 import { dashboard, PHASE_LABELS, STATUS_LABELS } from "@/content/dashboard";
 import { TaskStatusControl } from "../_components/TaskStatusControl";
-import { buildTimeline } from "@/lib/roadmap/timeline";
-import { Timeline, type TimelineView } from "./Timeline";
+import { buildTimelineView } from "@/lib/roadmap/timeline-view";
+import { Timeline } from "./Timeline";
 
 export const metadata: Metadata = {
   title: "Feuille de route — Admitto",
@@ -38,42 +38,10 @@ export default async function RoadmapPage() {
   const { tasks } = loaded;
   const now = new Date();
 
-  // Timeline (CDC §22) : mêmes tâches, projetées sur l'axe du temps. Toutes
-  // les dates sont formatées ICI, côté serveur — un composant client qui
-  // formate une date fait diverger les deux rendus à cheval sur minuit.
-  const model = buildTimeline(tasks, now);
-  const monthFr = (iso: string) =>
-    new Date(`${iso}T00:00:00Z`).toLocaleDateString("fr-FR", {
-      month: "short",
-      year: "2-digit",
-      timeZone: "UTC",
-    });
-  const timelineView: TimelineView | null = model
-    ? {
-        points: model.entries.map((entry) => ({
-          id: entry.id,
-          title: entry.title,
-          state: entry.state,
-          position: entry.position,
-          dateLabel: dateFr(entry.date),
-          leftLabel:
-            entry.state === "DONE"
-              ? STATUS_LABELS[entry.status]
-              : entry.daysLeft < 0
-                ? dashboard.timeline.lateBy(-entry.daysLeft)
-                : dashboard.timeline.inDays(entry.daysLeft),
-          statusLabel: STATUS_LABELS[entry.status],
-          delayRisk: entry.delayRisk,
-          toolHref: entry.toolHref,
-          toolLabel: entry.toolLabel,
-        })),
-        todayPosition: model.todayPosition,
-        ticks: model.ticks.map((tick) => ({ label: monthFr(tick.date), position: tick.position })),
-        doneCount: model.doneCount,
-        totalCount: model.totalCount,
-        undatedNote: model.undatedCount > 0 ? dashboard.timeline.undated(model.undatedCount) : "",
-      }
-    : null;
+  // Timeline (CDC §22) : mêmes tâches et mêmes échéances officielles,
+  // projetées sur l'axe du temps. La projection est PARTAGÉE avec le tableau
+  // de bord : deux projections divergeraient sans que rien ne le signale.
+  const timelineView = buildTimelineView(tasks, loaded.assessment.deadlines, now);
 
   const phases = progressByPhase(tasks);
   const applicable = applicableTasks(tasks);

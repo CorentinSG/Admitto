@@ -125,6 +125,32 @@ const after = (await waitFor(async () => {
 })) ?? (await page.locator("body").innerText());
 check("Statut modifiable et progression recalculée", !/\b0\s*%/.test(after), after.match(/\d+\s*%/)?.[0] ?? "?");
 
+// ── Timeline sur le tableau de bord aussi ──────────────────────────────────
+{
+  const board = (await page.locator("body").innerText()).toLowerCase();
+  check("Timeline présente sur le tableau de bord", board.includes("votre timeline"));
+  check("Échéances officielles sur l'axe", board.includes("échéance officielle"));
+  check("Tâches à commencer désignées", board.includes("à commencer maintenant"));
+
+  // Un losange d'échéance se sélectionne comme une pastille : son détail
+  // affiche la note de l'échéance, pas une tâche.
+  const diamond = page.locator('button[aria-label^="Échéance :"]').first();
+  const label = ((await diamond.getAttribute("aria-label")) ?? "").replace("Échéance : ", "");
+  await diamond.click();
+  check(
+    "Une échéance sélectionnée montre son détail",
+    Boolean(
+      await waitFor(async () => {
+        const text = await page
+          .locator('section[aria-label="Timeline du parcours"]')
+          .innerText();
+        return text.includes(label.split(" — ")[0]) ? text : null;
+      })
+    ),
+    label.split(" — ")[0]
+  );
+}
+
 // ── Feuille de route ───────────────────────────────────────────────────────
 await page.goto(`${BASE}/app/roadmap`, { waitUntil: "networkidle" });
 const roadmap = (await page.locator("body").innerText()).toLowerCase();
@@ -142,7 +168,11 @@ check("Timeline affichée", roadmap.includes("votre timeline"));
 check("Repère du jour planté sur l'axe", roadmap.includes("aujourd'hui"));
 check("Avancement compté", /\d+ accomplie\(s\) sur \d+/.test(roadmap));
 
-const dots = page.locator('section[aria-label="Timeline du parcours"] button[aria-pressed]');
+// Les losanges d'échéance portent aussi aria-pressed : les exclure, sinon le
+// point « une pastille par tâche » compterait des échéances.
+const dots = page.locator(
+  'section[aria-label="Timeline du parcours"] button[aria-pressed]:not([aria-label^="Échéance :"])'
+);
 check("Une pastille par tâche datée", (await dots.count()) > 5, String(await dots.count()));
 
 // Cliquer une pastille sélectionne SA tâche dans le détail.

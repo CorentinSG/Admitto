@@ -1,4 +1,5 @@
 import type { Task, TaskStatus } from "./types";
+import type { Deadline } from "@/lib/deadlines/compute";
 import { applicableTasks } from "./generate";
 
 /**
@@ -51,8 +52,26 @@ export interface TimelineTick {
   position: number;
 }
 
+/**
+ * Échéance officielle sur l'axe (CDC §15) : celles du diagnostic — test
+ * d'anglais, dossiers, visa, évaluation. Distinctes des tâches : une tâche
+ * est un travail à soi, une échéance est une porte qui ferme. Les deux
+ * cohabitent sur le même axe pour que « ce que je fais » se lise contre
+ * « ce qui m'attend ».
+ */
+export interface TimelineDeadline {
+  key: string;
+  label: string;
+  note: string;
+  date: string;
+  position: number;
+  daysLeft: number;
+  passed: boolean;
+}
+
 export interface TimelineModel {
   entries: TimelineEntry[];
+  deadlines: TimelineDeadline[];
   /** Position d'aujourd'hui sur l'axe, 0–100. */
   todayPosition: number;
   ticks: TimelineTick[];
@@ -60,6 +79,12 @@ export interface TimelineModel {
   totalCount: number;
   /** Tâches applicables mais sans échéance (rentrée non décidée) : dites, pas cachées. */
   undatedCount: number;
+  /**
+   * Les prochaines tâches À COMMENCER : non entamées, la plus proche d'abord —
+   * une tâche en retard est la plus urgente à commencer, elle vient en tête.
+   * Des identifiants, pas des copies : la liste pointe les entrées de l'axe.
+   */
+  toStartIds: string[];
 }
 
 const DAY = 86_400_000;
@@ -89,7 +114,11 @@ function stateOf(task: Task, todayIso: string, reference: Date): TimelineState {
  * rentrée décidée il n'y a pas d'axe de temps, et en dessiner un serait une
  * invention — l'appelant affiche pourquoi, au lieu d'un axe vide.
  */
-export function buildTimeline(tasks: Task[], reference: Date): TimelineModel | null {
+export function buildTimeline(
+  tasks: Task[],
+  reference: Date,
+  officialDeadlines: Deadline[] = []
+): TimelineModel | null {
   const applicable = applicableTasks(tasks);
   const dated = applicable
     .filter((task) => task.dueDate !== null)
@@ -101,9 +130,11 @@ export function buildTimeline(tasks: Task[], reference: Date): TimelineModel | n
   const todayMs = toMs(todayIso);
 
   // L'axe couvre du plus ancien repère (échéance passée comprise : un retard
-  // se VOIT derrière soi, il ne sort pas de l'écran) à la dernière échéance.
-  const firstMs = Math.min(todayMs, toMs(dayOf(dated[0].dueDate!)));
-  const lastMs = Math.max(todayMs, toMs(dayOf(dated[dated.length - 1].dueDate!)));
+  // se VOIT derrière soi, il ne sort pas de l'écran) à la dernière échéance —
+  // tâches ET échéances officielles : un marqueur hors axe serait invisible.
+  const deadlineMs = officialDeadlines.map((deadline) => toMs(dayOf(deadline.date)));
+  const firstMs = Math.min(todayMs, toMs(dayOf(dated[0].dueDate!)), ...deadlineMs);
+  const lastMs = Math.max(todayMs, toMs(dayOf(dated[dated.length - 1].dueDate!)), ...deadlineMs);
   // Une seule échéance, le jour même : l'étendue serait nulle, chaque position
   // une division par zéro. Un mois d'étendue rend l'axe lisible.
   const span = Math.max(lastMs - firstMs, 30 * DAY);
@@ -138,12 +169,37 @@ export function buildTimeline(tasks: Task[], reference: Date): TimelineModel | n
   }
   const thinned = ticks.length > 12 ? ticks.filter((_, i) => i % 2 === 0) : ticks;
 
+  const deadlines: TimelineDeadline[] = [...officialDeadlines]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((deadline) => {
+      const date = dayOf(deadline.date);
+      return {
+        key: deadline.key,
+        label: deadline.label,
+        note: deadline.note,
+        date,
+        position: position(toMs(date)),
+        daysLeft: Math.ceil((toMs(date) - todayMs) / DAY),
+        passed: date < todayIso,
+      };
+    });
+
+  // À commencer : non entamées (TODO ou bloquées — débloquer, c'est commencer),
+  // la plus proche d'abord. `entries` est déjà trié par date, et une tâche en
+  // retard précède les autres naturellement.
+  const toStartIds = entries
+    .filter((entry) => entry.status === "TODO" || entry.status === "BLOCKED")
+    .slice(0, 3)
+    .map((entry) => entry.id);
+
   return {
     entries,
+    deadlines,
     todayPosition: position(todayMs),
     ticks: thinned,
     doneCount: entries.filter((entry) => entry.state === "DONE").length,
     totalCount: entries.length,
     undatedCount: applicable.length - dated.length,
+    toStartIds,
   };
 }

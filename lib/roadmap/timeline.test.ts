@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Task } from "./types";
+import type { Deadline } from "@/lib/deadlines/compute";
 import { URGENT_WINDOW_DAYS, buildTimeline } from "./timeline";
 
 const REFERENCE = new Date("2026-07-30T12:00:00.000Z");
@@ -16,6 +17,15 @@ const task = (over: Partial<Task>): Task => ({
   delayRisk: "Un retard comprime la suite.",
   status: over.status ?? "TODO",
   dueDate: over.dueDate === undefined ? "2026-12-01" : over.dueDate,
+  ...over,
+});
+
+const deadline = (over: Partial<Deadline>): Deadline => ({
+  key: "SCHOOL_LIST",
+  date: "2026-10-15",
+  monthsBeforeIntake: 11,
+  label: "Liste d'écoles",
+  note: "Les dossiers se préparent à rebours de cette date.",
   ...over,
 });
 
@@ -113,6 +123,43 @@ describe("timeline du parcours", () => {
     const model = buildTimeline([task({ dueDate: "2026-07-30" })], REFERENCE)!;
     expect(Number.isFinite(model.entries[0].position)).toBe(true);
     expect(Number.isFinite(model.todayPosition)).toBe(true);
+  });
+
+  it("place les échéances officielles sur l'axe, l'étendant s'il le faut", () => {
+    const model = buildTimeline(
+      [task({ id: "t", dueDate: "2026-10-01" })],
+      REFERENCE,
+      [
+        deadline({ key: "VISA", date: "2027-05-01", label: "Visa" }),
+        deadline({ key: "ENGLISH", date: "2026-06-01", label: "Test d'anglais" }),
+      ]
+    )!;
+    // L'axe s'étend jusqu'à l'échéance la plus lointaine ET la plus ancienne :
+    // un marqueur hors axe serait invisible.
+    const byKey = Object.fromEntries(model.deadlines.map((d) => [d.key, d]));
+    expect(byKey.VISA.position).toBe(100);
+    expect(byKey.ENGLISH.position).toBe(0);
+    expect(byKey.ENGLISH.passed).toBe(true);
+    expect(byKey.VISA.passed).toBe(false);
+    // Triées par date, pas par ordre d'arrivée.
+    expect(model.deadlines.map((d) => d.key)).toEqual(["ENGLISH", "VISA"]);
+  });
+
+  it("désigne les prochaines tâches à commencer, le retard en tête", () => {
+    const model = buildTimeline(
+      [
+        task({ id: "done", status: "DONE", dueDate: "2026-08-01" }),
+        task({ id: "started", status: "IN_PROGRESS", dueDate: "2026-09-01" }),
+        task({ id: "late", status: "TODO", dueDate: "2026-07-01" }),
+        task({ id: "next", status: "TODO", dueDate: "2026-10-01" }),
+        task({ id: "blocked", status: "BLOCKED", dueDate: "2026-11-01" }),
+        task({ id: "far", status: "TODO", dueDate: "2027-06-01" }),
+      ],
+      REFERENCE
+    )!;
+    // Non entamées seulement : ni l'accomplie, ni celle déjà en cours. Trois
+    // au plus — une liste de dix « à commencer » ne fait commencer personne.
+    expect(model.toStartIds).toEqual(["late", "next", "blocked"]);
   });
 
   it("gradue par mois et éclaircit au-delà de douze", () => {

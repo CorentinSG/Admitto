@@ -116,8 +116,11 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
   `toolHref` relie une tâche à l'outil qui l'accomplit : sans lui, la feuille de route
   demande un travail que le produit sait faire et laisse l'utilisateur le faire ailleurs.
   `timeline.ts` projette les mêmes tâches sur l'axe du temps (accompli / en retard /
-  approche / à venir, repère du jour) : l'état vient des statuts de la feuille de
-  route, JAMAIS d'un compteur propre — il n'existe pas de second état à désynchroniser.
+  approche / à venir, repère du jour), plus les échéances officielles du diagnostic
+  (losanges) et les prochaines tâches À COMMENCER : l'état vient des statuts de la
+  feuille de route, JAMAIS d'un compteur propre — il n'existe pas de second état à
+  désynchroniser. Rendue sur la feuille de route ET le tableau de bord via l'UNIQUE
+  projection `timeline-view.ts` (deux projections divergeraient sans signal).
   Sans tâche datée, pas d'axe : `buildTimeline` rend null plutôt qu'un axe inventé.
 - `lib/vault/` + `content/vault.ts` — coffre de documents (CDC §29). Cinq types fermés :
   la liste EST le contrôle de minimisation. `policy.ts` décide avant toute écriture, et

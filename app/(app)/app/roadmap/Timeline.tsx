@@ -38,8 +38,22 @@ export interface TimelinePointView {
   toolLabel?: string;
 }
 
+export interface TimelineDeadlineView {
+  key: string;
+  label: string;
+  note: string;
+  position: number;
+  dateLabel: string;
+  leftLabel: string;
+  passed: boolean;
+}
+
 export interface TimelineView {
   points: TimelinePointView[];
+  /** Échéances officielles du diagnostic — losanges au-dessus du rail. */
+  deadlines: TimelineDeadlineView[];
+  /** Les prochaines tâches non entamées — références aux points de l'axe. */
+  toStart: TimelinePointView[];
   todayPosition: number;
   ticks: Array<{ label: string; position: number }>;
   doneCount: number;
@@ -68,6 +82,10 @@ export function Timeline({ view }: { view: TimelineView }) {
   const first = view.points.find((point) => point.state !== "DONE") ?? view.points[0];
   const [selectedId, setSelectedId] = useState<string | null>(first?.id ?? null);
   const selected = view.points.find((point) => point.id === selectedId) ?? null;
+  // Préfixe « D: » : une échéance sélectionnée ne peut pas entrer en collision
+  // avec un identifiant de tâche.
+  const selectedDeadline =
+    view.deadlines.find((deadline) => `D:${deadline.key}` === selectedId) ?? null;
 
   const small = {
     fontFamily: fonts.sans,
@@ -105,7 +123,11 @@ export function Timeline({ view }: { view: TimelineView }) {
       {/* L'axe déborde horizontalement sur petit écran plutôt que d'écraser
           les positions : le temps ne se compresse pas. */}
       <div style={{ overflowX: "auto", paddingBottom: 6 }}>
-        <div style={{ position: "relative", minWidth: 640, height: 108, marginTop: 18 }}>
+        {/* Marges internes : un marqueur à 0 % ou 100 % est centré sur le bord
+            de l'axe, sa moitié dépasse — sans elles, elle serait rognée. */}
+        <div
+          style={{ position: "relative", minWidth: 640, height: 108, margin: "18px 12px 0" }}
+        >
           {/* Rail */}
           <div
             aria-hidden
@@ -187,6 +209,36 @@ export function Timeline({ view }: { view: TimelineView }) {
             </span>
           ))}
 
+          {/* Les échéances officielles — losanges au-dessus du rail. Une
+              échéance n'est pas une tâche : une tâche est un travail à soi,
+              une échéance est une porte qui ferme. */}
+          {view.deadlines.map((deadline) => {
+            const key = `D:${deadline.key}`;
+            const isSelected = key === selectedId;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setSelectedId(key)}
+                aria-label={`Échéance : ${deadline.label} — ${deadline.dateLabel}`}
+                aria-pressed={isSelected}
+                title={deadline.label}
+                style={{
+                  position: "absolute",
+                  left: `${deadline.position}%`,
+                  top: 8,
+                  transform: "translateX(-50%) rotate(45deg)",
+                  width: 11,
+                  height: 11,
+                  padding: 0,
+                  backgroundColor: deadline.passed ? alpha.cardNumIdle : colors.navy900,
+                  border: `2px solid ${isSelected ? colors.gold : colors.navy900}`,
+                  cursor: "pointer",
+                }}
+              />
+            );
+          })}
+
           {/* Les tâches */}
           {view.points.map((point) => {
             const style = STATE_STYLES[point.state];
@@ -240,7 +292,61 @@ export function Timeline({ view }: { view: TimelineView }) {
             </span>
           );
         })}
+        {view.deadlines.length > 0 ? (
+          <span style={{ ...small, display: "flex", alignItems: "center", gap: 6 }}>
+            <span
+              aria-hidden
+              style={{
+                width: 8,
+                height: 8,
+                backgroundColor: colors.navy900,
+                transform: "rotate(45deg)",
+                display: "inline-block",
+              }}
+            />
+            {dashboard.timeline.deadlineLegend}
+          </span>
+        ) : null}
       </div>
+
+      {/* Détail de l'échéance sélectionnée */}
+      {selectedDeadline ? (
+        <div
+          style={{
+            marginTop: 18,
+            paddingTop: 16,
+            borderTop: `1px solid ${alpha.cardGridGap}`,
+          }}
+        >
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 12 }}>
+            <strong
+              style={{
+                fontFamily: fonts.sans,
+                fontWeight: 500,
+                fontSize: "0.95rem",
+                color: colors.navy900,
+              }}
+            >
+              {dashboard.timeline.deadlineLegend} — {selectedDeadline.label}
+            </strong>
+            <span style={{ ...small, color: colors.gold }}>
+              {selectedDeadline.dateLabel} · {selectedDeadline.leftLabel}
+            </span>
+          </div>
+          <p
+            style={{
+              fontFamily: fonts.sans,
+              fontSize: "0.85rem",
+              lineHeight: 1.7,
+              maxWidth: 700,
+              margin: "8px 0 0",
+              color: colors.slate,
+            }}
+          >
+            {selectedDeadline.note}
+          </p>
+        </div>
+      ) : null}
 
       {/* Détail de la tâche sélectionnée */}
       {selected ? (
@@ -294,6 +400,79 @@ export function Timeline({ view }: { view: TimelineView }) {
               {selected.toolLabel} →
             </Link>
           ) : null}
+        </div>
+      ) : null}
+
+      {/* À commencer maintenant : les prochaines tâches non entamées. Une
+          ligne SÉLECTIONNE son point sur l'axe — même état, même détail. */}
+      {view.toStart.length > 0 ? (
+        <div
+          style={{
+            marginTop: 18,
+            paddingTop: 16,
+            borderTop: `1px solid ${alpha.cardGridGap}`,
+          }}
+        >
+          <span
+            style={{
+              ...small,
+              fontSize: "0.68rem",
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: colors.gold,
+            }}
+          >
+            {dashboard.timeline.toStart}
+          </span>
+          <ul style={{ listStyle: "none", margin: "10px 0 0", padding: 0 }}>
+            {view.toStart.map((point) => (
+              <li
+                key={point.id}
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "baseline",
+                  gap: 10,
+                  padding: "6px 0",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSelectedId(point.id)}
+                  aria-label={`${dashboard.timeline.toStart} — ${point.title}`}
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: "0.88rem",
+                    color: colors.navy900,
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    textDecorationColor: alpha.goldBorderHover,
+                    textUnderlineOffset: 3,
+                  }}
+                >
+                  {point.title}
+                </button>
+                <span style={{ ...small, color: point.state === "OVERDUE" || point.state === "URGENT" ? colors.gold : colors.slate }}>
+                  {point.dateLabel} · {point.leftLabel}
+                </span>
+                {point.toolHref && point.toolLabel ? (
+                  <Link
+                    href={point.toolHref}
+                    style={{
+                      ...small,
+                      color: colors.gold,
+                      textDecoration: "none",
+                    }}
+                  >
+                    {point.toolLabel} →
+                  </Link>
+                ) : null}
+              </li>
+            ))}
+          </ul>
         </div>
       ) : null}
 

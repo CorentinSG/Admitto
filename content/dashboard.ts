@@ -57,6 +57,8 @@ export const dashboard = {
       `${n} tâche(s) sans échéance : elles rejoindront l'axe dès que votre rentrée visée sera décidée.`,
     inDays: (n: number) => (n === 0 ? "aujourd'hui" : n === 1 ? "demain" : `dans ${n} jours`),
     lateBy: (n: number) => `en retard de ${n} jour(s)`,
+    deadlineLegend: "Échéance officielle",
+    toStart: "À commencer maintenant",
   },
   sections: {
     phase: "Phase actuelle",
