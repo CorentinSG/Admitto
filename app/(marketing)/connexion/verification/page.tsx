@@ -17,7 +17,7 @@ export const metadata: Metadata = {
  */
 export default function VerifyRequestPage() {
   return (
-    <main style={{ backgroundColor: colors.ivory, minHeight: "100vh", padding: "120px 8%" }}>
+    <main id="contenu" tabIndex={-1} style={{ backgroundColor: colors.ivory, minHeight: "100vh", padding: "120px 8%" }}>
       <div style={{ maxWidth: 620 }}>
         <h1
           style={{
@@ -60,7 +60,7 @@ export default function VerifyRequestPage() {
             marginTop: 32,
             fontFamily: fonts.sans,
             fontSize: "0.82rem",
-            color: colors.gold,
+            color: colors.goldText,
             textDecoration: "none",
           }}
         >

@@ -71,7 +71,7 @@ export default async function AdminPartnershipsPage() {
       </h1>
       <p style={{ fontFamily: fonts.sans, fontSize: "0.85rem", margin: "8px 0 0", color: colors.slate }}>
         Importée depuis{" "}
-        <a href={IMPORT_SOURCE.repo} style={{ color: colors.gold }}>
+        <a href={IMPORT_SOURCE.repo} style={{ color: colors.goldText }}>
           {IMPORT_SOURCE.repo.replace("https://github.com/", "")}
         </a>{" "}
         · commit {IMPORT_SOURCE.commit.slice(0, 8)} · instantané du {IMPORT_SOURCE.importedAt}
@@ -184,7 +184,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
           fontSize: "0.7rem",
           letterSpacing: "0.16em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
           margin: 0,
         }}
       >
@@ -222,7 +222,7 @@ function Cell({ children, highlight }: { children: React.ReactNode; highlight?: 
         padding: "10px 12px 10px 0",
         fontFamily: fonts.sans,
         fontSize: "0.84rem",
-        color: highlight ? colors.gold : colors.navy900,
+        color: highlight ? colors.goldText : colors.navy900,
         verticalAlign: "top",
       }}
     >
@@ -241,7 +241,7 @@ function Stat({ label, value }: { label: string; value: string }) {
           fontSize: "0.66rem",
           letterSpacing: "0.14em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
         }}
       >
         {label}

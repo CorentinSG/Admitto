@@ -155,7 +155,7 @@ export default async function EcolesPage() {
                   fontSize: "0.72rem",
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
-                  color: colors.gold,
+                  color: colors.goldText,
                 }}
               >
                 {AMBITION_LABELS[ambition]}

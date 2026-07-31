@@ -66,7 +66,7 @@ export function Founder() {
               fontFamily: fonts.serif,
               fontSize: "1rem",
               letterSpacing: "0.08em",
-              color: colors.gold,
+              color: colors.goldText,
               flexShrink: 0,
             }}
           >

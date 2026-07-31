@@ -36,7 +36,7 @@ export function SectionLabel({
           fontSize: "0.72rem",
           letterSpacing: "0.18em",
           textTransform: "uppercase",
-          color: dark ? colors.goldLight : colors.gold,
+          color: dark ? colors.goldLight : colors.goldText,
         }}
       >
         {children}

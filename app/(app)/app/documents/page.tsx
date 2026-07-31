@@ -75,7 +75,7 @@ export default async function DocumentsPage() {
               fontSize: "0.7rem",
               letterSpacing: "0.16em",
               textTransform: "uppercase",
-              color: colors.gold,
+              color: colors.goldText,
               margin: 0,
             }}
           >

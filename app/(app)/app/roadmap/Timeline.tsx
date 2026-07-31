@@ -217,7 +217,7 @@ export function Timeline({ view }: { view: TimelineView }) {
                 fontSize: "0.62rem",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                color: colors.gold,
+                color: colors.goldText,
                 marginBottom: 4,
               }}
             >
@@ -393,7 +393,7 @@ export function Timeline({ view }: { view: TimelineView }) {
             >
               {dashboard.timeline.deadlineLegend} — {selectedDeadline.label}
             </strong>
-            <span style={{ ...small, color: colors.gold }}>
+            <span style={{ ...small, color: colors.goldText }}>
               {selectedDeadline.dateLabel} · {selectedDeadline.leftLabel}
             </span>
           </div>
@@ -432,7 +432,7 @@ export function Timeline({ view }: { view: TimelineView }) {
             >
               {selected.title}
             </strong>
-            <span style={{ ...small, color: colors.gold }}>
+            <span style={{ ...small, color: colors.goldText }}>
               {selected.dateLabel} · {selected.leftLabel}
             </span>
             <span style={small}>{selected.statusLabel}</span>
@@ -457,7 +457,7 @@ export function Timeline({ view }: { view: TimelineView }) {
                 marginTop: 10,
                 fontFamily: fonts.sans,
                 fontSize: "0.82rem",
-                color: colors.gold,
+                color: colors.goldText,
                 textDecoration: "none",
               }}
             >
@@ -483,7 +483,7 @@ export function Timeline({ view }: { view: TimelineView }) {
               fontSize: "0.68rem",
               letterSpacing: "0.14em",
               textTransform: "uppercase",
-              color: colors.gold,
+              color: colors.goldText,
             }}
           >
             {dashboard.timeline.toStart}
@@ -519,7 +519,7 @@ export function Timeline({ view }: { view: TimelineView }) {
                 >
                   {point.title}
                 </button>
-                <span style={{ ...small, color: point.state === "OVERDUE" || point.state === "URGENT" ? colors.gold : colors.slate }}>
+                <span style={{ ...small, color: point.state === "OVERDUE" || point.state === "URGENT" ? colors.goldText : colors.slate }}>
                   {point.dateLabel} · {point.leftLabel}
                 </span>
                 {point.toolHref && point.toolLabel ? (
@@ -527,7 +527,7 @@ export function Timeline({ view }: { view: TimelineView }) {
                     href={point.toolHref}
                     style={{
                       ...small,
-                      color: colors.gold,
+                      color: colors.goldText,
                       textDecoration: "none",
                     }}
                   >

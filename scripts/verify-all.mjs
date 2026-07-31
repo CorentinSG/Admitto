@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Enchaîne les douze suites navigateur et résume (revue §B2).
+ * Enchaîne les treize suites navigateur et résume (revue §B2).
  *
  * Deux raisons d'exister plutôt que de lancer les suites à la main :
  *
@@ -24,6 +24,7 @@ const BASE = process.argv[2] ?? "http://localhost:3000";
 /** Ordre d'exécution : du plus indépendant au plus dépendant de l'état. */
 const SUITES = [
   "verify-animations",
+  "verify-accessibilite",
   "verify-questionnaire",
   "verify-checkout",
   "verify-dashboard",

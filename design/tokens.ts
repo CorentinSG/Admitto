@@ -14,6 +14,23 @@ export const colors = {
   slate: "#3D4F6B",
   gold: "#C9A84C",
   goldLight: "#E8C87A",
+  /**
+   * Doré réservé au TEXTE posé sur fond clair (ivoire) — espace payant et
+   * back-office.
+   *
+   * `gold` y était à 2,19:1 pour un seuil AA de 4,5:1, et sous le seuil de
+   * 3:1 des grands textes : les libellés de section dorés y étaient à la
+   * limite du lisible, et invisibles pour une vue affaiblie. Ce ton garde la
+   * teinte (44°) et la saturation (54 %) du doré, assombri jusqu'à tenir le
+   * seuil sur les DEUX fonds clairs du produit : l'ivoire (4,97:1) et les
+   * panneaux dorés translucides comme le bloc « mentions à compléter »
+   * (4,56:1), où le fond teinté grignote encore un peu de contraste.
+   *
+   * Il ne remplace PAS `gold` : bordures, filets, aplats et tout le texte
+   * posé sur navy — la signature du site, à 7,93:1 — restent inchangés.
+   * Ne jamais l'employer sur fond sombre : il n'y tient que 3,49:1.
+   */
+  goldText: "#826A27",
 } as const;
 
 /** Teintes dérivées autorisées (rgba des tokens ci-dessus, telles quelles sur le site). */

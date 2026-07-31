@@ -8,6 +8,8 @@
  *
  * fadeIn / fadeInUp sont déclarées mais NON utilisées : quirk du site conservé.
  */
+import { colors, fonts } from "./tokens";
+
 export const globalCss = `
 html { scroll-behavior: smooth; }
 body { transition: opacity 0.2s ease-in; }
@@ -29,6 +31,51 @@ body { transition: opacity 0.2s ease-in; }
 }
 @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
 @keyframes fadeIn   { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+/*
+ * Lien d'évitement (WCAG 2.4.1).
+ *
+ * Il vit ici et non en style inline parce qu'il dépend de « :focus » : c'est la
+ * seule exception à la règle « pas de pseudo-classe » du contrat de design, et
+ * elle est structurelle — un lien qui n'apparaît qu'au clavier ne peut pas se
+ * décrire autrement.
+ *
+ * Décalé par « transform » et non par « display: none » ou « left: -9999px » :
+ * masqué par l'un il ne serait plus focusable du tout, et emporté au loin par
+ * l'autre certains navigateurs font défiler la page jusqu'à lui. Il reste donc
+ * en place, simplement hors du cadre visible, et redescend au focus.
+ *
+ * z-index au-dessus de la navigation (100), sans quoi il apparaîtrait derrière
+ * elle sur les pages marketing — visible pour le lecteur d'écran, invisible à
+ * l'œil, ce qui est le pire des deux mondes.
+ */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 200;
+  transform: translate(-50%, -140%);
+  transition: transform 0.2s ease;
+  padding: 14px 28px;
+  font-family: ${fonts.sans};
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  background-color: ${colors.navy900};
+  color: ${colors.ivory};
+  border: 1px solid ${colors.gold};
+  border-top: none;
+}
+.skip-link:focus { transform: translate(-50%, 0); }
+
+/*
+ * La cible du lien reçoit le focus par « tabIndex={-1} » : sans cela, le
+ * navigateur déplace le défilement mais laisse le focus sur le lien, si bien
+ * que la tabulation suivante repart dans la navigation — exactement ce que le
+ * lien d'évitement est censé épargner. L'anneau de focus est retiré sur ce
+ * conteneur seulement : il cerclerait toute la page sans rien désigner.
+ */
+main:focus { outline: none; }
 
 /*
  * Navigation sous 900 px.

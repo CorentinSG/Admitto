@@ -66,7 +66,7 @@ export function ReviewChecklist({
           fontSize: "0.85rem",
           lineHeight: 1.7,
           margin: 0,
-          color: remaining > 0 ? colors.gold : colors.slate,
+          color: remaining > 0 ? colors.goldText : colors.slate,
         }}
       >
         {remaining > 0
@@ -126,7 +126,7 @@ export function ReviewChecklist({
                     fontSize: "0.64rem",
                     letterSpacing: "0.14em",
                     textTransform: "uppercase",
-                    color: isBlocking ? colors.gold : colors.slate,
+                    color: isBlocking ? colors.goldText : colors.slate,
                   }}
                 >
                   {isBlocking ? "Bloquant" : "Attention"}
@@ -152,7 +152,7 @@ export function ReviewChecklist({
       {error && (
         <p
           role="alert"
-          style={{ fontFamily: fonts.sans, fontSize: "0.82rem", margin: "12px 0 0", color: colors.gold }}
+          style={{ fontFamily: fonts.sans, fontSize: "0.82rem", margin: "12px 0 0", color: colors.goldText }}
         >
           {error}
         </p>

@@ -120,7 +120,7 @@ export default async function AdminReportPage({ params }: { params: Promise<{ id
             <span style={{ fontFamily: fonts.sans, fontSize: "0.9rem", color: colors.navy900 }}>
               {axis.label}
             </span>
-            <span style={{ fontFamily: fonts.serif, fontSize: "1.1rem", color: colors.gold }}>
+            <span style={{ fontFamily: fonts.serif, fontSize: "1.1rem", color: colors.goldText }}>
               {axis.score} / 4
             </span>
             <span style={{ fontFamily: fonts.sans, fontSize: "0.85rem", lineHeight: 1.6, color: colors.slate }}>
@@ -160,7 +160,7 @@ export default async function AdminReportPage({ params }: { params: Promise<{ id
               key={i}
               style={{ padding: "12px 0", borderTop: `1px solid ${alpha.cardGridGap}` }}
             >
-              <span style={{ fontFamily: fonts.sans, fontSize: "0.75rem", color: colors.gold }}>
+              <span style={{ fontFamily: fonts.sans, fontSize: "0.75rem", color: colors.goldText }}>
                 {new Date(entry.at).toLocaleString("fr-FR")} · {entry.author}
               </span>
               <p
@@ -191,7 +191,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
           fontSize: "0.72rem",
           letterSpacing: "0.16em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
           margin: 0,
         }}
       >
@@ -220,7 +220,7 @@ function Field({ label, value, alert }: { label: string; value: string; alert?: 
         style={{
           fontFamily: fonts.sans,
           fontSize: "0.9rem",
-          color: alert ? colors.gold : colors.navy900,
+          color: alert ? colors.goldText : colors.navy900,
         }}
       >
         {value}

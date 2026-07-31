@@ -131,6 +131,41 @@ Le seul endroit où le produit est en dessous de son propre standard.
 _Vérification : axe-core ajouté à `verify:animations` (0 violation sérieuse),
 parcours questionnaire au clavier seul dans `verify:questionnaire`._
 
+**Livré**, avec une suite dédiée `verify:accessibilite` (28 points) plutôt qu'un
+ajout à `verify:animations` : cette dernière ne couvre que l'accueil, et
+n'aurait donc rien prouvé sur le contraste, qui se joue sur les fonds clairs de
+l'espace payant et du back-office.
+
+Arbitrage du contraste : **ton dédié `goldText` (#826A27)**. La mesure réelle
+était plus mauvaise que l'estimation du plan — 2,19:1 et non ~2,8:1, sous le
+seuil de 3:1 des grands textes eux-mêmes. Le ton garde la teinte (44°) et la
+saturation (54 %) du doré, assombri jusqu'à tenir sur les DEUX fonds clairs :
+l'ivoire (4,97:1) et les panneaux dorés translucides (4,56:1). `gold` est
+inchangé pour les bordures, les filets, les aplats et tout le texte sur navy —
+la signature du site, à 7,93:1. 93 usages basculés, 3 conservés (les seuls
+posés sur fond sombre).
+
+Trois défauts trouvés à la vérification, qu'aucune relecture n'avait vus :
+
+- **La navigation était illisible sur les pages légales.** Conçue pour le héros
+  sombre, elle y posait une marque ivoire sur ivoire — invisible — et des liens
+  blancs sur clair : 16 violations sur une seule page. Elle prend désormais sur
+  fond clair l'apparence qu'elle a DÉJÀ une fois défilée, sans second jeu de
+  couleurs à maintenir.
+- **axe ne mesurait presque rien.** Les sections n'apparaissent qu'une fois
+  entrées dans le champ et restent d'ici là à `opacity: 0` : un premier passage
+  rendait « accueil : 0 violation » alors que seul le héros avait été examiné.
+  La suite fait défiler la page, puis **attend la fin des fondus** — mesurer
+  pendant l'animation lisait des couleurs composées (#826A27 relevé en #937E45)
+  et accusait le produit de défauts que personne ne voit.
+- **Deux repères de navigation anonymes** sur les pages légales, annoncés
+  « navigation » deux fois sans moyen de les distinguer. Chacun porte son nom.
+
+Les numéros ornementaux des cartes « Le Défi » (1,28:1) restent tels quels :
+c'est un quirk du site de référence, et WCAG 1.4.3 exclut la décoration pure.
+Ils portent `aria-hidden`, et la suite les écarte par un sélecteur NOMMÉ plutôt
+que par un seuil relevé — un seuil ferait taire les vraies violations avec eux.
+
 ### Lot D — Observabilité — ~1-2 jours, priorité 4, avant toute URL publique
 
 1. `global-error.tsx` + capture des erreurs serveur non rattrapées vers un

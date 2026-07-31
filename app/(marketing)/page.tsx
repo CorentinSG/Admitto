@@ -31,7 +31,7 @@ export default function HomePage() {
     <>
       <style>{responsiveCss}</style>
       <Nav />
-      <main>
+      <main id="contenu" tabIndex={-1}>
         <Hero />
         <Problem />
         <Solution />

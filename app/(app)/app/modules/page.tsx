@@ -71,7 +71,7 @@ export default async function ModulesPage() {
                     fontFamily: fonts.sans,
                     fontSize: "0.68rem",
                     letterSpacing: "0.16em",
-                    color: colors.gold,
+                    color: colors.goldText,
                   }}
                 >
                   MODULE {entry.order}
@@ -134,7 +134,7 @@ export default async function ModulesPage() {
                   fontFamily: fonts.sans,
                   fontSize: "0.78rem",
                   letterSpacing: "0.04em",
-                  color: colors.gold,
+                  color: colors.goldText,
                 }}
               >
                 Lire le module →

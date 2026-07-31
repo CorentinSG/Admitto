@@ -105,7 +105,7 @@ export default async function AdminConsultationsPage() {
                 >
                   <span>
                     {slotLabel(slot.startsAt, slot.minutes)}
-                    <span style={{ color: taken ? colors.gold : colors.slate }}>
+                    <span style={{ color: taken ? colors.goldText : colors.slate }}>
                       {" · "}
                       {taken ? adminConsultations.slotTaken : adminConsultations.slotFree}
                     </span>
@@ -204,7 +204,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
           fontSize: "0.7rem",
           letterSpacing: "0.16em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
           margin: 0,
         }}
       >

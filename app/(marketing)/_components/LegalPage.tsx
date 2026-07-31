@@ -91,7 +91,7 @@ function Block({ block }: { block: LegalBlock }) {
                   style={{
                     fontFamily: fonts.sans,
                     fontSize: "0.9rem",
-                    color: pending ? colors.gold : colors.slate,
+                    color: pending ? colors.goldText : colors.slate,
                   }}
                 >
                   {entry.value}
@@ -134,7 +134,7 @@ function Block({ block }: { block: LegalBlock }) {
                   fontSize: "0.72rem",
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
-                  color: colors.gold,
+                  color: colors.goldText,
                   padding: "0 16px 12px 0",
                   borderBottom: `1px solid ${alpha.cardGridGap}`,
                 }}
@@ -190,8 +190,10 @@ export function LegalPage({
   return (
     <>
       <style>{responsiveCss}</style>
-      <Nav />
-      <main style={{ backgroundColor: colors.ivory, padding: "160px 8% 96px" }}>
+      {/* Page à fond ivoire : la nav transparente y posait du texte blanc sur
+          clair — marque invisible, liens illisibles. */}
+      <Nav solid />
+      <main id="contenu" tabIndex={-1} style={{ backgroundColor: colors.ivory, padding: "160px 8% 96px" }}>
         <div style={{ maxWidth: 820 }}>
           <h1
             style={{
@@ -223,7 +225,7 @@ export function LegalPage({
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               margin: "20px 0 0",
-              color: colors.gold,
+              color: colors.goldText,
             }}
           >
             {label.updated} : {document.updatedAt}
@@ -245,7 +247,7 @@ export function LegalPage({
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
                   margin: 0,
-                  color: colors.gold,
+                  color: colors.goldText,
                 }}
               >
                 {legalNotice.title}
@@ -299,6 +301,7 @@ export function LegalPage({
           ))}
 
           <nav
+            aria-label={label.otherPages}
             style={{
               marginTop: 64,
               paddingTop: 28,
@@ -312,7 +315,7 @@ export function LegalPage({
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
                 margin: "0 0 14px",
-                color: colors.gold,
+                color: colors.goldText,
               }}
             >
               {label.otherPages}

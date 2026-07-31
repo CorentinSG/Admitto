@@ -6,6 +6,9 @@
  */
 
 export const nav = {
+  /** Nom du repère de navigation : deux « navigation » anonymes sur une même
+      page ne se distinguent pas au lecteur d'écran. */
+  landmark: "Navigation principale",
   menuOpen: "Ouvrir le menu",
   menuClose: "Fermer le menu",
   brand: "ADMITTO",

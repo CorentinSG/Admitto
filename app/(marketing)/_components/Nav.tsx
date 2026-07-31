@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { colors, fonts, alpha, layout, gradients } from "@/design/tokens";
 import { nav } from "@/content/homepage";
 
@@ -19,9 +19,21 @@ import { nav } from "@/content/homepage";
  * Aucune transition sur le panneau : le contrat interdit toute animation de
  * sortie, et un menu qui se ferme en fondu en serait une.
  */
-export function Nav() {
+export function Nav({ solid = false }: { solid?: boolean } = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  /**
+   * Nav opaque d'emblée sur les pages à fond clair.
+   *
+   * Les liens et la marque sont blancs : conçus pour le héros sombre, ils
+   * étaient posés sur ivoire dans les pages légales, où la marque devenait
+   * invisible et les liens illisibles (axe : 16 violations de contraste sur
+   * une seule page). Plutôt qu'un second jeu de couleurs, la nav prend ici
+   * l'apparence qu'elle a DÉJÀ une fois défilée — fond navy, mêmes tokens,
+   * même vocabulaire visuel — et le texte blanc y retrouve ses 17:1.
+   */
+  const opaque = solid || scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -29,8 +41,29 @@ export function Nav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /**
+   * Échap ferme le menu et rend le focus au bouton (WCAG 2.1.2).
+   *
+   * Sans cela, le menu ouvert au clavier ne se refermait que par un lien : il
+   * n'existait aucun moyen d'en sortir sans quitter la page où l'on était. Le
+   * focus revient au bouton d'ouverture, sans quoi il retomberait sur le
+   * `<body>` et la tabulation suivante repartirait du début du document.
+   */
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMenuOpen(false);
+      burgerRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+
   return (
     <nav
+      aria-label={nav.landmark}
       style={{
         position: "fixed",
         top: 0,
@@ -42,10 +75,10 @@ export function Nav() {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: scrolled ? alpha.navScrolledBg : "transparent",
-        backdropFilter: scrolled ? "blur(24px)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(24px)" : "none",
-        borderBottom: scrolled ? `1px solid ${alpha.goldBorderFaint}` : "none",
+        backgroundColor: opaque ? alpha.navScrolledBg : "transparent",
+        backdropFilter: opaque ? "blur(24px)" : "none",
+        WebkitBackdropFilter: opaque ? "blur(24px)" : "none",
+        borderBottom: opaque ? `1px solid ${alpha.goldBorderFaint}` : "none",
         transition: "background-color 0.4s ease, backdrop-filter 0.4s ease",
       }}
     >
@@ -90,6 +123,7 @@ export function Nav() {
         </div>
 
         <button
+          ref={burgerRef}
           type="button"
           className="nav-burger"
           aria-expanded={menuOpen}

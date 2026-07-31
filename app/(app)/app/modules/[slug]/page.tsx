@@ -50,7 +50,7 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
             fontFamily: fonts.sans,
             fontSize: "0.68rem",
             letterSpacing: "0.16em",
-            color: colors.gold,
+            color: colors.goldText,
           }}
         >
           MODULE {entry.order}
@@ -122,7 +122,7 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
                     fontSize: "0.66rem",
                     letterSpacing: "0.16em",
                     textTransform: "uppercase",
-                    color: colors.gold,
+                    color: colors.goldText,
                   }}
                 >
                   {modulesCopy.keyPointsTitle}
@@ -156,7 +156,7 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
                 }}
               >
                 {modulesCopy.sourceLabel} :{" "}
-                <a href={section.source.url} style={{ color: colors.gold }}>
+                <a href={section.source.url} style={{ color: colors.goldText }}>
                   {section.source.label}
                 </a>{" "}
                 · {modulesCopy.verifiedLabel} {section.source.verifiedAt}

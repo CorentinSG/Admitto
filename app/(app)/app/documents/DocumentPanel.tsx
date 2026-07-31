@@ -75,7 +75,7 @@ export function DocumentPanel({
         >
           {DOCUMENT_TYPE_LABELS[type]}
         </h2>
-        <span style={{ fontFamily: fonts.sans, fontSize: "0.75rem", color: colors.gold }}>
+        <span style={{ fontFamily: fonts.sans, fontSize: "0.75rem", color: colors.goldText }}>
           {vault.countSuffix(documents.length)}
         </span>
       </div>
@@ -224,7 +224,7 @@ export function DocumentPanel({
             lineHeight: 1.7,
             margin: "10px 0 0",
             maxWidth: 620,
-            color: colors.gold,
+            color: colors.goldText,
           }}
         >
           {error}

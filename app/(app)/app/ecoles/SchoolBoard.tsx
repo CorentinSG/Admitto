@@ -58,7 +58,7 @@ const label = {
   fontSize: "0.72rem",
   letterSpacing: "0.1em",
   textTransform: "uppercase",
-  color: colors.gold,
+  color: colors.goldText,
   marginBottom: 6,
 } as const;
 
@@ -112,7 +112,7 @@ function SchoolRow({ school }: { school: SchoolView }) {
               letterSpacing: "0.12em",
               textTransform: "uppercase",
               padding: "3px 9px",
-              color: colors.gold,
+              color: colors.goldText,
               backgroundColor: alpha.goldBadgeBg,
             }}
           >
@@ -398,7 +398,7 @@ function CandidateRow({ candidate }: { candidate: CandidateView }) {
               fontSize: "0.68rem",
               letterSpacing: "0.1em",
               padding: "3px 9px",
-              color: colors.gold,
+              color: colors.goldText,
               backgroundColor: alpha.goldBadgeBg,
             }}
           >
@@ -477,7 +477,7 @@ function CandidateRow({ candidate }: { candidate: CandidateView }) {
             style={{
               fontFamily: fonts.sans,
               fontSize: "0.8rem",
-              color: colors.gold,
+              color: colors.goldText,
               textDecoration: "none",
             }}
           >

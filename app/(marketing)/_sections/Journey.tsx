@@ -47,7 +47,7 @@ export function Journey() {
                 fontFamily: fonts.sans,
                 fontSize: "0.68rem",
                 letterSpacing: "0.14em",
-                color: colors.gold,
+                color: colors.goldText,
                 marginTop: 22,
               }}
             >

@@ -107,7 +107,7 @@ export function ReportDocument({
                     padding: "10px 12px",
                     fontFamily: fonts.serif,
                     fontSize: "1rem",
-                    color: colors.gold,
+                    color: colors.goldText,
                     width: 56,
                     verticalAlign: "top",
                   }}
@@ -158,7 +158,7 @@ export function ReportDocument({
                       marginBottom: 6,
                     }}
                   >
-                    <span style={{ color: colors.gold }}>✦</span>
+                    <span style={{ color: colors.goldText }}>✦</span>
                     {action}
                   </li>
                 ))}
@@ -181,7 +181,7 @@ export function ReportDocument({
                 marginBottom: 8,
               }}
             >
-              <span style={{ color: colors.gold, fontFamily: fonts.serif }}>{i + 1}.</span>
+              <span style={{ color: colors.goldText, fontFamily: fonts.serif }}>{i + 1}.</span>
               {step}
             </li>
           ))}
@@ -201,7 +201,7 @@ export function ReportDocument({
               borderTop: `1px solid rgba(10, 22, 40, 0.12)`,
             }}
           >
-            <span style={{ fontSize: "0.8rem", color: colors.gold }}>{dateFr(d.date)}</span>
+            <span style={{ fontSize: "0.8rem", color: colors.goldText }}>{dateFr(d.date)}</span>
             <span style={{ fontSize: "0.86rem" }}>
               {d.label}
               <span style={{ display: "block", fontSize: "0.78rem", color: colors.slate }}>
@@ -313,7 +313,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
             fontSize: "0.7rem",
             letterSpacing: "0.16em",
             textTransform: "uppercase",
-            color: colors.gold,
+            color: colors.goldText,
             margin: 0,
           }}
         >

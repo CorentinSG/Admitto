@@ -302,7 +302,7 @@ export default async function DashboardPage() {
                 borderTop: `1px solid ${alpha.cardGridGap}`,
               }}
             >
-              <span style={{ fontFamily: fonts.sans, fontSize: "0.8rem", color: colors.gold }}>
+              <span style={{ fontFamily: fonts.sans, fontSize: "0.8rem", color: colors.goldText }}>
                 {dateFr(task.dueDate!)}
               </span>
               <span style={{ fontFamily: fonts.sans, fontSize: "0.9rem", color: colors.navy900 }}>
@@ -353,7 +353,7 @@ export default async function DashboardPage() {
               marginTop: 20,
               fontFamily: fonts.sans,
               fontSize: "0.82rem",
-              color: colors.gold,
+              color: colors.goldText,
               textDecoration: "none",
             }}
           >
@@ -379,7 +379,7 @@ export default async function DashboardPage() {
               >
                 <span
                   aria-hidden
-                  style={{ color: m.achieved ? colors.gold : alpha.cardNumIdle, fontSize: "0.9rem" }}
+                  style={{ color: m.achieved ? colors.goldText : alpha.cardNumIdle, fontSize: "0.9rem" }}
                 >
                   ✦
                 </span>
@@ -391,7 +391,7 @@ export default async function DashboardPage() {
                     marginLeft: "auto",
                     fontFamily: fonts.sans,
                     fontSize: "0.78rem",
-                    color: m.achieved ? colors.gold : colors.slate,
+                    color: m.achieved ? colors.goldText : colors.slate,
                   }}
                 >
                   {m.achieved && milestoneDates[m.milestone]
@@ -441,7 +441,7 @@ export default async function DashboardPage() {
               fontFamily: fonts.sans,
               fontSize: "0.82rem",
               margin: "12px 0 0",
-              color: colors.gold,
+              color: colors.goldText,
             }}
           >
             {recommendedModule.published ? "" : dashboard.modulePlaceholder}
@@ -458,7 +458,7 @@ export default async function DashboardPage() {
             style={{
               fontFamily: fonts.sans,
               fontSize: "0.85rem",
-              color: colors.gold,
+              color: colors.goldText,
               textDecoration: "none",
             }}
           >
@@ -506,7 +506,7 @@ export default async function DashboardPage() {
             fontFamily: fonts.sans,
             fontSize: "0.8rem",
             letterSpacing: "0.04em",
-            color: colors.gold,
+            color: colors.goldText,
             textDecoration: "none",
           }}
         >
@@ -528,7 +528,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
             fontSize: "0.7rem",
             letterSpacing: "0.16em",
             textTransform: "uppercase",
-            color: colors.gold,
+            color: colors.goldText,
             margin: 0,
           }}
         >
@@ -550,7 +550,7 @@ function Fact({ label, value }: { label: string; value: string }) {
           fontSize: "0.64rem",
           letterSpacing: "0.14em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
         }}
       >
         {label}
@@ -581,7 +581,7 @@ function Stat({ label, value, alert }: { label: string; value: string; alert?: b
           fontSize: "0.64rem",
           letterSpacing: "0.14em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
         }}
       >
         {label}
@@ -592,7 +592,7 @@ function Stat({ label, value, alert }: { label: string; value: string; alert?: b
           fontFamily: fonts.serif,
           fontSize: "1.4rem",
           margin: "8px 0 0",
-          color: alert ? colors.gold : colors.navy900,
+          color: alert ? colors.goldText : colors.navy900,
         }}
       >
         {value}

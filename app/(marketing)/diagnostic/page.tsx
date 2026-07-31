@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function DiagnosticPage() {
   return (
-    <main
+    <main id="contenu" tabIndex={-1}
       style={{
         minHeight: "100vh",
         background: gradients.hero,

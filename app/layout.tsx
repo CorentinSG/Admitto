@@ -35,6 +35,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         }}
       >
         <style>{resetCss + globalCss}</style>
+        {/*
+          Premier élément focusable du document, sur TOUTES les pages (WCAG
+          2.4.1). Sans lui, atteindre le contenu au clavier demandait de
+          traverser la navigation entière à chaque page — jusqu'à huit entrées
+          dans l'espace payant. Sa cible est le `<main id="contenu">` de chaque
+          page ; le style vit dans `design/global-css.ts`, il dépend de `:focus`.
+        */}
+        <a href="#contenu" className="skip-link">
+          Aller au contenu principal
+        </a>
         {children}
       </body>
     </html>

@@ -55,7 +55,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   if (!ready) {
     const active = await reportStore.activeCount();
     return (
-      <main style={{ backgroundColor: colors.ivory, minHeight: "100vh", padding: "120px 8%" }}>
+      <main id="contenu" tabIndex={-1} style={{ backgroundColor: colors.ivory, minHeight: "100vh", padding: "120px 8%" }}>
         <div style={{ maxWidth: 620 }}>
           <h1
             style={{
@@ -88,7 +88,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               borderTop: `1px solid ${alpha.cardGridGap}`,
               fontFamily: fonts.sans,
               fontSize: "0.85rem",
-              color: colors.gold,
+              color: colors.goldText,
               textDecoration: "none",
             }}
           >
@@ -100,7 +100,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
   }
 
   return (
-    <main style={{ backgroundColor: colors.ivory, minHeight: "100vh", padding: "40px 0 80px" }}>
+    <main id="contenu" tabIndex={-1} style={{ backgroundColor: colors.ivory, minHeight: "100vh", padding: "40px 0 80px" }}>
       {/*
         Impression : une règle @media print suffit, plutôt qu'une seconde route.
         Le bouton du navigateur produit alors le même document que le PDF du

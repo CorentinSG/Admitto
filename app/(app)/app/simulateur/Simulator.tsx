@@ -143,7 +143,7 @@ export function Simulator({
                 fontSize: "0.7rem",
                 letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                color: colors.gold,
+                color: colors.goldText,
                 margin: 0,
               }}
             >
@@ -225,7 +225,7 @@ export function Simulator({
           {simulator.newScenario}
         </button>
         {message && (
-          <span style={{ fontFamily: fonts.sans, fontSize: "0.84rem", color: colors.gold }}>
+          <span style={{ fontFamily: fonts.sans, fontSize: "0.84rem", color: colors.goldText }}>
             {message}
           </span>
         )}
@@ -241,7 +241,7 @@ export function Simulator({
               fontSize: "0.7rem",
               letterSpacing: "0.16em",
               textTransform: "uppercase",
-              color: colors.gold,
+              color: colors.goldText,
               margin: 0,
             }}
           >
@@ -263,7 +263,7 @@ export function Simulator({
                     <th key={s.id} style={{ ...thStyle, textAlign: "right" }}>
                       {s.inputs.label}
                       {s.id === cheapestId && (
-                        <span style={{ display: "block", fontSize: "0.62rem", color: colors.gold }}>
+                        <span style={{ display: "block", fontSize: "0.62rem", color: colors.goldText }}>
                           {simulator.cheapest}
                         </span>
                       )}
@@ -293,7 +293,7 @@ export function Simulator({
                           textAlign: "right",
                           fontFamily: fonts.serif,
                           fontSize: key === "net" ? "1.05rem" : "0.92rem",
-                          color: key === "net" && s.id === cheapestId ? colors.gold : colors.navy900,
+                          color: key === "net" && s.id === cheapestId ? colors.goldText : colors.navy900,
                         }}
                       >
                         {formatUsd(s.outputs[key])}
@@ -391,7 +391,7 @@ function Output({
           fontSize: "0.64rem",
           letterSpacing: "0.14em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
         }}
       >
         {label}

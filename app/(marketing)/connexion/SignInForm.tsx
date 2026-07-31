@@ -32,7 +32,7 @@ export function SignInForm({ disabled }: { disabled: boolean }) {
           fontSize: "0.68rem",
           letterSpacing: "0.14em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
         }}
       >
         {copy.emailLabel}
@@ -85,7 +85,7 @@ export function SignInForm({ disabled }: { disabled: boolean }) {
             fontSize: "0.85rem",
             lineHeight: 1.7,
             margin: "14px 0 0",
-            color: colors.gold,
+            color: colors.goldText,
           }}
         >
           {error}

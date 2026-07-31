@@ -48,7 +48,7 @@ export function Diagnostic() {
                 fontFamily: fonts.sans,
                 fontSize: "0.68rem",
                 letterSpacing: "0.16em",
-                color: colors.gold,
+                color: colors.goldText,
                 border: `1px solid ${alpha.goldBorderHover}`,
                 padding: "6px 12px",
               }}

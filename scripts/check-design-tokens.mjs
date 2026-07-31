@@ -17,6 +17,7 @@ const PALETTE = new Set(
     "#0A1628", "#0E1D3A", "#142240", "#1E3561", // navy
     "#FAFAF7", "#3D4F6B", // ivory, slate
     "#C9A84C", "#E8C87A", // gold
+    "#826A27", // goldText — doré du TEXTE sur fond clair (AA)
     "#FFFFFF", "#FFF", "#000000", // blanc/noir purs (texte hover, ombres)
   ].map((c) => c.toUpperCase())
 );

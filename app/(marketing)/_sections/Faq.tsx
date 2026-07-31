@@ -56,18 +56,18 @@ export function Faq() {
                   fontFamily: fonts.serif,
                   fontSize: "1.15rem",
                   fontWeight: 400,
-                  color: open ? colors.gold : colors.navy900,
+                  color: open ? colors.goldText : colors.navy900,
                   transition: "color 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.gold;
+                  e.currentTarget.style.color = colors.goldText;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = open ? colors.gold : colors.navy900;
+                  e.currentTarget.style.color = open ? colors.goldText : colors.navy900;
                 }}
               >
                 {item.q}
-                <span aria-hidden style={{ color: colors.gold, fontSize: "1.4rem", lineHeight: 1 }}>
+                <span aria-hidden style={{ color: colors.goldText, fontSize: "1.4rem", lineHeight: 1 }}>
                   {open ? "−" : "+"}
                 </span>
               </button>

@@ -108,7 +108,7 @@ export default async function DonneesPage() {
         <p style={body}>{available ? donnees.erase.body : donnees.erase.unavailable}</p>
         {available ? (
           <>
-            <p style={{ ...body, marginTop: 12, color: colors.gold }}>{donnees.erase.hint}</p>
+            <p style={{ ...body, marginTop: 12, color: colors.goldText }}>{donnees.erase.hint}</p>
             <EraseForm disabled={!available} />
           </>
         ) : null}
@@ -124,7 +124,7 @@ export default async function DonneesPage() {
             marginTop: 16,
             fontFamily: fonts.sans,
             fontSize: "0.85rem",
-            color: colors.gold,
+            color: colors.goldText,
             textDecoration: "none",
           }}
         >

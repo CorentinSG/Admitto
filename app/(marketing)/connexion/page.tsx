@@ -19,7 +19,7 @@ export default function SignInPage() {
   const available = usingDatabase() && Boolean(process.env.AUTH_SECRET);
 
   return (
-    <main style={{ backgroundColor: colors.ivory, minHeight: "100vh", padding: "120px 8%" }}>
+    <main id="contenu" tabIndex={-1} style={{ backgroundColor: colors.ivory, minHeight: "100vh", padding: "120px 8%" }}>
       <div style={{ maxWidth: 620 }}>
         <h1
           style={{
@@ -55,7 +55,7 @@ export default function SignInPage() {
             borderTop: `1px solid ${alpha.cardGridGap}`,
             fontFamily: fonts.sans,
             fontSize: "0.82rem",
-            color: colors.gold,
+            color: colors.goldText,
             textDecoration: "none",
           }}
         >

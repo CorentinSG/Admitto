@@ -97,7 +97,7 @@ export function BookingForm({
             lineHeight: 1.7,
             margin: "10px 0 0",
             maxWidth: 620,
-            color: colors.gold,
+            color: colors.goldText,
           }}
         >
           {error}

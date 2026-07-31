@@ -54,7 +54,7 @@ export function TaskStatusControl({ taskId, status }: { taskId: string; status: 
         })}
       </div>
       {error && (
-        <p style={{ fontFamily: fonts.sans, fontSize: "0.78rem", margin: "8px 0 0", color: colors.gold }}>
+        <p style={{ fontFamily: fonts.sans, fontSize: "0.78rem", margin: "8px 0 0", color: colors.goldText }}>
           {error}
         </p>
       )}

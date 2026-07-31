@@ -51,6 +51,24 @@ export function Questionnaire() {
     track("SCREEN_REACHED", currentId);
   }, [started, currentId]);
 
+  /**
+   * Focus sur la question à chaque changement d'écran (WCAG 2.4.3).
+   *
+   * Répondre fait disparaître le bouton cliqué. Le focus retombait alors sur
+   * le `<body>` : au clavier, la tabulation suivante repartait du tout début
+   * de la page, et un lecteur d'écran n'annonçait pas la nouvelle question —
+   * l'écran changeait sans que rien ne le dise. Le porter sur le titre annonce
+   * la question et place la tabulation juste avant ses réponses.
+   *
+   * L'anneau de focus est CONSERVÉ ici, contrairement à la cible du lien
+   * d'évitement : sur un titre il désigne quelque chose de précis, et c'est
+   * ce qui montre à quelqu'un qui navigue au clavier où il vient d'atterrir.
+   */
+  const questionRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (started) questionRef.current?.focus();
+  }, [started, currentId]);
+
   const options =
     currentId === "careerGoal"
       ? careerGoalOptions(answers, CAREER_GOAL).map(
@@ -201,6 +219,8 @@ export function Questionnaire() {
           cascade d'entrée sans avoir besoin d'un nouveau motif d'animation. */}
       <div key={currentId} style={{ marginTop: 48 }}>
         <h2
+          ref={questionRef}
+          tabIndex={-1}
           style={{
             fontFamily: fonts.serif,
             fontWeight: 300,

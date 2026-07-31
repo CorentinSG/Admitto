@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </span>
       </header>
 
-      <main style={{ padding: "48px 6% 96px", maxWidth: 1100 }}>{children}</main>
+      <main id="contenu" tabIndex={-1} style={{ padding: "48px 6% 96px", maxWidth: 1100 }}>{children}</main>
 
       <footer
         style={{

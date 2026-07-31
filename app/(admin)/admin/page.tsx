@@ -55,7 +55,7 @@ export default async function AdminQueuePage() {
           style={{
             fontFamily: fonts.sans,
             fontSize: "0.82rem",
-            color: colors.gold,
+            color: colors.goldText,
             textDecoration: "none",
           }}
         >
@@ -66,7 +66,7 @@ export default async function AdminQueuePage() {
           style={{
             fontFamily: fonts.sans,
             fontSize: "0.82rem",
-            color: colors.gold,
+            color: colors.goldText,
             textDecoration: "none",
           }}
         >
@@ -77,7 +77,7 @@ export default async function AdminQueuePage() {
           style={{
             fontFamily: fonts.sans,
             fontSize: "0.82rem",
-            color: colors.gold,
+            color: colors.goldText,
             textDecoration: "none",
           }}
         >
@@ -88,7 +88,7 @@ export default async function AdminQueuePage() {
           style={{
             fontFamily: fonts.sans,
             fontSize: "0.82rem",
-            color: colors.gold,
+            color: colors.goldText,
             textDecoration: "none",
           }}
         >
@@ -180,7 +180,7 @@ export default async function AdminQueuePage() {
               <span style={{ fontFamily: fonts.sans, fontSize: "0.8rem", color: colors.slate }}>
                 {new Date(report.createdAt).toLocaleDateString("fr-FR")}
               </span>
-              <span style={{ fontFamily: fonts.sans, fontSize: "0.78rem", color: colors.gold }}>
+              <span style={{ fontFamily: fonts.sans, fontSize: "0.78rem", color: colors.goldText }}>
                 {report.priority === "PAID" ? "Payant" : "Gratuit"}
               </span>
               <span style={{ fontFamily: fonts.sans, fontSize: "0.78rem", color: colors.navy900 }}>
@@ -190,7 +190,7 @@ export default async function AdminQueuePage() {
                 style={{
                   fontFamily: fonts.sans,
                   fontSize: "0.78rem",
-                  color: blocking > 0 ? colors.gold : colors.slate,
+                  color: blocking > 0 ? colors.goldText : colors.slate,
                 }}
               >
                 {blocking > 0 ? `${blocking} à arbitrer` : "Revue faite"}
@@ -213,7 +213,7 @@ function Stat({ label, value, alert }: { label: string; value: string; alert?: b
           fontSize: "0.68rem",
           letterSpacing: "0.14em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
         }}
       >
         {label}
@@ -224,7 +224,7 @@ function Stat({ label, value, alert }: { label: string; value: string; alert?: b
           fontFamily: fonts.serif,
           fontSize: "1.5rem",
           margin: "10px 0 0",
-          color: alert ? colors.gold : colors.navy900,
+          color: alert ? colors.goldText : colors.navy900,
         }}
       >
         {value}

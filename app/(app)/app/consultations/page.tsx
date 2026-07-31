@@ -95,7 +95,7 @@ export default async function ConsultationsPage() {
             fontSize: "0.66rem",
             letterSpacing: "0.14em",
             textTransform: "uppercase",
-            color: colors.gold,
+            color: colors.goldText,
           }}
         >
           {consultations.allowanceLabel}
@@ -174,7 +174,7 @@ export default async function ConsultationsPage() {
                 >
                   {definition.name}
                 </h2>
-                <span style={{ fontFamily: fonts.sans, fontSize: "0.75rem", color: colors.gold }}>
+                <span style={{ fontFamily: fonts.sans, fontSize: "0.75rem", color: colors.goldText }}>
                   {consultations.duration(definition.minutes)}
                 </span>
               </div>
@@ -216,7 +216,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
         fontSize: "0.7rem",
         letterSpacing: "0.16em",
         textTransform: "uppercase",
-        color: colors.gold,
+        color: colors.goldText,
         margin: 0,
       }}
     >
@@ -243,7 +243,7 @@ function ScopeList({
           fontSize: "0.66rem",
           letterSpacing: "0.14em",
           textTransform: "uppercase",
-          color: muted ? colors.slate : colors.gold,
+          color: muted ? colors.slate : colors.goldText,
         }}
       >
         {title}

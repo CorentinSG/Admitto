@@ -149,7 +149,7 @@ export default async function RoadmapPage() {
                         fontSize: "0.64rem",
                         letterSpacing: "0.12em",
                         textTransform: "uppercase",
-                        color: colors.gold,
+                        color: colors.goldText,
                         border: `1px solid ${alpha.goldBorderHover}`,
                         padding: "3px 8px",
                       }}
@@ -194,7 +194,7 @@ export default async function RoadmapPage() {
                       display: "inline-block",
                       fontFamily: fonts.sans,
                       fontSize: "0.82rem",
-                      color: colors.gold,
+                      color: colors.goldText,
                       textDecoration: "none",
                       margin: "0 0 16px",
                     }}

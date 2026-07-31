@@ -77,8 +77,14 @@ export function Problem() {
               (el.querySelector("[data-desc]") as HTMLElement).style.color = colors.slate;
             }}
           >
+            {/* Numéro ornemental : il redit le rang de la carte, que la
+                structure porte déjà. Très pâle au repos, il ne tient que
+                1,28:1 sur ivoire — c'est le quirk du site de référence, et il
+                se conserve. Le retirer des technologies d'assistance dit ce
+                qu'il est vraiment : une décoration, pas un texte à lire. */}
             <span
               data-num
+              aria-hidden
               style={{
                 display: "block",
                 fontFamily: fonts.serif,

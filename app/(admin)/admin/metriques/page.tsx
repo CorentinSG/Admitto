@@ -221,7 +221,7 @@ export default async function AdminMetricsPage() {
                 fontSize: "0.7rem",
                 letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                color: colors.gold,
+                color: colors.goldText,
                 margin: "32px 0 4px",
               }}
             >
@@ -256,7 +256,7 @@ export default async function AdminMetricsPage() {
                   style={{
                     fontFamily: fonts.sans,
                     fontSize: "0.82rem",
-                    color: screen.lost > 0 ? colors.gold : colors.slate,
+                    color: screen.lost > 0 ? colors.goldText : colors.slate,
                   }}
                 >
                   {screen.lost} abandon(s)
@@ -310,7 +310,7 @@ function Card({
           fontSize: "0.66rem",
           letterSpacing: "0.14em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
         }}
       >
         {label}
@@ -363,7 +363,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
           fontSize: "0.7rem",
           letterSpacing: "0.16em",
           textTransform: "uppercase",
-          color: colors.gold,
+          color: colors.goldText,
           margin: "0 0 14px",
         }}
       >

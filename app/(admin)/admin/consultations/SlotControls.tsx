@@ -147,7 +147,7 @@ export function GrantForm({
         {adminConsultations.grant}
       </button>
       {saved && !error && (
-        <span style={{ fontFamily: fonts.sans, fontSize: "0.75rem", color: colors.gold }}>✓</span>
+        <span style={{ fontFamily: fonts.sans, fontSize: "0.75rem", color: colors.goldText }}>✓</span>
       )}
       {error && <Error>{error}</Error>}
     </div>
@@ -178,7 +178,7 @@ function Error({ children }: { children: React.ReactNode }) {
   return (
     <p
       role="alert"
-      style={{ fontFamily: fonts.sans, fontSize: "0.8rem", margin: "8px 0 0", color: colors.gold }}
+      style={{ fontFamily: fonts.sans, fontSize: "0.8rem", margin: "8px 0 0", color: colors.goldText }}
     >
       {children}
     </p>

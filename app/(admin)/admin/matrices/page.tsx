@@ -143,7 +143,7 @@ export default async function MatricesPage() {
                 fontSize: "0.7rem",
                 letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                color: colors.gold,
+                color: colors.goldText,
                 margin: "0 0 4px",
               }}
             >

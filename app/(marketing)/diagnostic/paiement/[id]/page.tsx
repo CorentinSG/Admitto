@@ -31,7 +31,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
   const priceLabel = formatEuros(OFFERS.DIAGNOSTIC.priceCents ?? 0);
 
   return (
-    <main style={{ background: gradients.hero, minHeight: "100vh", padding: "140px 8% 100px" }}>
+    <main id="contenu" tabIndex={-1} style={{ background: gradients.hero, minHeight: "100vh", padding: "140px 8% 100px" }}>
       <TrackView kind="CHECKOUT_VIEWED" />
       <div style={{ maxWidth: 720 }}>
         <span

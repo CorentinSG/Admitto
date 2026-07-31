@@ -31,7 +31,7 @@ const label = {
   fontSize: "0.7rem",
   letterSpacing: "0.1em",
   textTransform: "uppercase",
-  color: colors.gold,
+  color: colors.goldText,
   margin: "14px 0 6px",
 } as const;
 
@@ -74,7 +74,7 @@ function Feedback({ error, saved }: { error: string | null; saved: boolean }) {
   }
   if (saved) {
     return (
-      <p style={{ ...meta, color: colors.gold, marginTop: 10 }} role="status">
+      <p style={{ ...meta, color: colors.goldText, marginTop: 10 }} role="status">
         {matrices.rules.saved}
       </p>
     );

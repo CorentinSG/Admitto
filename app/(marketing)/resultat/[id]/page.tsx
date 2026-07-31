@@ -71,7 +71,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
   const { answers, derived, path, textBlocks, partnerships, costs, deadlines } = assessment;
 
   return (
-    <main style={{ background: gradients.hero, minHeight: "100vh", padding: "140px 8% 100px" }}>
+    <main id="contenu" tabIndex={-1} style={{ background: gradients.hero, minHeight: "100vh", padding: "140px 8% 100px" }}>
       <TrackView kind="RESULT_VIEWED" />
       <div style={{ maxWidth: 780 }}>
         <span

@@ -71,7 +71,7 @@ export function ReportControls({
             fontSize: "0.72rem",
             letterSpacing: "0.14em",
             textTransform: "uppercase",
-            color: colors.gold,
+            color: colors.goldText,
           }}
         >
           Journal des corrections
@@ -124,7 +124,7 @@ export function ReportControls({
       </div>
 
       {error && (
-        <p style={{ fontFamily: fonts.sans, fontSize: "0.85rem", color: colors.gold }}>{error}</p>
+        <p style={{ fontFamily: fonts.sans, fontSize: "0.85rem", color: colors.goldText }}>{error}</p>
       )}
     </div>
   );

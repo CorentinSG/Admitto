@@ -62,7 +62,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
 
-      <main style={{ padding: "44px 6% 48px", maxWidth: 1120 }}>{children}</main>
+      <main id="contenu" tabIndex={-1} style={{ padding: "44px 6% 48px", maxWidth: 1120 }}>{children}</main>
 
       {/*
         Liens légaux au pied de l'espace payant aussi, et pas seulement sur le
