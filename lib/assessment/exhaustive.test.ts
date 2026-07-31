@@ -23,6 +23,7 @@ import { computeProgress, milestoneStates, personalStats } from "@/lib/roadmap/p
 import { TASK_STATUSES } from "@/lib/roadmap/types";
 import { deriveProfile } from "@/lib/profile/derive";
 import { scheduleSequence } from "@/lib/email/schedule";
+import { buildTimeline } from "@/lib/roadmap/timeline";
 import { analyseList } from "@/lib/schools/balance";
 import { candidatesFor } from "@/lib/schools/candidates";
 
@@ -252,6 +253,17 @@ function problemsOf({ answers, label }: Combo): string[] {
 
   personalStats(tasks, REFERENCE);
 
+  // ── Timeline : positions finies et bornées, quel que soit le profil ─────
+  const timeline = buildTimeline(tasks, REFERENCE);
+  if (timeline) {
+    for (const entry of timeline.entries) {
+      if (!Number.isFinite(entry.position) || entry.position < 0 || entry.position > 100) {
+        fail(`position de timeline hors axe ${entry.id} : ${entry.position}`);
+      }
+    }
+    if (!Number.isFinite(timeline.todayPosition)) fail("repère du jour non fini");
+  }
+
   const nba = selectNextBestAction(tasks, REFERENCE);
   if (nba) {
     const ids = applicableTasks(tasks).map((t) => t.id);
@@ -309,12 +321,20 @@ describe("balayage exhaustif des profils", () => {
     }
   });
 
-  it("produit un profil complet et cohérent pour chaque combinaison", () => {
-    const problems = combos.flatMap(problemsOf);
-    // Les vingt premiers suffisent à diagnostiquer : la liste entière noierait
-    // la sortie si une règle commune cassait.
-    expect(problems.slice(0, 20), `${problems.length} profil(s) en défaut`).toEqual([]);
-  });
+  it(
+    "produit un profil complet et cohérent pour chaque combinaison",
+    () => {
+      const problems = combos.flatMap(problemsOf);
+      // Les vingt premiers suffisent à diagnostiquer : la liste entière
+      // noierait la sortie si une règle commune cassait.
+      expect(problems.slice(0, 20), `${problems.length} profil(s) en défaut`).toEqual([]);
+    },
+    // 7 560 profils × rapport complet : quatre secondes sur une machine au
+    // repos, davantage pendant que les suites navigateur tournent à côté. Le
+    // plafond par défaut (5 s) rendait ce test rouge selon la charge — un
+    // test qui peut échouer sans que rien ne soit cassé ne protège plus rien.
+    { timeout: 60_000 }
+  );
 
   it("supporte tout profil partiel, y compris vide", () => {
     const problems = [...partialCombos()].flatMap(problemsOf);
