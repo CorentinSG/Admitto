@@ -4,6 +4,7 @@ import { noticeStore } from "@/lib/store/notifications";
 import { loadRoadmap } from "@/lib/roadmap/load";
 import { baseUrl, dispatchEmail } from "@/lib/email/dispatch";
 import { deadlineList, dueNotices, noticeLead } from "./deadlines";
+import { log } from "@/lib/observability/log";
 
 /**
  * Passage d'envoi des rappels d'échéance (CDC §22).
@@ -81,5 +82,11 @@ export async function runDeadlineNotifications(reference: Date): Promise<RunSumm
     }
   }
 
+
+  // Le résumé partait au client HTTP et nulle part ailleurs : un cron qui
+  // n'échoue pas mais n'envoie plus rien (`sent` à zéro pendant que
+  // `considered` monte) était indétectable sans lire la réponse d'une requête
+  // que personne ne lit.
+  log(summary.failed > 0 ? "warn" : "info", "notifications.done", { ...summary });
   return summary;
 }

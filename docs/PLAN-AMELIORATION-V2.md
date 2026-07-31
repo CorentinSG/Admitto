@@ -182,6 +182,57 @@ que par un seuil relevé — un seuil ferait taire les vraies violations avec eu
 _Vérification : provoquer une erreur serveur → une ligne JSON complète, aucune
 stack au navigateur._
 
+**Livré.** L'erreur a été provoquée pour de bon — une instance lancée contre une
+base injoignable, puis une page qui l'interroge — et non simulée en test.
+
+La décision qui structure le lot : **un journal est un puits de données qu'aucun
+garde-fou ne surveille**. `check:legal` relie chaque modèle Prisma à la
+politique de confidentialité ; un journal n'est pas un modèle. Une adresse
+écrite dans un log n'échoue à aucun contrôle, ne figure dans aucun registre, et
+survit à l'effacement du compte qu'elle désigne — `personal-data.ts` efface la
+base, pas les fichiers de sortie du serveur. Le journal est donc construit pour
+qu'aucune donnée personnelle n'y entre : noms d'événements en union fermée,
+toute chaîne traversant `redact()` (remplacement, jamais troncature — une
+adresse tronquée désigne encore quelqu'un), et **ce qui quitte la machine est
+plus pauvre que ce qui reste dessus** : le webhook ne reçoit jamais de message
+d'erreur, parce qu'un message cite la valeur qui l'a causé.
+
+Deux conséquences non prévues au plan :
+
+- **La route journalisée est le PATRON (`/rapport/[id]`), jamais le chemin
+  appelé.** Le chemin résolu contient l'identifiant, et cet identifiant est une
+  capacité : il ouvre la page de résultat à qui le détient. Un journal
+  d'erreurs serait devenu une liste de liens d'accès — et les journaux se
+  copient et se transfèrent. Le repli n'est pas le chemin réel : mieux vaut
+  ignorer où l'erreur s'est produite que déposer une clé dans un fichier.
+- **Les journaux techniques sont désormais décrits dans la politique de
+  confidentialité** (nouvelle section). Ce que la politique affirme — aucune
+  donnée personnelle, remplacement avant écriture, alerte externe plus pauvre
+  encore — n'est vrai que grâce aux choix ci-dessus.
+
+Deux défauts trouvés à la vérification :
+
+- **`global-error` ne suffisait pas.** Il ne prend le relais que si la mise en
+  page RACINE échoue ; une erreur de rendu de page remontait à la page 500 par
+  défaut de Next.js, un corps vide. L'utilisateur voyait une page blanche et le
+  `digest` journalisé ne lui parvenait jamais : la référence censée relier son
+  signalement à la ligne du journal n'existait que pour un incident dont
+  personne ne pouvait parler. `app/error.tsx` couvre désormais les pages, et
+  partage son rendu avec `global-error` via `ErrorScreen` — deux écrans séparés
+  divergeraient, et le moins vu serait le moins soigné.
+- **La redaction mangeait le champ le plus utile.** Sa première règle prenait
+  toute chaîne de plus de seize caractères et remplaçait
+  `PrismaClientInitializationError` par « [identifiant] » : le journal devenait
+  illisible au moment précis où on l'ouvre. La règle exige maintenant lettres
+  ET chiffres — les jetons du produit (cuid, uuid, hexadécimal) les mêlent
+  tous, un nom de classe jamais.
+
+Vérifié de bout en bout : ligne JSON complète (patron de route, classe
+d'erreur, digest), webhook recevant le sous-ensemble pauvre, écran d'erreur
+affichant la référence `844318385` correspondant à la ligne, aucune trace
+d'exécution au navigateur, et un passage cron journalisant ses quatre résumés
+(`notifications.done`, `email.sequence.done`, `purge.done`, `cron.done`).
+
 ### Lot E — Croissance (horizon 2027, dernier délibérément) — ~1 sprint
 
 À ne lancer que quand une date de mise en ligne publique existe.

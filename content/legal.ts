@@ -413,6 +413,26 @@ const CONFIDENTIALITE: LegalDocument = {
         },
       ],
     },
+    {
+      id: "journaux",
+      title: "Journaux techniques",
+      blocks: [
+        {
+          kind: "TEXT",
+          body: [
+            "Le service tient un journal d'exploitation : une ligne par passage des tâches planifiées, par confirmation de paiement reçue, par connexion et par erreur du serveur. Il sert à constater qu'une fonction s'exécute encore, et à retrouver une panne signalée.",
+            "Ce journal ne contient aucune donnée personnelle. Il enregistre des compteurs, des motifs de refus et des classes d'erreur ; jamais votre adresse email, votre prénom, ni l'identifiant de votre diagnostic. Les adresses et identifiants qui apparaîtraient dans un message d'erreur sont remplacés avant écriture, et non tronqués : une adresse tronquée désigne encore quelqu'un.",
+            "Lorsqu'un écran d'erreur vous présente une référence, c'est le seul élément qui relie ce que vous avez vu à la ligne correspondante. Il ne révèle rien par lui-même.",
+          ],
+        },
+        {
+          kind: "TEXT",
+          body: [
+            "L'éditeur peut configurer une adresse externe recevant une alerte à chaque erreur du serveur. Cette alerte est plus pauvre encore que la ligne conservée sur la machine : elle porte la route concernée, la méthode, la classe de l'erreur et la référence, jamais le message d'erreur ni le détail de son exécution.",
+          ],
+        },
+      ],
+    },
   ],
 };
 

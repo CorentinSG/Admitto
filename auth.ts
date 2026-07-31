@@ -4,6 +4,7 @@ import { authConfig, type Role } from "./auth.config";
 import { prisma } from "@/lib/db/client";
 import { getTransport } from "@/lib/email/transport";
 import { AUTH_EMAIL } from "@/content/auth";
+import { log } from "@/lib/observability/log";
 
 /**
  * Auth.js — comptes réels (CDC §10 et §33).
@@ -115,6 +116,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
           where: { id: user.id },
           data: { role: "ADMIN" satisfies Role },
         });
+
+        // Une élévation de privilège se journalise toujours : c'est le seul
+        // événement du produit qui donne accès aux données de tous les
+        // autres. L'adresse n'est pas écrite — savoir QU'UN administrateur a
+        // été amorcé suffit à repérer une élévation inattendue, et la base
+        // dit lequel.
+        log("warn", "auth.admin.bootstrap", { bootstrapped: true });
       },
 
       /**
@@ -134,10 +142,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
         const db = prisma();
         if (!db || !user?.email || !user.id) return;
 
-        await db.assessment.updateMany({
+        const { count } = await db.assessment.updateMany({
           where: { email: user.email.toLowerCase(), userId: null },
           data: { userId: user.id },
         });
+
+        // Le compteur, jamais l'adresse ni l'identifiant du compte. Ce qu'on
+        // veut voir ici est un régime : si `attached` vaut toujours 0 alors
+        // que des diagnostics arrivent, le rattachement du CDC §10 est cassé
+        // — c'est exactement la panne qui avait déjà eu lieu, et que rien
+        // n'avait signalée.
+        log("info", "auth.signin", { attached: count });
       },
     },
   };

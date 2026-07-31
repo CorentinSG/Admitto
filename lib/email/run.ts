@@ -5,6 +5,7 @@ import { baseUrl, dispatchEmail, emailVariables } from "./dispatch";
 import { eligibility } from "./eligibility";
 import { dueEmails, scheduleSequence } from "./schedule";
 import type { SequenceKind } from "./types";
+import { log } from "@/lib/observability/log";
 
 /**
  * Passage d'envoi de la séquence J+0 → J+25 (CDC §19).
@@ -133,5 +134,10 @@ export async function runEmailSequence(reference: Date): Promise<SequenceSummary
     }
   }
 
+
+  // `failed` élève le niveau : un email de la séquence qui ne part pas est
+  // une promesse non tenue — le J+2 porte le rapport, le J+25 annonce une
+  // expiration. Les compteurs seuls, jamais une adresse.
+  log(summary.failed > 0 ? "warn" : "info", "email.sequence.done", { ...summary });
   return summary;
 }

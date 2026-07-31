@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/client";
 import { purgeRateLimitHits } from "./rate-limit";
 import { purgeUnclaimedAssessments } from "@/lib/legal/retention";
+import { log } from "@/lib/observability/log";
 
 /**
  * Purge des données techniques périmées (revue §B2/§C6).
@@ -31,10 +32,26 @@ export async function purgeTechnicalData(reference: Date = new Date()): Promise<
   const unclaimedAssessments = await purgeUnclaimedAssessments(reference);
 
   const db = prisma();
-  if (!db) return { expiredTokens: 0, rateLimitHits, unclaimedAssessments };
+  const expiredTokens = db
+    ? (await db.verificationToken.deleteMany({ where: { expires: { lt: reference } } })).count
+    : 0;
 
-  const { count } = await db.verificationToken.deleteMany({
-    where: { expires: { lt: reference } },
-  });
-  return { expiredTokens: count, rateLimitHits, unclaimedAssessments };
+  const summary = { expiredTokens, rateLimitHits, unclaimedAssessments };
+
+  /*
+   * Un seul point de journalisation, atteint par les deux régimes.
+   *
+   * La fonction sortait plus tôt quand la base est absente ; en journalisant
+   * avant chaque `return`, le régime mémoire n'aurait rien écrit — c'est-à-dire
+   * précisément le régime où l'on cherche à savoir si la purge tourne.
+   *
+   * Ce résumé compte des effacements, dont ceux de `unclaimedAssessments` :
+   * la seule suppression que personne ne peut demander, faute de compte d'où
+   * la demander. Elle doit laisser une trace de son passage — un effacement
+   * dû qui ne s'exécute plus ne se voit autrement qu'en comptant les lignes
+   * restées en base.
+   */
+  log("info", "purge.done", { ...summary, database: Boolean(db) });
+
+  return summary;
 }
