@@ -63,4 +63,21 @@ export const checkout = {
     "Phase bêta : le rapport complet est actuellement offert aux premiers participants, en échange de leur retour d'expérience. Aucun paiement ne vous sera demandé.",
   betaCta: "Recevoir mon rapport",
   error: "Le paiement n'a pas pu être initié. Réessayez ou écrivez-nous.",
+
+  /**
+   * État de la déduction, une fois le diagnostic payé (CDC §16.2).
+   * Chaque message annonce le montant ET la raison : un prix sans son motif
+   * laisse croire à une erreur ou à une promesse non tenue.
+   */
+  deductionState: {
+    title: "Votre déduction",
+    active: (amount: string, offer: string, days: number, date: string) =>
+      `${amount} restent déductibles de l'offre ${offer} pendant encore ${days} jour(s), jusqu'au ${date}.`,
+    expiring: (amount: string, offer: string, days: number, date: string) =>
+      `${amount} restent déductibles de l'offre ${offer}, mais plus que ${days} jour(s) : la déduction s'arrête le ${date}.`,
+    expired: (amount: string, date: string) =>
+      `La déduction de ${amount} a expiré le ${date}. L'offre reste accessible au tarif plein, sans autre changement.`,
+    price: (full: string, payable: string) => `${full} — à payer aujourd'hui : ${payable}`,
+    fullPrice: (full: string) => `Tarif plein : ${full}`,
+  },
 };

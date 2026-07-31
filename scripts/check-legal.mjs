@@ -51,6 +51,10 @@ const COVERED = {
   Account: "Jetons de connexion et sessions",
   VerificationToken: "Jetons de connexion et sessions",
   RateLimitHit: "formulaires publics",
+  // Sans identifiant d'aucune sorte, donc hors du tableau des traitements — mais
+  // PAS hors de la politique : quelqu'un qui est compté doit pouvoir le lire.
+  // Le repère vit dans la section « Cookies et mesure d'audience ».
+  ProductEvent: "compteurs de parcours ne comportent aucun identifiant",
 };
 
 /** Modèles délibérément hors du tableau, avec le motif. */

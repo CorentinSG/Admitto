@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { TrackView } from "@/app/_components/TrackView";
 import { colors, fonts, alpha, gradients } from "@/design/tokens";
 import { assessmentStore } from "@/lib/store/assessments";
 import { announcedDelay } from "@/lib/capacity/delay";
@@ -8,6 +9,11 @@ import { reportStore } from "@/lib/store/reports";
 import { formatUsd } from "@/lib/costs/estimate";
 import { PATH_LABELS, result } from "@/content/result";
 import { rapport } from "@/content/rapport";
+import { deductionView } from "@/lib/payments/deduction-state";
+import { recommendOffer } from "@/lib/offers/recommend";
+import { assembleReportLive } from "@/lib/matrices/load";
+import { OFFERS } from "@/lib/payments/offers";
+import { checkout } from "@/content/checkout";
 import { usingDatabase } from "@/lib/db/client";
 import { resultAccess } from "@/lib/access/result";
 import { AccessButton } from "./AccessButton";
@@ -45,12 +51,28 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
 
   // Délai annoncé calculé sur la file réelle (CDC §18).
   const activeReports = await reportStore.activeCount();
-  const reportReady = (await reportStore.get(id))?.status === "SENT";
+  const record = await reportStore.get(id);
+  const reportReady = record?.status === "SENT";
+
+  /**
+   * État de la déduction (CDC §16.2) — affiché seulement si un paiement l'a
+   * ouverte. Le calcul existait depuis toujours ; il n'était montré nulle
+   * part, si bien qu'une personne ayant payé son diagnostic ignorait combien
+   * de temps sa déduction courait encore, et n'apprenait jamais qu'elle avait
+   * expiré.
+   */
+  const deduction = record?.deduction ?? null;
+  const recommended = deduction
+    ? recommendOffer((await assembleReportLive(assessment)).verdict, assessment.derived.journeyType)
+    : null;
+  const deductionState =
+    deduction && recommended ? deductionView(deduction, recommended, new Date()) : null;
 
   const { answers, derived, path, textBlocks, partnerships, costs, deadlines } = assessment;
 
   return (
     <main style={{ background: gradients.hero, minHeight: "100vh", padding: "140px 8% 100px" }}>
+      <TrackView kind="RESULT_VIEWED" />
       <div style={{ maxWidth: 780 }}>
         <span
           style={{
@@ -335,6 +357,73 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           >
             {result.nextCta} →
           </Link>
+
+          {deductionState && recommended ? (
+            <div
+              style={{
+                marginTop: 26,
+                paddingTop: 20,
+                borderTop: `1px solid ${alpha.goldBorderFaint}`,
+              }}
+            >
+              <span
+                style={{
+                  display: "block",
+                  fontFamily: fonts.sans,
+                  fontSize: "0.7rem",
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: colors.gold,
+                  marginBottom: 8,
+                }}
+              >
+                {checkout.deductionState.title}
+              </span>
+              <p
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: "0.88rem",
+                  lineHeight: 1.75,
+                  margin: 0,
+                  color: alpha.whiteDesc,
+                }}
+              >
+                {deductionState.state === "EXPIRED"
+                  ? checkout.deductionState.expired(
+                      deductionState.amountLabel,
+                      dateFr(deductionState.expiresOn)
+                    )
+                  : deductionState.state === "EXPIRING"
+                    ? checkout.deductionState.expiring(
+                        deductionState.amountLabel,
+                        OFFERS[recommended].name,
+                        deductionState.daysLeft,
+                        dateFr(deductionState.expiresOn)
+                      )
+                    : checkout.deductionState.active(
+                        deductionState.amountLabel,
+                        OFFERS[recommended].name,
+                        deductionState.daysLeft,
+                        dateFr(deductionState.expiresOn)
+                      )}
+              </p>
+              <p
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: "0.85rem",
+                  margin: "8px 0 0",
+                  color: colors.goldLight,
+                }}
+              >
+                {deductionState.state === "EXPIRED"
+                  ? checkout.deductionState.fullPrice(deductionState.offerPriceLabel)
+                  : checkout.deductionState.price(
+                      deductionState.offerPriceLabel,
+                      deductionState.payableLabel
+                    )}
+              </p>
+            </div>
+          ) : null}
 
           {/* L'espace payant n'est proposé que s'il est activé côté serveur. */}
           {accountsAvailable() && <AccessButton assessmentId={id} />}

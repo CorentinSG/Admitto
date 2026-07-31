@@ -284,6 +284,8 @@ const CONFIDENTIALITE: LegalDocument = {
           body: [
             "Le site ne dépose aucun cookie publicitaire et n'utilise aucun traceur tiers de mesure d'audience.",
             "Seul un cookie de session est déposé une fois que vous vous connectez : il est strictement nécessaire au fonctionnement du service et ne requiert donc pas de consentement préalable. Il disparaît à la déconnexion ou à l'expiration de la session.",
+            "Le service compte en revanche ses propres étapes de parcours : combien de fois le questionnaire a été commencé, combien de fois chaque écran a été atteint, combien de diagnostics ont été soumis. Ces compteurs de parcours ne comportent aucun identifiant — ni cookie, ni numéro de passage, ni adresse IP, ni empreinte du navigateur. Deux passages successifs de la même personne y sont indiscernables de deux passages de deux personnes différentes, et rien ne permet de les rattacher à votre compte ou à votre diagnostic.",
+            "Ces compteurs ne constituent donc pas des données personnelles au sens du règlement, et ne figurent pas dans le tableau ci-dessus. Ils servent une seule question : à quel endroit du parcours les gens s'arrêtent, afin de corriger cet endroit.",
           ],
         },
       ],

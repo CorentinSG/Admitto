@@ -7,6 +7,7 @@ import { computeAssessment } from "@/lib/assessment/compute";
 import { liveMatrices } from "@/lib/matrices/load";
 import { assessmentStore } from "@/lib/store/assessments";
 import { reportStore } from "@/lib/store/reports";
+import { eventStore } from "@/lib/store/events";
 import { dispatchEmail, emailVariables } from "@/lib/email/dispatch";
 import {
   BUDGET,
@@ -102,6 +103,24 @@ export async function submitQuestionnaire(raw: Record<string, unknown>) {
   const now = new Date();
   const assessment = computeAssessment(answers, now, id, await liveMatrices(now));
   await assessmentStore.save(assessment);
+
+  // Entonnoir (CDC §36) : compté ICI, et pas au navigateur.
+  //
+  // L'appel client placé après `submitQuestionnaire` ne s'exécutait jamais :
+  // `redirect()` lève, la suite du bloc est morte, et le compteur des
+  // soumissions restait à zéro. L'entonnoir en devenait faux deux fois — l'étape
+  // « questionnaire soumis » vide, et le dernier écran, dont l'abandon se mesure
+  // contre ce compteur, affichant tous ses visiteurs comme perdus.
+  //
+  // Le placement dit la même chose que l'ancien commentaire client : après les
+  // refus (adresse invalide, plafond atteint), donc seule une soumission
+  // ACCEPTÉE compte. Aucun identifiant n'accompagne l'événement.
+  try {
+    await eventStore.record("QUESTIONNAIRE_SUBMITTED", null);
+  } catch {
+    // Une mesure ne fait jamais échouer une soumission.
+  }
+
   // Le rapport entre en file dès la soumission : c'est ce compteur qui pilote
   // le délai annoncé à l'utilisateur (CDC §18). Priorité « gratuit » en phase
   // bêta ; les rapports payants passeront devant en Phase 1B.

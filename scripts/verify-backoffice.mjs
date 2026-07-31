@@ -236,6 +236,129 @@ check("Aucune éligibilité affirmée", !/vous êtes éligible/i.test(printed));
   );
 }
 
+// ── Entonnoir du questionnaire (CDC §36) ───────────────────────────────────
+// Le parcours ci-dessus a émis de vrais événements : questionnaire commencé,
+// écrans atteints, soumission, résultat consulté, rapport ouvert.
+{
+  await page.goto(`${BASE}/admin/metriques`, { waitUntil: "networkidle" });
+  const metrics = await page.locator("body").innerText();
+
+  check("Écran des métriques — section entonnoir", /Entonnoir du questionnaire/i.test(metrics));
+  check(
+    "L'écran dit que la mesure est anonyme",
+    /aucun identifiant n['’]est enregistré/i.test(metrics)
+  );
+  check("Abandon par écran affiché", /Abandon par écran/i.test(metrics));
+
+  // Les compteurs sont GLOBAUX au serveur : leur valeur absolue dépend des
+  // exécutions précédentes et ne prouve rien. Ce qui prouve que la chaîne
+  // fonctionne — navigateur → /api/events → base → écran — c'est qu'une
+  // consultation de plus fasse monter le compteur correspondant.
+  const readCount = (body, label) => {
+    const found = new RegExp(`${label}\\s+(\\d+)`).exec(body);
+    return found ? Number(found[1]) : null;
+  };
+
+  const before = readCount(metrics, "Résultat consulté");
+  check("Compteur « Résultat consulté » lisible", before !== null, String(before));
+
+  await anonPage.goto(`${BASE}/resultat/${assessmentId}`, { waitUntil: "networkidle" });
+
+  // `sendBeacon` ne rend pas la main sur l'enregistrement : on attend que le
+  // compteur monte, jamais un délai fixe.
+  const raised = await waitFor(async () => {
+    await page.goto(`${BASE}/admin/metriques`, { waitUntil: "networkidle" });
+    const body = await page.locator("body").innerText();
+    const after = readCount(body, "Résultat consulté");
+    return after !== null && before !== null && after > before ? after : null;
+  });
+  check(
+    "Une consultation de plus fait monter le compteur",
+    Boolean(raised),
+    `avant ${before}, après ${raised}`
+  );
+
+  // Le compteur des soumissions ne peut PAS être alimenté depuis le
+  // navigateur : l'action redirige, `redirect()` lève, et tout appel placé
+  // après elle est du code mort. Le défaut est invisible à l'œil — l'écran
+  // affiche « 0 » sans rien signaler — donc il se vérifie ici, et par une
+  // hausse plutôt qu'une valeur absolue : les compteurs sont globaux et une
+  // base déjà remplie ferait passer l'assertion sans rien prouver.
+  const submitBefore = readCount(await page.locator("body").innerText(), "Questionnaire soumis");
+  check("Compteur « Questionnaire soumis » lisible", submitBefore !== null, String(submitBefore));
+
+  const second = await browser.newContext();
+  const secondPage = await second.newPage();
+  await secondPage.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
+  const beforeSecond = await secondPage.locator("body").innerText();
+  await secondPage.getByRole("button", { name: "Commencer" }).click();
+  await waitForTextChange(secondPage, beforeSecond);
+  await answerScreens(secondPage, [
+    "Je prépare mes candidatures",
+    "Master 2",
+    "Université Paris 1 Panthéon-Sorbonne",
+    "Grand cabinet international",
+    "Rester aux États-Unis",
+    "Moins de 30 000 $",
+    "Aucune option identifiée",
+    "L'an prochain",
+    "Pas encore commencé",
+    "Français, sans statut américain",
+  ]);
+  await secondPage.getByPlaceholder("Prénom").fill("Dominique");
+  await secondPage.getByPlaceholder("Adresse email").fill(verifyEmail("dominique"));
+  await secondPage.getByRole("button", { name: "Obtenir mon résultat" }).click();
+  await secondPage.waitForURL("**/resultat/**", { timeout: 20000 });
+
+  const submitRaised = await waitFor(async () => {
+    await page.goto(`${BASE}/admin/metriques`, { waitUntil: "networkidle" });
+    const body = await page.locator("body").innerText();
+    const after = readCount(body, "Questionnaire soumis");
+    return after !== null && submitBefore !== null && after > submitBefore ? after : null;
+  });
+  check(
+    "Une soumission acceptée fait monter le compteur",
+    Boolean(submitRaised),
+    `avant ${submitBefore}, après ${submitRaised}`
+  );
+  await second.close();
+
+  // Aucune part supérieure à 100 % : l'écran en affichait « 137 % » et
+  // « 174 % » parce qu'il rapportait au départ des compteurs qui ne portent
+  // pas sur la même population (ouvertures de page rouvertes depuis un email,
+  // rapports payés antérieurs à la mesure). Lu comme un taux de conversion,
+  // un tel nombre oriente une décision sur une comparaison qui n'existe pas.
+  // Le titre est mis en capitales par le style, et `innerText` rend le texte
+  // TEL QU'AFFICHÉ : un `indexOf` sensible à la casse renvoyait -1, donc
+  // `slice(-1)` ne gardait qu'un caractère et les assertions portant sur cette
+  // section passaient sur une chaîne vide.
+  const funnelSectionOf = (body) => {
+    const at = body.search(/Entonnoir du questionnaire/i);
+    return at === -1 ? "" : body.slice(at);
+  };
+  {
+    const section = funnelSectionOf(await page.locator("body").innerText());
+    check("Section entonnoir localisée dans la page", section.length > 0);
+    const parts = [...section.matchAll(/(\d+)\s%/g)].map((m) => Number(m[1]));
+    check(
+      "Aucune part au-dessus de 100 %",
+      parts.every((p) => p <= 100),
+      parts.filter((p) => p > 100).join(", ")
+    );
+    check("Au moins une part calculée", parts.length > 0, String(parts.length));
+  }
+
+  // Aucun identifiant ne doit apparaître sur cet écran : ni l'adresse du
+  // demandeur, ni l'identifiant du diagnostic. L'entonnoir ne compte pas
+  // des personnes, il compte des passages.
+  const funnelSection = funnelSectionOf(await page.locator("body").innerText());
+  check("Section entonnoir non vide pour le contrôle d'identifiants", funnelSection.length > 0);
+  check(
+    "L'entonnoir n'expose aucune adresse ni identifiant",
+    !funnelSection.includes(REQUESTER_EMAIL) && !funnelSection.includes(assessmentId)
+  );
+}
+
 await browser.close();
 
 if (failures.length) {

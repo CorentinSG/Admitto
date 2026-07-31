@@ -80,6 +80,38 @@ _Vérification : événements visibles dans `/admin/metriques` après un parcour
 de la suite navigateur ; `check:legal` échouera sur la nouvelle table tant que
 la politique de confidentialité ne la déclare pas — c'est voulu._
 
+**Livré.** Trois écarts au plan, tous délibérés :
+
+1. **Aucun identifiant, pas même « anonyme avant compte ».** Le plan tolérait un
+   identifiant de passage ; il n'y en a aucun. Un événement est un triplet
+   (type, écran, instant), et deux lignes du même visiteur sont indiscernables
+   de deux lignes de deux visiteurs. La question à laquelle la bêta doit
+   répondre — « où s'arrête-t-on ? » — se lit en compteurs : l'abandon à
+   l'écran N est la différence entre les compteurs de N et du suivant. Corréler
+   n'apporterait que la capacité de suivre quelqu'un.
+2. **Pas d'événement « lien email cliqué ».** Il exigerait un jeton par
+   destinataire dans l'URL, c'est-à-dire précisément l'identifiant que le point
+   précédent refuse. Renoncer à cette mesure coûte moins que détenir la donnée.
+3. **Les parts ne sont calculées que là où elles ont un sens.** Après la
+   soumission, les compteurs comptent des ouvertures de page (le lien du
+   résultat part par email et se rouvre), et les diagnostics payés viennent des
+   rapports, dont beaucoup précèdent la mesure. Seule la conversion
+   commencé → soumis est une vraie part ; les autres étapes gardent leur compte
+   et affichent un tiret.
+
+Deux défauts trouvés à la vérification, invisibles aux tests unitaires :
+
+- **Le compteur des soumissions ne pouvait pas monter.** L'appel était placé
+  après `submitQuestionnaire`, mais l'action réussit par `redirect()`, qui lève :
+  tout ce qui suit était du code mort. L'étape centrale de l'entonnoir serait
+  restée à zéro, et le dernier écran aurait affiché tous ses visiteurs comme
+  perdus. La soumission est désormais comptée dans l'action, après les refus.
+- **L'abandon était calculé contre un écran conditionnel.** « Barreau
+  étranger » n'est posé qu'à certains profils : l'écran qui le précède
+  affichait 18 abandons sur 19 visiteurs alors que personne n'était parti.
+  L'abandon se mesure maintenant contre le prochain écran vu de tous
+  (`CONDITIONAL_SCREENS`, tenu en parité avec `visibleScreens` par un test).
+
 ### Lot C — Accessibilité — ~2 jours, priorité 3
 
 Le seul endroit où le produit est en dessous de son propre standard.

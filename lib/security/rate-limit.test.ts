@@ -24,6 +24,21 @@ let seq = 0;
 const freshIp = () => `203.0.113.${(seq += 1)}`;
 const freshEmail = () => `limite${(seq += 1)}@example.com`;
 
+/**
+ * Plafond par email d'un périmètre qui en a un.
+ *
+ * `perEmail` peut valoir `null` — le périmètre ne comporte alors aucune
+ * adresse. Les tests ci-dessous portent sur des périmètres qui en ont un :
+ * l'assertion ici fait échouer le test avec un message clair si ce n'était
+ * plus le cas, au lieu de laisser une comparaison avec `null` passer pour
+ * un plafond de zéro.
+ */
+const emailCap = (scope: "DIAGNOSTIC" | "SIGN_IN"): number => {
+  const cap = RATE_LIMITS[scope].perEmail;
+  if (cap === null) throw new Error(`${scope} n'a plus de plafond par email`);
+  return cap;
+};
+
 beforeEach(async () => {
   // Repart d'un journal vide en mémoire ; en base, les clés sont uniques.
   await purgeRateLimitHits(later(HIT_RETENTION_MINUTES * 10));
@@ -33,9 +48,14 @@ describe("plafonds", () => {
   it("définit un plafond fini pour chaque périmètre", () => {
     for (const scope of RATE_LIMIT_SCOPES) {
       const limit = RATE_LIMITS[scope];
+      // Le plafond par IP, lui, n'est jamais absent : c'est la seule clé
+      // dont dispose une route qui ne demande aucune identité.
       expect(limit.perIp, scope).toBeGreaterThan(0);
-      expect(limit.perEmail, scope).toBeGreaterThan(0);
       expect(limit.windowMinutes, scope).toBeGreaterThan(0);
+      // `null` dit « ce périmètre ne comporte pas d'adresse ». Zéro dirait
+      // « une seule tentative suffit à dépasser », ce qui refuserait tout dès
+      // la première requête : la distinction n'est pas cosmétique.
+      if (limit.perEmail !== null) expect(limit.perEmail, scope).toBeGreaterThan(0);
     }
   });
 
@@ -43,7 +63,25 @@ describe("plafonds", () => {
     // Une IP partagée (entreprise, campus) porte plusieurs personnes ; une
     // adresse email n'en porte qu'une.
     for (const scope of RATE_LIMIT_SCOPES) {
-      expect(RATE_LIMITS[scope].perEmail, scope).toBeLessThan(RATE_LIMITS[scope].perIp);
+      const { perEmail, perIp } = RATE_LIMITS[scope];
+      if (perEmail === null) continue;
+      expect(perEmail, scope).toBeLessThan(perIp);
+    }
+  });
+
+  it("n'enferme pas un périmètre sans email dans un plafond de zéro", async () => {
+    // Le piège que le type ferme : avec `perEmail: 0`, une adresse parvenant
+    // ici ferait 1 > 0 et la toute première requête serait refusée. Le
+    // périmètre EVENT n'en reçoit jamais, mais rien dans le code appelant ne
+    // l'empêche — la limite doit donc rester inerte, pas fatale.
+    expect(RATE_LIMITS.EVENT.perEmail).toBeNull();
+    // Dix passages avec la MÊME adresse, chacun depuis une IP différente :
+    // aucun ne doit être refusé. C'est ce qui prouve que la clé email
+    // n'accumule rien ici, et pas seulement que le premier appel passe.
+    const email = freshEmail();
+    for (let i = 0; i < 10; i++) {
+      const verdict = await checkRateLimit("EVENT", { ip: freshIp(), email }, NOW);
+      expect(verdict.ok, `passage ${i + 1}`).toBe(true);
     }
   });
 
@@ -66,7 +104,7 @@ describe("plafonds", () => {
 describe("limite par adresse email", () => {
   it("accepte jusqu'au plafond puis refuse", async () => {
     const email = freshEmail();
-    const { perEmail } = RATE_LIMITS.DIAGNOSTIC;
+    const perEmail = emailCap("DIAGNOSTIC");
 
     for (let i = 0; i < perEmail; i++) {
       const verdict = await checkRateLimit("DIAGNOSTIC", { ip: null, email }, NOW);
@@ -82,7 +120,7 @@ describe("limite par adresse email", () => {
 
   it("ignore la casse et les espaces de l'adresse", async () => {
     const email = freshEmail();
-    const { perEmail } = RATE_LIMITS.DIAGNOSTIC;
+    const perEmail = emailCap("DIAGNOSTIC");
 
     for (let i = 0; i < perEmail; i++) {
       await checkRateLimit("DIAGNOSTIC", { ip: null, email: `  ${email.toUpperCase()} ` }, NOW);
@@ -95,7 +133,7 @@ describe("limite par adresse email", () => {
     // C'est précisément le scénario du bombardement d'email : mille IP, une
     // seule victime.
     const email = freshEmail();
-    for (let i = 0; i < RATE_LIMITS.SIGN_IN.perEmail; i++) {
+    for (let i = 0; i < emailCap("SIGN_IN"); i++) {
       await checkRateLimit("SIGN_IN", { ip: freshIp(), email }, NOW);
     }
     const refused = await checkRateLimit("SIGN_IN", { ip: freshIp(), email }, NOW);
@@ -127,7 +165,8 @@ describe("limite par adresse IP", () => {
 describe("fenêtre glissante", () => {
   it("libère après la fenêtre", async () => {
     const email = freshEmail();
-    const { perEmail, windowMinutes } = RATE_LIMITS.DIAGNOSTIC;
+    const perEmail = emailCap("DIAGNOSTIC");
+    const { windowMinutes } = RATE_LIMITS.DIAGNOSTIC;
 
     for (let i = 0; i < perEmail; i++) {
       await checkRateLimit("DIAGNOSTIC", { ip: null, email }, NOW);
@@ -144,7 +183,8 @@ describe("fenêtre glissante", () => {
     // Les tentatives refusées sont comptées : sinon la fenêtre se viderait
     // pendant qu'un script frappe, et le plafond ne tiendrait jamais.
     const email = freshEmail();
-    const { perEmail, windowMinutes } = RATE_LIMITS.DIAGNOSTIC;
+    const perEmail = emailCap("DIAGNOSTIC");
+    const { windowMinutes } = RATE_LIMITS.DIAGNOSTIC;
 
     for (let i = 0; i < perEmail + 5; i++) {
       await checkRateLimit("DIAGNOSTIC", { ip: null, email }, later(i));
@@ -159,7 +199,7 @@ describe("fenêtre glissante", () => {
 describe("cloisonnement des périmètres", () => {
   it("saturer le diagnostic ne bloque pas la connexion", async () => {
     const email = freshEmail();
-    for (let i = 0; i < RATE_LIMITS.DIAGNOSTIC.perEmail + 2; i++) {
+    for (let i = 0; i < emailCap("DIAGNOSTIC") + 2; i++) {
       await checkRateLimit("DIAGNOSTIC", { ip: null, email }, NOW);
     }
     expect((await checkRateLimit("SIGN_IN", { ip: null, email }, NOW)).ok).toBe(true);
@@ -202,7 +242,7 @@ describe("purge", () => {
     await purgeRateLimitHits(later(HIT_RETENTION_MINUTES + 1));
 
     // L'ancienne clé repart de zéro : son plafond est de nouveau entier.
-    for (let i = 0; i < RATE_LIMITS.DIAGNOSTIC.perEmail; i++) {
+    for (let i = 0; i < emailCap("DIAGNOSTIC"); i++) {
       const verdict = await checkRateLimit(
         "DIAGNOSTIC",
         { ip: null, email: ancien },

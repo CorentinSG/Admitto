@@ -128,6 +128,25 @@ for (const path of UNKNOWN_RESOURCES) {
   );
 }
 
+{
+  // La mesure (CDC §36) ne doit jamais faire échouer un parcours, quel que
+  // soit le régime : sans base, les compteurs vivent en mémoire, et une
+  // soumission mal formée est ignorée. Dans tous les cas 204 — un 5xx ici
+  // signalerait qu'un écran peut casser à cause d'un compteur.
+  for (const [label, body] of [
+    ["valide", '{"kind":"RESULT_VIEWED"}'],
+    ["type inconnu", '{"kind":"PIXEL_TRACKER"}'],
+    ["corps illisible", "pas du json"],
+  ]) {
+    const { status } = await probe("/api/events", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body,
+    });
+    check(`Mesure inerte et silencieuse — ${label}`, status === 204, String(status));
+  }
+}
+
 // ── Ce que le régime minimal doit DIRE, plutôt que cacher ──────────────────
 if (REGIME === "minimal") {
   const { text } = await probe("/connexion");

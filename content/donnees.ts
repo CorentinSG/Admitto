@@ -13,7 +13,8 @@ export const donnees = {
 
   held: {
     title: "Ce qui est enregistré",
-    intro: "Cette liste correspond aux tables de la base, pas à un résumé.",
+    intro:
+      "Cette liste correspond aux tables de la base qui portent quelque chose sur vous, pas à un résumé. Les compteurs de parcours n'y figurent pas : ils ne comportent aucun identifiant, donc rien à y retrouver ni à en extraire.",
   },
 
   export: {

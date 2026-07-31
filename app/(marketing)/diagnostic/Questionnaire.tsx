@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { colors, fonts, alpha, gradients } from "@/design/tokens";
 import { SCREENS, intro, ui } from "@/content/diagnostic";
 import { CAREER_GOAL, type Answers, type ScreenId } from "@/lib/questionnaire/types";
 import { careerGoalOptions, visibleScreens } from "@/lib/questionnaire/visibility";
 import { submitQuestionnaire } from "./actions";
+import { track } from "@/lib/analytics/track";
 
 /**
  * Questionnaire — une question par écran, douze écrans visibles au maximum,
@@ -27,6 +28,29 @@ export function Questionnaire() {
   const screen = SCREENS.find((s) => s.id === currentId)!;
   const isLast = index >= screens.length - 1;
 
+  /**
+   * Mesure de l'entonnoir (CDC §36) : un compteur par écran atteint, sans
+   * aucun identifiant. `currentId` en dépendance et non `index` : deux écrans
+   * différents peuvent porter le même index quand la logique conditionnelle
+   * en insère un, et c'est l'écran vu qui compte.
+   *
+   * Un écran n'est compté qu'UNE fois par passage. Revenir en arrière pour
+   * corriger une réponse est un geste courant ; sans ce garde-fou, l'écran
+   * repasserait au compteur et paraîtrait plus atteint que le précédent. La
+   * courbe d'abandon se lit en différences entre écrans successifs : la
+   * gonfler ainsi ferait disparaître un abandon réel dans un écart inversé.
+   *
+   * Le `Set` vit dans le composant, jamais au-delà : ce n'est pas un
+   * identifiant, rien n'en sort et il disparaît avec la page.
+   */
+  const counted = useRef<Set<ScreenId>>(new Set());
+  useEffect(() => {
+    if (!started) return;
+    if (counted.current.has(currentId)) return;
+    counted.current.add(currentId);
+    track("SCREEN_REACHED", currentId);
+  }, [started, currentId]);
+
   const options =
     currentId === "careerGoal"
       ? careerGoalOptions(answers, CAREER_GOAL).map(
@@ -44,6 +68,9 @@ export function Questionnaire() {
     setError(null);
     startTransition(async () => {
       const result = await submitQuestionnaire(answers as Record<string, unknown>);
+      // Rien ne peut être mesuré ici : en cas de succès l'action redirige, et
+      // `redirect()` lève — le code qui suit ne s'exécute jamais. La soumission
+      // est donc comptée dans l'action elle-même (voir actions.ts).
       if (result?.error) setError(result.error);
     });
   }
@@ -89,7 +116,10 @@ export function Questionnaire() {
         </p>
         <button
           type="button"
-          onClick={() => setStarted(true)}
+          onClick={() => {
+            track("QUESTIONNAIRE_STARTED");
+            setStarted(true);
+          }}
           style={{
             marginTop: 40,
             background: gradients.goldButton,

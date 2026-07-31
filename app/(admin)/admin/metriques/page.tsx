@@ -5,6 +5,9 @@ import { assessmentStore } from "@/lib/store/assessments";
 import { reportStore } from "@/lib/store/reports";
 import { roadmapStore } from "@/lib/store/roadmap";
 import { computeMetrics, formatMetric, type Metric } from "@/lib/analytics/metrics";
+import { buildFunnel } from "@/lib/analytics/events";
+import { eventStore } from "@/lib/store/events";
+import { SCREENS } from "@/content/diagnostic";
 
 export const metadata: Metadata = {
   title: "Métriques — Admitto",
@@ -31,6 +34,18 @@ export default async function AdminMetricsPage() {
   }
 
   const metrics = computeMetrics({ assessments, reports, activatedRoadmaps });
+
+  // Entonnoir (CDC §36) : des compteurs anonymes, jamais des parcours. Le
+  // nombre de diagnostics payés vient des RAPPORTS, pas des événements : un
+  // achat est un fait comptable, il ne se mesure pas à un pixel.
+  const funnel = buildFunnel(
+    await eventStore.countsByKind(),
+    await eventStore.countsByScreen(),
+    reports.filter((report) => report.priority === "PAID").length
+  );
+  const screenTitles: Record<string, string> = Object.fromEntries(
+    SCREENS.map((screen) => [screen.id, screen.question])
+  );
 
   return (
     <div>
@@ -120,6 +135,146 @@ export default async function AdminMetricsPage() {
             note="Part des diagnostics ayant donné lieu à au moins une tâche touchée."
           />
         </div>
+      </Section>
+
+      <Section title="Entonnoir du questionnaire">
+        <p
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: "0.85rem",
+            lineHeight: 1.75,
+            maxWidth: 700,
+            margin: "0 0 18px",
+            color: colors.slate,
+          }}
+        >
+          Compteurs anonymes : aucun identifiant n&apos;est enregistré, aucun parcours
+          individuel n&apos;est reconstituable. L&apos;abandon par écran est la différence
+          entre deux compteurs successifs.
+          <br />
+          Un tiret remplace la part du départ quand les deux nombres ne portent pas sur la
+          même population : après la soumission, les compteurs comptent des ouvertures de
+          page — le lien du résultat part par email et se rouvre plusieurs fois — et les
+          diagnostics payés viennent des rapports, dont beaucoup sont antérieurs à la mesure.
+          Seule la conversion commencé → soumis est une vraie part.
+        </p>
+
+        {funnel.events === 0 ? (
+          <p style={{ fontFamily: fonts.sans, fontSize: "0.88rem", margin: 0, color: colors.slate }}>
+            Aucun événement enregistré pour l&apos;instant.
+          </p>
+        ) : (
+          <>
+            {funnel.steps.map((step) => (
+              <div
+                key={step.label}
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "baseline",
+                  gap: 14,
+                  padding: "10px 0",
+                  borderTop: `1px solid ${alpha.cardGridGap}`,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: "0.88rem",
+                    color: colors.navy900,
+                    minWidth: 210,
+                  }}
+                >
+                  {step.label}
+                </span>
+                <span
+                  style={{
+                    fontFamily: fonts.serif,
+                    fontSize: "1.2rem",
+                    color: colors.navy900,
+                    minWidth: 48,
+                  }}
+                >
+                  {step.count}
+                </span>
+                {/* Barre proportionnelle au PLUS GRAND compte, pas au départ :
+                    les comptes se comparent entre eux même quand aucun n'est
+                    une part de l'autre, et la barre ne peut pas déborder. */}
+                <span
+                  aria-hidden
+                  style={{
+                    display: "block",
+                    height: 6,
+                    width: `${step.barShare * 2.6}px`,
+                    backgroundColor: colors.gold,
+                  }}
+                />
+                <span style={{ fontFamily: fonts.sans, fontSize: "0.78rem", color: colors.slate }}>
+                  {step.shareOfStart === null ? "—" : `${step.shareOfStart} %`}
+                </span>
+              </div>
+            ))}
+
+            <h3
+              style={{
+                fontFamily: fonts.sans,
+                fontSize: "0.7rem",
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: colors.gold,
+                margin: "32px 0 4px",
+              }}
+            >
+              Abandon par écran
+            </h3>
+            {funnel.dropOff.map((screen) => (
+              <div
+                key={screen.screen}
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "baseline",
+                  gap: 14,
+                  padding: "8px 0",
+                  borderTop: `1px solid ${alpha.cardGridGap}`,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: "0.84rem",
+                    color: colors.navy900,
+                    minWidth: 300,
+                  }}
+                >
+                  {screenTitles[screen.screen] ?? screen.screen}
+                </span>
+                <span style={{ fontFamily: fonts.sans, fontSize: "0.82rem", color: colors.slate }}>
+                  {screen.reached} atteint(s)
+                </span>
+                <span
+                  style={{
+                    fontFamily: fonts.sans,
+                    fontSize: "0.82rem",
+                    color: screen.lost > 0 ? colors.gold : colors.slate,
+                  }}
+                >
+                  {screen.lost} abandon(s)
+                </span>
+                {/* Un écran conditionnel est atteint par une fraction des
+                    profils : son compte, lu à côté des autres, ressemblerait
+                    sinon à un effondrement. */}
+                {screen.conditional ? (
+                  <span
+                    style={{ fontFamily: fonts.sans, fontSize: "0.74rem", color: colors.slate }}
+                  >
+                    écran posé à certains profils seulement
+                  </span>
+                ) : null}
+              </div>
+            ))}
+          </>
+        )}
       </Section>
     </div>
   );

@@ -43,6 +43,20 @@ export function needsVisaBranch(answers: Answers): boolean {
   return answers.usStatus !== "US_DUAL_NATIONAL";
 }
 
+/**
+ * Écrans qui ne sont PAS montrés à tout le monde.
+ *
+ * Doit rester exactement l'ensemble des écrans que `visibleScreens` peut
+ * omettre — un test de parité le vérifie contre des profils réels, parce que
+ * les deux ne peuvent pas diverger sans conséquence : l'entonnoir mesure
+ * l'abandon en comparant un écran au suivant, et comparer à un écran que la
+ * moitié des gens ne voit jamais fabrique des abandons qui n'ont pas eu lieu.
+ */
+export const CONDITIONAL_SCREENS = ["foreignBar"] as const satisfies readonly ScreenId[];
+
+export const isConditionalScreen = (id: ScreenId): boolean =>
+  (CONDITIONAL_SCREENS as readonly ScreenId[]).includes(id);
+
 /** Écrans effectivement visibles, dans l'ordre. */
 export function visibleScreens(answers: Answers): ScreenId[] {
   return SCREEN_IDS.filter((id) => (id === "foreignBar" ? showsForeignBarScreen(answers) : true));

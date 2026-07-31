@@ -272,6 +272,25 @@ model SchoolChoice {
   @@index([assessmentId])
 }
 
+/// Événement produit (CDC §36) — compteur d'usage, sans aucun identifiant.
+///
+/// Volontairement dépourvu de toute colonne rattachable à une personne : ni
+/// utilisateur, ni session, ni adresse IP, ni identifiant de passage. Deux
+/// lignes du même visiteur sont indiscernables de deux lignes de deux
+/// visiteurs — c'est ce qui permet de mesurer l'entonnoir sans détenir de
+/// donnée personnelle.
+///
+/// `screen` n'est renseigné que pour `SCREEN_REACHED` : c'est lui qui produit
+/// la courbe d'abandon, par différence entre compteurs successifs.
+model ProductEvent {
+  id     String   @id @default(uuid())
+  kind   String
+  screen String?
+  at     DateTime @default(now())
+
+  @@index([kind])
+}
+
 /// Révision d'une règle du Moteur A (CDC §33 — matrices éditables).
 ///
 /// APPEND-ONLY : chaque modification crée une révision, rien n'est écrasé.

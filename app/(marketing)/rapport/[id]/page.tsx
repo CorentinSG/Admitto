@@ -9,6 +9,7 @@ import { resultAccess } from "@/lib/access/result";
 import { announcedDelay } from "@/lib/capacity/delay";
 import { rapport } from "@/content/rapport";
 import { ReportDocument } from "@/app/_components/ReportDocument";
+import { TrackView } from "@/app/_components/TrackView";
 
 export const metadata: Metadata = {
   title: "Votre rapport — Admitto",
@@ -126,6 +127,10 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           {rapport.printHint}
         </p>
       </div>
+
+      {/* Compté ici, dans la branche « rapport prêt » seulement : la page
+          d'attente n'est pas une lecture de rapport. */}
+      <TrackView kind="REPORT_VIEWED" />
 
       <ReportDocument
         report={await assembleReportLive(assessment)}

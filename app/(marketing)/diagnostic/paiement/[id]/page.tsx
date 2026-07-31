@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { TrackView } from "@/app/_components/TrackView";
 import { colors, fonts, alpha, gradients } from "@/design/tokens";
 import { assessmentStore } from "@/lib/store/assessments";
 import { reportStore } from "@/lib/store/reports";
@@ -31,6 +32,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
 
   return (
     <main style={{ background: gradients.hero, minHeight: "100vh", padding: "140px 8% 100px" }}>
+      <TrackView kind="CHECKOUT_VIEWED" />
       <div style={{ maxWidth: 720 }}>
         <span
           style={{

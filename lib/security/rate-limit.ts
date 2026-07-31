@@ -21,14 +21,21 @@ import { db, usingDatabase } from "@/lib/db/client";
  * des autres.
  */
 
-export const RATE_LIMIT_SCOPES = ["DIAGNOSTIC", "SIGN_IN"] as const;
+export const RATE_LIMIT_SCOPES = ["DIAGNOSTIC", "SIGN_IN", "EVENT"] as const;
 export type RateLimitScope = (typeof RATE_LIMIT_SCOPES)[number];
 
 interface Limit {
   /** Tentatives autorisées par adresse IP dans la fenêtre. */
   perIp: number;
-  /** Tentatives autorisées par adresse email dans la fenêtre. */
-  perEmail: number;
+  /**
+   * Tentatives autorisées par adresse email dans la fenêtre.
+   *
+   * `null` — et non zéro — quand le périmètre ne comporte aucune adresse. Zéro
+   * se lirait comme un plafond, et le premier appel le dépasserait : un
+   * périmètre sans email refuserait tout dès la première requête. La valeur
+   * doit dire « cette clé n'existe pas ici », pas « elle vaut zéro ».
+   */
+  perEmail: number | null;
   windowMinutes: number;
 }
 
@@ -63,6 +70,14 @@ export const RATE_LIMITS: Record<RateLimitScope, Limit> = {
   // emails », y compris venus d'un réseau de machines. En revanche un plafond
   // trop bas gêne la personne qui n'a pas reçu son lien et redemande.
   SIGN_IN: { perIp: 30, perEmail: 8, windowMinutes: 15 },
+  // Les événements produit (CDC §36) n'écrivent qu'un compteur anonyme, mais
+  // la route est publique : sans plafond, elle serait un moyen d'écriture
+  // illimitée en base. Un parcours de questionnaire en émet une quinzaine ;
+  // trois cents par heure laissent passer une vingtaine de parcours depuis
+  // une même IP — un campus ou un cabinet — et arrêtent un script.
+  // `perEmail` est nul au sens propre : aucune adresse n'entre dans un
+  // événement, il n'y a donc pas de seconde clé à plafonner.
+  EVENT: { perIp: 300, perEmail: null, windowMinutes: 60 },
 };
 
 /** Durée de conservation des tentatives : la plus longue fenêtre, doublée. */
@@ -135,7 +150,12 @@ export async function checkRateLimit(
   reference: Date = new Date()
 ): Promise<RateLimitVerdict> {
   const limit = RATE_LIMITS[scope];
-  const email = caller.email?.trim().toLowerCase();
+  // Un périmètre dont `perEmail` est nul ne comporte pas de clé email : une
+  // adresse qui lui parviendrait quand même n'est ni comptée ni ENREGISTRÉE.
+  // La ranger dans le journal des tentatives ferait entrer une donnée
+  // personnelle dans un périmètre dont la politique dit qu'il n'en porte pas.
+  // Le plafond par IP continue de s'appliquer : rien n'y devient illimité.
+  const email = limit.perEmail === null ? undefined : caller.email?.trim().toLowerCase();
 
   const counts = await Promise.all([
     caller.ip
@@ -148,7 +168,8 @@ export async function checkRateLimit(
 
   const [ipCount, emailCount] = counts;
   const exceeded =
-    (caller.ip !== null && ipCount > limit.perIp) || (Boolean(email) && emailCount > limit.perEmail);
+    (caller.ip !== null && ipCount > limit.perIp) ||
+    (Boolean(email) && limit.perEmail !== null && emailCount > limit.perEmail);
 
   return exceeded ? { ok: false, retryAfterMinutes: limit.windowMinutes } : { ok: true };
 }

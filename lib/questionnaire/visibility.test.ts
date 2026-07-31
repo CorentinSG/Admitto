@@ -7,8 +7,10 @@ import {
   progress,
   showsForeignBarScreen,
   visibleScreens,
+  CONDITIONAL_SCREENS,
+  isConditionalScreen,
 } from "./visibility";
-import { CAREER_GOAL } from "./types";
+import { CAREER_GOAL, SCREEN_IDS, type Answers, type ScreenId } from "./types";
 
 describe("logique conditionnelle du questionnaire (CDC §12.4)", () => {
   it("n'affiche l'écran barreau étranger que lorsqu'il est pertinent", () => {
@@ -52,5 +54,42 @@ describe("logique conditionnelle du questionnaire (CDC §12.4)", () => {
       total: 11,
     });
     expect(progress({ status: "LAWYER_EXPLORING" }, "contact")).toEqual({ step: 12, total: 12 });
+  });
+});
+
+describe("écrans conditionnels", () => {
+  /**
+   * `CONDITIONAL_SCREENS` sert à l'entonnoir (CDC §36) pour savoir à quel
+   * écran comparer celui qu'il mesure. Si la liste et `visibleScreens`
+   * divergent, l'entonnoir compare un écran à un écran que tout le monde ne
+   * voit pas, et rapporte des abandons qui n'ont pas eu lieu — un défaut
+   * silencieux, puisque le chiffre s'affiche sans rien signaler.
+   */
+  const PROFILS: Answers[] = [
+    {},
+    { status: "EXPLORING_LLM", education: "M2" },
+    { status: "LAWYER_EXPLORING", education: "M2" },
+    { status: "TARGETING_BAR", education: "LICENCE" },
+    { status: "ADMITTED_OR_ENROLLED", education: "CRFPA" },
+    { status: "EXPLORING_LLM", education: "CAPA" },
+    { status: "EXPLORING_LLM", education: "DOCTORAT" },
+    { status: "EXPLORING_LLM", education: "LICENCE" },
+  ];
+
+  it("est exactement l'ensemble des écrans que la visibilité peut omettre", () => {
+    const omis = new Set<ScreenId>();
+    for (const answers of PROFILS) {
+      const visibles = new Set(visibleScreens(answers));
+      for (const id of SCREEN_IDS) if (!visibles.has(id)) omis.add(id);
+    }
+    expect([...omis].sort()).toEqual([...CONDITIONAL_SCREENS].sort());
+  });
+
+  it("marque comme conditionnel ce que la liste déclare, et rien d'autre", () => {
+    for (const id of SCREEN_IDS) {
+      expect(isConditionalScreen(id), id).toBe(
+        (CONDITIONAL_SCREENS as readonly ScreenId[]).includes(id)
+      );
+    }
   });
 });
