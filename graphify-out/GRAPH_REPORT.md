@@ -1,64 +1,85 @@
-# Graph Report - .  (2026-07-30)
+# Graph Report - /home/user/Admitto  (2026-07-31)
 
 ## Corpus Check
 - cluster-only mode — file stats not available
 
 ## Summary
-- 1352 nodes · 3244 edges · 63 communities (56 shown, 7 thin omitted)
+- 1412 nodes · 3425 edges · 85 communities (77 shown, 8 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6e1d799a`
+- Built from commit: `07cb03b5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- tokens.ts
 - assessment/compute.ts
-- dashboard/page.tsx
-- exhaustive.test.ts
 - assemble.ts
-- eligibility.ts
-- resultat/[id]/page.tsx
 - ecoles/page.tsx
-- stores.test.ts
-- LegalPage.tsx
-- currentAssessmentId
+- Simulator.tsx
+- resultat/[id]/page.tsx
+- alpha
+- documents/actions.ts
+- email/run.ts
 - scripts
-- current.ts
+- LegalPage.tsx
+- exhaustive.test.ts
 - compilerOptions
-- paiement/[id]/page.tsx
+- tokens.ts
+- roadmap/types.ts
 - devDependencies
-- auth.ts
-- app/consultations/page.tsx
-- metriques/page.tsx
-- admin/page.tsx
-- admin/consultations/page.tsx
 - booking.ts
+- rapports/[id]/page.tsx
+- rate-limit.ts
+- timeline.ts
+- admin/consultations/page.tsx
+- paiement/[id]/page.tsx
+- current.ts
+- roadmap/page.tsx
+- metriques/page.tsx
+- app/consultations/page.tsx
+- dashboard/page.tsx
+- auth.config.ts
 - reports.ts
-- dependencies
+- AssessmentStore
 - assessments.ts
+- deadlines.ts
+- analytics/events.ts
+- email/run.test.ts
+- derive.ts
 - stripe.ts
+- Questionnaire.tsx
+- dependencies
+- stores.test.ts
+- verify-dashboard.mjs
+- visibility.ts
+- deduction.ts
 - verify-simulator.mjs
-- booking.test.ts
+- notifications/run.ts
 - verify-backoffice.mjs
 - verify-matrices.mjs
+- eligibility.ts
 - check-legal.mjs
 - verify-acces.mjs
-- verify-dashboard.mjs
 - verify-degraded.mjs
-- admin/actions.ts
-- rapports/[id]/page.tsx
+- admin/page.tsx
+- deadlines/route.ts
+- desinscription/[id]/page.tsx
+- deadlines/compute.ts
 - wait.mjs
 - verify-checkout.mjs
 - verify-consultations.mjs
 - verify-ecoles.mjs
 - verify-espace.mjs
+- donnees/page.tsx
 - import-partnerships.mjs
 - verify-legal.mjs
+- app/layout.tsx
+- check-vocabulary.mjs
 - verify-questionnaire.mjs
 - verify-all.mjs
+- limits.ts
 - package.json
 - .prettierrc.json
 - check-design-tokens.mjs
@@ -67,6 +88,7 @@
 - verify-animations.mjs
 - next.config.ts
 - sign-in.mjs
+- Nav.tsx
 - eslint.config.mjs
 - check-skills.mjs
 - render-report-pdf.mjs
@@ -76,265 +98,349 @@
 - { GET, POST }
 
 ## God Nodes (most connected - your core abstractions)
-1. `colors` - 57 edges
-2. `fonts` - 57 edges
-3. `alpha` - 49 edges
+1. `colors` - 58 edges
+2. `fonts` - 58 edges
+3. `alpha` - 50 edges
 4. `scripts` - 41 edges
 5. `AssessmentStore` - 27 edges
 6. `currentAssessmentId()` - 24 edges
 7. `gradients` - 23 edges
-8. `useInView()` - 21 edges
-9. `Answers` - 21 edges
-10. `usingDatabase()` - 21 edges
+8. `useInView()` - 22 edges
+9. `Answers` - 22 edges
+10. `usingDatabase()` - 22 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `ModulePage()` --calls--> `currentAssessmentId()`  [EXTRACTED]
-  app/(app)/app/modules/[slug]/page.tsx → lib/auth/current.ts
-- `ModulesPage()` --calls--> `currentAssessmentId()`  [EXTRACTED]
-  app/(app)/app/modules/page.tsx → lib/auth/current.ts
-- `SimulatorPage()` --calls--> `currentAssessmentId()`  [EXTRACTED]
-  app/(app)/app/simulateur/page.tsx → lib/auth/current.ts
 - `AdminQueuePage()` --calls--> `assembleReportLive()`  [EXTRACTED]
   app/(admin)/admin/page.tsx → lib/matrices/load.ts
 - `PrintableReportPage()` --calls--> `assembleReportLive()`  [EXTRACTED]
   app/(admin)/admin/rapports/[id]/impression/page.tsx → lib/matrices/load.ts
+- `AdminReportPage()` --calls--> `assembleReportLive()`  [EXTRACTED]
+  app/(admin)/admin/rapports/[id]/page.tsx → lib/matrices/load.ts
+- `startCheckout()` --calls--> `getPaymentProvider()`  [EXTRACTED]
+  app/(marketing)/diagnostic/paiement/[id]/actions.ts → lib/payments/stripe.ts
+- `Output()` --calls--> `formatUsd()`  [EXTRACTED]
+  app/(app)/app/simulateur/Simulator.tsx → lib/simulator/compute.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (63 total, 7 thin omitted)
+## Communities (85 total, 8 thin omitted)
 
-### Community 0 - "tokens.ts"
+### Community 0 - "assessment/compute.ts"
+Cohesion: 0.05
+Nodes (73): requireBackoffice(), saveBlockRevision(), saveRuleRevision(), BlockForm(), BlockView, field, label, meta (+65 more)
+
+### Community 1 - "assemble.ts"
+Cohesion: 0.06
+Nodes (51): AXIS_COMMENTS, AXIS_LABELS, NEXT_STEPS, OFFER_BLOCKS, REPORT_STATIC, RISK_BLOCKS, VERDICT_BLOCKS, ACADEMIC (+43 more)
+
+### Community 2 - "ecoles/page.tsx"
+Cohesion: 0.08
+Nodes (46): addSchool(), removeSchool(), updateSchool(), dateFr(), EcolesPage(), metadata, AddForm(), body (+38 more)
+
+### Community 3 - "Simulator.tsx"
+Cohesion: 0.08
+Nodes (46): DocumentsPage(), metadata, ModulesPage(), metadata, ModulePage(), NUMERIC_FIELDS, parseInputs(), removeScenario() (+38 more)
+
+### Community 4 - "resultat/[id]/page.tsx"
 Cohesion: 0.07
-Nodes (54): endSession(), SignOutButton(), cormorant, dmSans, metadata, Footer(), Nav(), Badge() (+46 more)
+Nodes (36): AdminPartnershipsPage(), metadata, RELIABILITY_LABELS, accountsAvailable(), dateFr(), metadata, ResultPage(), FRENCH_UNIVERSITIES_DATA (+28 more)
 
-### Community 1 - "assessment/compute.ts"
-Cohesion: 0.05
-Nodes (71): requireBackoffice(), saveBlockRevision(), saveRuleRevision(), BlockForm(), BlockView, field, label, meta (+63 more)
+### Community 5 - "alpha"
+Cohesion: 0.15
+Nodes (32): Badge(), GhostCta(), GoldCta(), SectionLabel(), SectionTitle(), DashboardPreview(), Diagnostic(), Faq() (+24 more)
 
-### Community 2 - "dashboard/page.tsx"
-Cohesion: 0.05
-Nodes (74): setTaskStatus(), SELECTABLE, TaskStatusControl(), DashboardPage(), dateFr(), metadata, dateFr(), metadata (+66 more)
-
-### Community 3 - "exhaustive.test.ts"
-Cohesion: 0.05
-Nodes (58): oneOf(), parseAnswers(), submitQuestionnaire(), metadata, Questionnaire(), intro, Option, Screen (+50 more)
-
-### Community 4 - "assemble.ts"
-Cohesion: 0.06
-Nodes (52): ReportDocument(), AXIS_COMMENTS, AXIS_LABELS, NEXT_STEPS, OFFER_BLOCKS, REPORT_STATIC, RISK_BLOCKS, VERDICT_BLOCKS (+44 more)
-
-### Community 5 - "eligibility.ts"
-Cohesion: 0.06
-Nodes (49): POST(), EMAIL_TEMPLATES, Assessment, baseUrl(), dispatchEmail(), emailVariables(), deductionVariables(), Eligibility (+41 more)
-
-### Community 6 - "resultat/[id]/page.tsx"
-Cohesion: 0.06
-Nodes (40): AdminPartnershipsPage(), metadata, RELIABILITY_LABELS, accountsAvailable(), dateFr(), metadata, ResultPage(), FRENCH_UNIVERSITIES_DATA (+32 more)
-
-### Community 7 - "ecoles/page.tsx"
-Cohesion: 0.08
-Nodes (48): addSchool(), removeSchool(), updateSchool(), dateFr(), EcolesPage(), metadata, AddForm(), body (+40 more)
-
-### Community 8 - "stores.test.ts"
-Cohesion: 0.08
-Nodes (47): NUMERIC_FIELDS, parseInputs(), removeScenario(), saveScenario(), metadata, SimulatorPage(), inputStyle, labelStyle (+39 more)
-
-### Community 9 - "LegalPage.tsx"
-Cohesion: 0.06
-Nodes (39): Block(), label, LegalPage(), metadata, metadata, requestSignIn(), metadata, CGV (+31 more)
-
-### Community 10 - "currentAssessmentId"
+### Community 6 - "documents/actions.ts"
 Cohesion: 0.11
-Nodes (33): removeDocument(), uploadDocument(), DocumentPanel(), DocumentView, DocumentsPage(), metadata, DOCUMENT_TYPE_HINTS, DOCUMENT_TYPE_LABELS (+25 more)
+Nodes (31): removeDocument(), uploadDocument(), DocumentPanel(), DocumentView, metadata, DOCUMENT_TYPE_HINTS, DOCUMENT_TYPE_LABELS, REFUSAL_MESSAGES (+23 more)
 
-### Community 11 - "scripts"
+### Community 7 - "email/run.ts"
+Cohesion: 0.10
+Nodes (31): EMAIL_TEMPLATES, baseUrl(), emailVariables(), SUBMITTED, VARIABLES, ALLOWED_EMAIL_VARIABLES, AllowedEmailVariable, EmailVariables (+23 more)
+
+### Community 8 - "scripts"
 Cohesion: 0.05
 Nodes (41): scripts, build, check:all, check:legal, check:rules, check:skills, check:suites, check:tokens (+33 more)
 
-### Community 12 - "current.ts"
-Cohesion: 0.11
-Nodes (27): eraseAccount(), EraseForm(), GET(), metadata, metadata, ModulesPage(), metadata, ModulePage() (+19 more)
+### Community 9 - "LegalPage.tsx"
+Cohesion: 0.12
+Nodes (22): Footer(), Block(), label, LegalPage(), metadata, metadata, metadata, footer (+14 more)
 
-### Community 13 - "compilerOptions"
+### Community 10 - "exhaustive.test.ts"
+Cohesion: 0.13
+Nodes (23): oneOf(), parseAnswers(), security, Combo, cycles, isRealDate(), problemsOf(), REFERENCE (+15 more)
+
+### Community 11 - "compilerOptions"
 Cohesion: 0.07
 Nodes (27): dom, dom.iterable, esnext, graphify-out, next-env.d.ts, .next/types/**/*.ts, node_modules, **/*.ts (+19 more)
 
-### Community 14 - "paiement/[id]/page.tsx"
-Cohesion: 0.15
-Nodes (18): POST(), startCheckout(), CheckoutButton(), CheckoutPage(), metadata, checkout, applyDeduction(), createDeduction() (+10 more)
+### Community 12 - "tokens.ts"
+Cohesion: 0.17
+Nodes (12): endSession(), SignOutButton(), requestSignIn(), metadata, SignInForm(), metadata, requestPlatformAccess(), AccessButton() (+4 more)
 
-### Community 15 - "devDependencies"
+### Community 13 - "roadmap/types.ts"
+Cohesion: 0.21
+Nodes (12): formatDuration(), IMPORTANCE_RANK, NextBestAction, reasonFor(), selectNextBestAction(), EXCLUDED_STATUSES, Importance, IMPORTANCES (+4 more)
+
+### Community 14 - "devDependencies"
 Cohesion: 0.08
 Nodes (25): eslint, eslint-config-next, @eslint/eslintrc, devDependencies, eslint, eslint-config-next, @eslint/eslintrc, playwright (+17 more)
 
-### Community 16 - "auth.ts"
-Cohesion: 0.13
-Nodes (13): BACKOFFICE_ROLES, isBackofficeRole(), Role, ROLES, { handlers, auth, signIn, signOut }, AUTH_EMAIL, { auth }, config (+5 more)
-
-### Community 17 - "app/consultations/page.tsx"
-Cohesion: 0.17
-Nodes (13): bookConsultation(), cancelConsultation(), BookingForm(), CancelButton(), SlotView, ConsultationsPage(), metadata, slotLabel() (+5 more)
-
-### Community 18 - "metriques/page.tsx"
-Cohesion: 0.17
-Nodes (13): AdminMetricsPage(), Card(), grid, metadata, computeMetrics(), formatMetric(), medianHours(), Metric (+5 more)
-
-### Community 19 - "admin/page.tsx"
+### Community 15 - "booking.ts"
 Cohesion: 0.16
-Nodes (14): AdminQueuePage(), metadata, blockingPoints(), canSend(), missingDecisiveAnswers(), PATHS_REQUIRING_ARBITRATION, REVIEW_SEVERITIES, reviewChecklist() (+6 more)
+Nodes (19): BookingDecision, BookingRefusal, BookingRequest, decideBooking(), Entitlement, booking(), hoursFromNow(), NOW (+11 more)
 
-### Community 20 - "admin/consultations/page.tsx"
-Cohesion: 0.18
-Nodes (12): closeSlot(), grantConsultations(), openSlot(), metadata, button, CloseSlotButton(), field, GrantForm() (+4 more)
+### Community 16 - "rapports/[id]/page.tsx"
+Cohesion: 0.12
+Nodes (17): setReviewPoint(), AdminReportPage(), metadata, ReviewChecklist(), blockingPoints(), canSend(), missingDecisiveAnswers(), PATHS_REQUIRING_ARBITRATION (+9 more)
 
-### Community 21 - "booking.ts"
-Cohesion: 0.25
-Nodes (10): BookingDecision, BookingRequest, Entitlement, Booking, CONSULTATION_TYPES, ConsultationDefinition, ConsultationSlot, ConsultationType (+2 more)
-
-### Community 22 - "reports.ts"
+### Community 17 - "rate-limit.ts"
 Cohesion: 0.15
-Nodes (10): metadata, PrintableReportPage(), Deduction, CorrectionEntry, globalStore, REPORT_PRIORITIES, ReportPriority, ReportRow (+2 more)
+Nodes (16): POST(), submitQuestionnaire(), parseEvent(), callerIp(), checkRateLimit(), globalStore, Limit, purgeRateLimitHits() (+8 more)
 
-### Community 23 - "dependencies"
+### Community 18 - "timeline.ts"
+Cohesion: 0.15
+Nodes (17): TimelineView, Deadline, buildTimeline(), dayOf(), isDone(), stateOf(), REFERENCE, TIMELINE_STATES (+9 more)
+
+### Community 19 - "admin/consultations/page.tsx"
+Cohesion: 0.17
+Nodes (15): closeSlot(), grantConsultations(), openSlot(), AdminConsultationsPage(), metadata, slotLabel(), button, CloseSlotButton() (+7 more)
+
+### Community 20 - "paiement/[id]/page.tsx"
+Cohesion: 0.19
+Nodes (10): startCheckout(), CheckoutButton(), metadata, checkout, formatEuros(), instalments(), Offer, OFFERS (+2 more)
+
+### Community 21 - "current.ts"
+Cohesion: 0.18
+Nodes (11): eraseAccount(), GET(), { handlers, auth, signIn, signOut }, AUTH_EMAIL, CurrentUser, prisma(), erasePersonalData(), ErasureSummary (+3 more)
+
+### Community 22 - "roadmap/page.tsx"
+Cohesion: 0.18
+Nodes (15): setTaskStatus(), SELECTABLE, TaskStatusControl(), dateFr(), metadata, RoadmapPage(), LEGEND, STATE_STYLES (+7 more)
+
+### Community 23 - "metriques/page.tsx"
+Cohesion: 0.17
+Nodes (11): grid, metadata, computeMetrics(), formatMetric(), medianHours(), Metric, Metrics, MetricsInput (+3 more)
+
+### Community 24 - "app/consultations/page.tsx"
+Cohesion: 0.20
+Nodes (11): bookConsultation(), cancelConsultation(), BookingForm(), CancelButton(), SlotView, ConsultationsPage(), metadata, slotLabel() (+3 more)
+
+### Community 25 - "dashboard/page.tsx"
+Cohesion: 0.14
+Nodes (22): DashboardPage(), dateFr(), metadata, MILESTONE_LABELS, activePhases(), applicableTasks(), dueDateFor(), generateRoadmap() (+14 more)
+
+### Community 26 - "auth.config.ts"
+Cohesion: 0.17
+Nodes (11): BACKOFFICE_ROLES, isBackofficeRole(), Role, ROLES, { auth }, config, JWT, next-auth (+3 more)
+
+### Community 27 - "reports.ts"
+Cohesion: 0.21
+Nodes (12): addCorrection(), setReportStatus(), ReportControls(), STATUS_LABELS, CorrectionEntry, globalStore, REPORT_PRIORITIES, REPORT_STATUSES (+4 more)
+
+### Community 28 - "AssessmentStore"
+Cohesion: 0.13
+Nodes (7): metadata, PrintableReportPage(), ReportDocument(), metadata, ResultAccess, AssessmentStore, reportStore
+
+### Community 29 - "assessments.ts"
+Cohesion: 0.18
+Nodes (9): databaseUrl(), db(), globalForPrisma, usingDatabase(), DerivedProfile, AssessmentRow, globalStore, globalUnsub (+1 more)
+
+### Community 30 - "deadlines.ts"
+Cohesion: 0.21
+Nodes (14): daysBetween(), deadlineList(), DeadlineNotice, dueNotices(), mostUrgentSent(), NOTICE_DAYS, noticeId(), noticeLead() (+6 more)
+
+### Community 31 - "analytics/events.ts"
+Cohesion: 0.20
+Nodes (11): AdminMetricsPage(), TrackView(), buildFunnel(), EVENT_KINDS, EventKind, Funnel, FunnelStep, ProductEvent (+3 more)
+
+### Community 32 - "email/run.test.ts"
+Cohesion: 0.19
+Nodes (11): POST(), journalId(), runEmailSequence(), ANSWERS, later(), RUN, seed(), sent (+3 more)
+
+### Community 33 - "derive.ts"
+Cohesion: 0.25
+Nodes (12): currentPhase(), deriveProfile(), hasBlockingGaps(), JOURNEY_TYPES, lawYearsValidated(), monthsUntilIntake(), Phase, PHASES (+4 more)
+
+### Community 34 - "stripe.ts"
+Cohesion: 0.24
+Nodes (8): POST(), createDeduction(), disabledProvider, getPaymentProvider(), PaymentProvider, stripeProvider(), NOW, verifyStripeSignature()
+
+### Community 35 - "Questionnaire.tsx"
+Cohesion: 0.21
+Nodes (8): metadata, intro, Option, Screen, SCREENS, ui, UNIVERSITIES, ScreenId
+
+### Community 36 - "dependencies"
 Cohesion: 0.15
 Nodes (13): @auth/prisma-adapter, next, next-auth, dependencies, @auth/prisma-adapter, next, next-auth, @prisma/client (+5 more)
 
-### Community 24 - "assessments.ts"
+### Community 37 - "stores.test.ts"
+Cohesion: 0.19
+Nodes (10): computeAssessment(), globalStore, milestoneStore, globalStore, scenarioStore, StoredScenario, ANSWERS, createdIds (+2 more)
+
+### Community 38 - "verify-dashboard.mjs"
 Cohesion: 0.15
-Nodes (5): DerivedProfile, AssessmentRow, AssessmentStore, globalStore, globalUnsub
+Nodes (10): BASE, consoleErrors, countBefore, done, dots, EMAIL, failures, interdits (+2 more)
 
-### Community 25 - "stripe.ts"
-Cohesion: 0.23
-Nodes (8): PriceBreakdown, OfferCode, CheckoutRequest, disabledProvider, getPaymentProvider(), PaymentProvider, stripeProvider(), NOW
+### Community 39 - "visibility.ts"
+Cohesion: 0.35
+Nodes (10): Questionnaire(), CareerGoal, SCREEN_IDS, allowsTooEarlyGoal(), careerGoalOptions(), isAlreadyEnrolled(), isConditionalScreen(), progress() (+2 more)
 
-### Community 26 - "verify-simulator.mjs"
+### Community 40 - "deduction.ts"
+Cohesion: 0.29
+Nodes (10): applyDeduction(), DEDUCTIBLE_ON, Deduction, isDeductibleOn(), isDeductionValid(), PriceBreakdown, DEDUCTION_STATES, DeductionState (+2 more)
+
+### Community 41 - "verify-simulator.mjs"
 Cohesion: 0.17
 Nodes (7): BASE, bourses, consoleErrors, EMAIL, failures, final, tuition
 
-### Community 27 - "booking.test.ts"
-Cohesion: 0.31
-Nodes (10): AdminConsultationsPage(), slotLabel(), decideBooking(), remainingAllowance(), booking(), hoursFromNow(), NOW, request() (+2 more)
+### Community 42 - "notifications/run.ts"
+Cohesion: 0.29
+Nodes (7): TASK_TEMPLATES, dispatchEmail(), RunSummary, loadRoadmap(), TASK_STATUSES, globalStore, roadmapStore
 
-### Community 28 - "verify-backoffice.mjs"
+### Community 43 - "verify-backoffice.mjs"
 Cohesion: 0.18
 Nodes (8): BASE, blocked, boxes, detail, failures, printed, REQUESTER_EMAIL, review
 
-### Community 29 - "verify-matrices.mjs"
+### Community 44 - "verify-matrices.mjs"
 Cohesion: 0.18
 Nodes (5): BASE, consoleErrors, failures, LABELS, verdictForm
 
-### Community 30 - "check-legal.mjs"
+### Community 45 - "eligibility.ts"
+Cohesion: 0.36
+Nodes (9): Assessment, deductionVariables(), Eligibility, Ineligible, mainRisk(), reportVariables(), resourceFor(), SequenceContext (+1 more)
+
+### Community 46 - "check-legal.mjs"
 Cohesion: 0.20
 Nodes (8): COVERED, failures, held, models, OUT_OF_SCOPE, policy, schema, slugs
 
-### Community 31 - "verify-acces.mjs"
+### Community 47 - "verify-acces.mjs"
 Cohesion: 0.20
 Nodes (6): ALICE, BASE, BOB, consoleErrors, failures, LABELS
 
-### Community 32 - "verify-dashboard.mjs"
-Cohesion: 0.20
-Nodes (7): BASE, consoleErrors, done, EMAIL, failures, interdits, roadmap
-
-### Community 33 - "verify-degraded.mjs"
+### Community 48 - "verify-degraded.mjs"
 Cohesion: 0.20
 Nodes (7): args, BASE, CLOSED_PAGES, failures, PUBLIC_PAGES, REGIME, UNKNOWN_RESOURCES
 
-### Community 34 - "admin/actions.ts"
-Cohesion: 0.44
-Nodes (6): addCorrection(), setReportStatus(), ReportControls(), STATUS_LABELS, REPORT_STATUSES, ReportStatus
+### Community 49 - "admin/page.tsx"
+Cohesion: 0.36
+Nodes (5): AdminQueuePage(), metadata, announcedDelay(), DELAY_TIERS, isSaturated()
 
-### Community 35 - "rapports/[id]/page.tsx"
-Cohesion: 0.28
-Nodes (5): setReviewPoint(), AdminReportPage(), metadata, ReviewChecklist(), ReviewPoint
+### Community 50 - "deadlines/route.ts"
+Cohesion: 0.36
+Nodes (5): timingSafeEqualString(), purgeUnclaimedAssessments(), unclaimedCutoff(), PurgeSummary, purgeTechnicalData()
 
-### Community 36 - "wait.mjs"
+### Community 51 - "desinscription/[id]/page.tsx"
+Cohesion: 0.39
+Nodes (4): confirmUnsubscribe(), metadata, UnsubscribeButton(), desinscription
+
+### Community 52 - "deadlines/compute.ts"
+Cohesion: 0.33
+Nodes (7): BAR_MILESTONES, computeDeadlines(), isRelevant(), MILESTONES, shiftMonths(), keys(), REF
+
+### Community 53 - "wait.mjs"
 Cohesion: 0.47
 Nodes (6): answerScreens(), submitDiagnostic(), waitFor(), waitForText(), waitForTextChange(), waitForTextGone()
 
-### Community 37 - "verify-checkout.mjs"
+### Community 54 - "verify-checkout.mjs"
 Cohesion: 0.22
 Nodes (6): BASE, checkoutText, consent, consoleErrors, EMAIL, failures
 
-### Community 38 - "verify-consultations.mjs"
+### Community 55 - "verify-consultations.mjs"
 Cohesion: 0.22
 Nodes (6): BASE, consoleErrors, EMAIL, failures, local, slotDate
 
-### Community 39 - "verify-ecoles.mjs"
+### Community 56 - "verify-ecoles.mjs"
 Cohesion: 0.22
 Nodes (6): BASE, candidateName, consoleErrors, EMAIL, failures, targetRow
 
-### Community 40 - "verify-espace.mjs"
+### Community 57 - "verify-espace.mjs"
 Cohesion: 0.22
 Nodes (5): BASE, consoleErrors, declarative, EMAIL, failures
 
-### Community 41 - "import-partnerships.mjs"
+### Community 58 - "donnees/page.tsx"
+Cohesion: 0.43
+Nodes (4): EraseForm(), metadata, donnees, HELD_DATA
+
+### Community 59 - "import-partnerships.mjs"
 Cohesion: 0.25
 Nodes (5): dataPath, db, partnerships, snapshotDate, universities
 
-### Community 42 - "verify-legal.mjs"
+### Community 60 - "verify-legal.mjs"
 Cohesion: 0.25
 Nodes (5): BASE, consoleErrors, DOCUMENTS, EMAIL, failures
 
-### Community 43 - "verify-questionnaire.mjs"
+### Community 61 - "app/layout.tsx"
+Cohesion: 0.29
+Nodes (3): cormorant, dmSans, metadata
+
+### Community 62 - "check-vocabulary.mjs"
+Cohesion: 0.33
+Nodes (5): ALLOWLIST, EXTS, FORBIDDEN, ROOTS, walk()
+
+### Community 63 - "verify-questionnaire.mjs"
 Cohesion: 0.29
 Nodes (5): ANSWERS, BASE, consoleErrors, EMAIL, failures
 
-### Community 44 - "verify-all.mjs"
+### Community 64 - "verify-all.mjs"
 Cohesion: 0.33
 Nodes (3): broken, results, SUITES
 
-### Community 45 - "package.json"
+### Community 65 - "limits.ts"
+Cohesion: 0.60
+Nodes (3): RFC-5321, boundedText(), validEmail()
+
+### Community 66 - "package.json"
 Cohesion: 0.40
 Nodes (4): description, name, private, version
 
-### Community 46 - ".prettierrc.json"
+### Community 67 - ".prettierrc.json"
 Cohesion: 0.40
 Nodes (4): printWidth, semi, singleQuote, trailingComma
 
-### Community 47 - "check-design-tokens.mjs"
+### Community 68 - "check-design-tokens.mjs"
 Cohesion: 0.40
 Nodes (3): EXTS, PALETTE, ROOTS
 
-### Community 48 - "check-rules.mjs"
+### Community 69 - "check-rules.mjs"
 Cohesion: 0.40
 Nodes (3): blocks, source, TODAY
 
-### Community 49 - "check-suites.mjs"
+### Community 70 - "check-suites.mjs"
 Cohesion: 0.40
 Nodes (3): failures, HELPER_MODULES, helpers
 
-### Community 50 - "verify-animations.mjs"
+### Community 71 - "verify-animations.mjs"
 Cohesion: 0.40
 Nodes (3): consoleErrors, failures, longest
 
-### Community 51 - "next.config.ts"
+### Community 72 - "next.config.ts"
 Cohesion: 0.50
 Nodes (3): csp, nextConfig, securityHeaders
 
-### Community 52 - "sign-in.mjs"
+### Community 73 - "sign-in.mjs"
 Cohesion: 0.83
 Nodes (3): lastSignInLink(), mailLogPath(), signInByEmail()
 
 ## Knowledge Gaps
-- **391 isolated node(s):** `session-start.sh script`, `printWidth`, `singleQuote`, `semi`, `trailingComma` (+386 more)
+- **411 isolated node(s):** `session-start.sh script`, `printWidth`, `singleQuote`, `semi`, `trailingComma` (+406 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `colors` connect `tokens.ts` to `assessment/compute.ts`, `admin/actions.ts`, `rapports/[id]/page.tsx`, `dashboard/page.tsx`, `assemble.ts`, `resultat/[id]/page.tsx`, `ecoles/page.tsx`, `stores.test.ts`, `LegalPage.tsx`, `currentAssessmentId`, `exhaustive.test.ts`, `current.ts`, `paiement/[id]/page.tsx`, `app/consultations/page.tsx`, `metriques/page.tsx`, `admin/page.tsx`, `admin/consultations/page.tsx`?**
-  _High betweenness centrality (0.047) - this node is a cross-community bridge._
-- **Why does `fonts` connect `tokens.ts` to `assessment/compute.ts`, `admin/actions.ts`, `rapports/[id]/page.tsx`, `dashboard/page.tsx`, `assemble.ts`, `resultat/[id]/page.tsx`, `ecoles/page.tsx`, `stores.test.ts`, `LegalPage.tsx`, `currentAssessmentId`, `exhaustive.test.ts`, `current.ts`, `paiement/[id]/page.tsx`, `app/consultations/page.tsx`, `metriques/page.tsx`, `admin/page.tsx`, `admin/consultations/page.tsx`?**
-  _High betweenness centrality (0.047) - this node is a cross-community bridge._
-- **Why does `alpha` connect `tokens.ts` to `assessment/compute.ts`, `admin/actions.ts`, `rapports/[id]/page.tsx`, `dashboard/page.tsx`, `exhaustive.test.ts`, `resultat/[id]/page.tsx`, `ecoles/page.tsx`, `stores.test.ts`, `LegalPage.tsx`, `currentAssessmentId`, `current.ts`, `paiement/[id]/page.tsx`, `app/consultations/page.tsx`, `metriques/page.tsx`, `admin/page.tsx`, `admin/consultations/page.tsx`?**
-  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Why does `colors` connect `tokens.ts` to `assessment/compute.ts`, `assemble.ts`, `ecoles/page.tsx`, `Simulator.tsx`, `resultat/[id]/page.tsx`, `alpha`, `documents/actions.ts`, `LegalPage.tsx`, `rapports/[id]/page.tsx`, `admin/consultations/page.tsx`, `paiement/[id]/page.tsx`, `roadmap/page.tsx`, `metriques/page.tsx`, `app/consultations/page.tsx`, `dashboard/page.tsx`, `reports.ts`, `AssessmentStore`, `Questionnaire.tsx`, `admin/page.tsx`, `desinscription/[id]/page.tsx`, `donnees/page.tsx`, `app/layout.tsx`, `Nav.tsx`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Why does `fonts` connect `tokens.ts` to `assessment/compute.ts`, `assemble.ts`, `ecoles/page.tsx`, `Simulator.tsx`, `resultat/[id]/page.tsx`, `alpha`, `documents/actions.ts`, `LegalPage.tsx`, `rapports/[id]/page.tsx`, `admin/consultations/page.tsx`, `paiement/[id]/page.tsx`, `roadmap/page.tsx`, `metriques/page.tsx`, `app/consultations/page.tsx`, `dashboard/page.tsx`, `reports.ts`, `AssessmentStore`, `Questionnaire.tsx`, `admin/page.tsx`, `desinscription/[id]/page.tsx`, `donnees/page.tsx`, `app/layout.tsx`, `Nav.tsx`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Why does `alpha` connect `alpha` to `assessment/compute.ts`, `ecoles/page.tsx`, `Simulator.tsx`, `resultat/[id]/page.tsx`, `documents/actions.ts`, `LegalPage.tsx`, `tokens.ts`, `rapports/[id]/page.tsx`, `admin/consultations/page.tsx`, `paiement/[id]/page.tsx`, `roadmap/page.tsx`, `metriques/page.tsx`, `app/consultations/page.tsx`, `dashboard/page.tsx`, `reports.ts`, `AssessmentStore`, `Questionnaire.tsx`, `admin/page.tsx`, `desinscription/[id]/page.tsx`, `donnees/page.tsx`, `Nav.tsx`?**
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **What connects `session-start.sh script`, `printWidth`, `singleQuote` to the rest of the system?**
-  _391 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `tokens.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.07091321377035663 - nodes in this community are weakly interconnected._
+  _411 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `assessment/compute.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.0509020618556701 - nodes in this community are weakly interconnected._
-- **Should `dashboard/page.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.05416666666666667 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.050073637702503684 - nodes in this community are weakly interconnected._
+- **Should `assemble.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.061018437225636525 - nodes in this community are weakly interconnected._
+- **Should `ecoles/page.tsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.08022598870056497 - nodes in this community are weakly interconnected._
