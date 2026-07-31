@@ -133,8 +133,12 @@ check("Statut modifiable et progression recalculée", !/\b0\s*%/.test(after), af
   check("Tâches à commencer désignées", board.includes("à commencer maintenant"));
 
   // Un losange d'échéance se sélectionne comme une pastille : son détail
-  // affiche la note de l'échéance, pas une tâche.
-  const diamond = page.locator('button[aria-label^="Échéance :"]').first();
+  // affiche la note de l'échéance, pas une tâche. La SECONDE, pas la première :
+  // deux échéances tombant le même jour se superposaient exactement, et celle
+  // du dessous était incliquable — trouvé en enregistrant la démonstration.
+  // L'empilement vertical corrige ; ce point l'empêche de régresser.
+  const diamonds = page.locator('button[aria-label^="Échéance :"]');
+  const diamond = (await diamonds.count()) > 1 ? diamonds.nth(1) : diamonds.first();
   const label = ((await diamond.getAttribute("aria-label")) ?? "").replace("Échéance : ", "");
   await diamond.click();
   check(

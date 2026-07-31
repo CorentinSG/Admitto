@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { colors, fonts, alpha } from "@/design/tokens";
+import { useInView } from "@/design/animations";
 import type { TimelineState } from "@/lib/roadmap/timeline";
 import { dashboard } from "@/content/dashboard";
 
@@ -21,6 +22,12 @@ import { dashboard } from "@/content/dashboard";
  * Interdits respectés : aucune librairie d'animation, `pulse-gold` est l'une
  * des quatre keyframes officielles, pas d'animation de sortie — une pastille
  * remplie ne se vide jamais sous les yeux.
+ *
+ * Révélation : `useInView` one-shot, `ease` uniquement, opacity + translateY —
+ * la primitive du site. La chorégraphie raconte l'axe dans l'ordre où il se
+ * lit : le rail, puis le chemin parcouru qui SE REMPLIT jusqu'à aujourd'hui,
+ * puis les marqueurs en cascade gauche → droite (l'ordre du temps), enfin la
+ * légende et le détail. `prefers-reduced-motion` est géré globalement.
  */
 
 export interface TimelinePointView {
@@ -87,6 +94,36 @@ export function Timeline({ view }: { view: TimelineView }) {
   const selectedDeadline =
     view.deadlines.find((deadline) => `D:${deadline.key}` === selectedId) ?? null;
 
+  const [sectionRef, inView] = useInView(0.15);
+
+  // Deux marqueurs le même jour occupent le même point de l'axe : sans étage,
+  // l'un recouvre l'autre et intercepte ses clics — trouvé en essayant de
+  // cliquer la seconde de deux échéances du 15 novembre. La position
+  // horizontale est du TEMPS et ne doit pas mentir : l'empilement est
+  // vertical, jamais un décalage sur l'axe.
+  const levelsOf = <T,>(items: T[], positionOf: (item: T) => number): Map<T, number> => {
+    const seen = new Map<number, number>();
+    const levels = new Map<T, number>();
+    for (const item of items) {
+      const at = positionOf(item);
+      const level = seen.get(at) ?? 0;
+      levels.set(item, level);
+      seen.set(at, level + 1);
+    }
+    return levels;
+  };
+  const deadlineLevels = levelsOf(view.deadlines, (d) => d.position);
+  const pointLevels = levelsOf(view.points, (p) => p.position);
+
+  // La cascade suit l'ordre du temps : un marqueur apparaît d'autant plus tard
+  // qu'il est loin sur l'axe. Dérivé de la POSITION, pas de l'index — deux
+  // marqueurs au même endroit apparaissent ensemble.
+  const staggerOf = (position: number) => 0.5 + (position / 100) * 0.5;
+  const markerReveal = (position: number) => ({
+    opacity: inView ? 1 : 0,
+    transition: `opacity 0.4s ease ${staggerOf(position)}s`,
+  });
+
   const small = {
     fontFamily: fonts.sans,
     fontSize: "0.75rem",
@@ -95,12 +132,16 @@ export function Timeline({ view }: { view: TimelineView }) {
 
   return (
     <section
+      ref={sectionRef}
       aria-label="Timeline du parcours"
       style={{
         marginTop: 36,
         padding: "26px 28px 20px",
         border: `1px solid ${alpha.cardGridGap}`,
         backgroundColor: colors.ivory,
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(24px)",
+        transition: "opacity 0.8s ease, transform 0.8s ease",
       }}
     >
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 14 }}>
@@ -126,7 +167,7 @@ export function Timeline({ view }: { view: TimelineView }) {
         {/* Marges internes : un marqueur à 0 % ou 100 % est centré sur le bord
             de l'axe, sa moitié dépasse — sans elles, elle serait rognée. */}
         <div
-          style={{ position: "relative", minWidth: 640, height: 108, margin: "18px 12px 0" }}
+          style={{ position: "relative", minWidth: 640, height: 152, margin: "18px 12px 0" }}
         >
           {/* Rail */}
           <div
@@ -135,33 +176,38 @@ export function Timeline({ view }: { view: TimelineView }) {
               position: "absolute",
               left: 0,
               right: 0,
-              top: 54,
+              top: 70,
               height: 2,
               backgroundColor: alpha.cardGridGap,
             }}
           />
-          {/* Le chemin parcouru : rempli jusqu'à aujourd'hui. */}
+          {/* Le chemin parcouru SE REMPLIT jusqu'à aujourd'hui : c'est le
+              seul mouvement qui raconte quelque chose — le temps déjà
+              couvert — et il ne rejoue jamais (one-shot). */}
           <div
             aria-hidden
             style={{
               position: "absolute",
               left: 0,
-              width: `${view.todayPosition}%`,
-              top: 54,
+              width: inView ? `${view.todayPosition}%` : "0%",
+              top: 70,
               height: 2,
               backgroundColor: colors.gold,
+              transition: "width 0.9s ease 0.2s",
             }}
           />
 
-          {/* Repère du jour */}
+          {/* Repère du jour — apparaît quand le chemin parcouru l'atteint. */}
           <div
             aria-hidden
             style={{
               position: "absolute",
               left: `${view.todayPosition}%`,
-              top: 30,
+              top: 40,
               transform: "translateX(-50%)",
               textAlign: "center",
+              opacity: inView ? 1 : 0,
+              transition: "opacity 0.5s ease 1s",
             }}
           >
             <span
@@ -181,7 +227,7 @@ export function Timeline({ view }: { view: TimelineView }) {
               style={{
                 display: "block",
                 width: 1,
-                height: 34,
+                height: 40,
                 margin: "0 auto",
                 backgroundColor: colors.gold,
               }}
@@ -196,7 +242,7 @@ export function Timeline({ view }: { view: TimelineView }) {
               style={{
                 position: "absolute",
                 left: `${tick.position}%`,
-                top: 62,
+                top: 134,
                 transform: "translateX(-50%)",
                 ...small,
                 fontSize: "0.66rem",
@@ -223,10 +269,16 @@ export function Timeline({ view }: { view: TimelineView }) {
                 aria-label={`Échéance : ${deadline.label} — ${deadline.dateLabel}`}
                 aria-pressed={isSelected}
                 title={deadline.label}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(-50%) rotate(45deg) scale(1.3)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(-50%) rotate(45deg) scale(1)";
+                }}
                 style={{
                   position: "absolute",
                   left: `${deadline.position}%`,
-                  top: 8,
+                  top: 8 + (deadlineLevels.get(deadline) ?? 0) * 17,
                   transform: "translateX(-50%) rotate(45deg)",
                   width: 11,
                   height: 11,
@@ -234,6 +286,10 @@ export function Timeline({ view }: { view: TimelineView }) {
                   backgroundColor: deadline.passed ? alpha.cardNumIdle : colors.navy900,
                   border: `2px solid ${isSelected ? colors.gold : colors.navy900}`,
                   cursor: "pointer",
+                  opacity: markerReveal(deadline.position).opacity,
+                  // transform est réservé au survol : l'apparition passe par
+                  // l'opacité seule, sinon les deux se disputeraient la propriété.
+                  transition: `${markerReveal(deadline.position).transition}, transform 0.2s ease, border-color 0.2s ease`,
                 }}
               />
             );
@@ -251,10 +307,16 @@ export function Timeline({ view }: { view: TimelineView }) {
                 aria-label={`${point.title} — ${point.dateLabel}`}
                 aria-pressed={isSelected}
                 title={point.title}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(-50%) scale(1.35)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(-50%) scale(1)";
+                }}
                 style={{
                   position: "absolute",
                   left: `${point.position}%`,
-                  top: 46,
+                  top: 62 + (pointLevels.get(point) ?? 0) * 24,
                   transform: "translateX(-50%)",
                   width: 18,
                   height: 18,
@@ -264,6 +326,8 @@ export function Timeline({ view }: { view: TimelineView }) {
                   border: `2px solid ${isSelected ? colors.navy900 : style.border}`,
                   cursor: "pointer",
                   animation: style.pulse ? "pulse-gold 2.4s ease infinite" : "none",
+                  opacity: markerReveal(point.position).opacity,
+                  transition: `${markerReveal(point.position).transition}, transform 0.2s ease, border-color 0.2s ease`,
                 }}
               />
             );
