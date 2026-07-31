@@ -34,7 +34,7 @@ export async function addSchool(formData: FormData) {
 
   const partnershipId = String(formData.get("partnershipId") ?? "").trim() || null;
 
-  await schoolStore.add({
+  const added = await schoolStore.add({
     id: randomUUID(),
     assessmentId,
     name: decision.name,
@@ -45,6 +45,12 @@ export async function addSchool(formData: FormData) {
     notes: decision.notes,
     addedAt: new Date().toISOString(),
   });
+
+  // Le contrôle de `decideAdd` a pu être franchi par deux soumissions
+  // simultanées ; c'est la contrainte de stockage qui tranche. Le message est
+  // celui du doublon, pas une erreur technique : du point de vue de
+  // l'utilisateur, l'école est bien dans sa liste — c'est ce qu'il voulait.
+  if (!added) return { error: REFUSAL_MESSAGES.DUPLICATE };
 
   revalidatePath("/app/ecoles");
   return { ok: true };

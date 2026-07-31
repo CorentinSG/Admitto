@@ -1,6 +1,7 @@
 import type { Assessment } from "@/lib/assessment/compute";
 import type { Deduction } from "@/lib/payments/deduction";
 import { db, usingDatabase } from "@/lib/db/client";
+import type { ReportStatus } from "./report-status";
 
 /**
  * File de rapports et journal des corrections (CDC §18 et §33).
@@ -13,8 +14,9 @@ import { db, usingDatabase } from "@/lib/db/client";
  * la file pour en afficher les vingt premiers.
  */
 
-export const REPORT_STATUSES = ["QUEUED", "IN_REVIEW", "SENT"] as const;
-export type ReportStatus = (typeof REPORT_STATUSES)[number];
+// Réexportés depuis un module sans dépendance : un composant client a besoin
+// de la liste, et l'importer d'ici lui livrerait le client Prisma avec.
+export { REPORT_STATUSES, type ReportStatus } from "./report-status";
 
 export const REPORT_PRIORITIES = ["PAID", "FREE"] as const;
 export type ReportPriority = (typeof REPORT_PRIORITIES)[number];

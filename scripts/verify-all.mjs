@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Enchaîne les treize suites navigateur et résume (revue §B2).
+ * Enchaîne le budget de bundle et les treize suites navigateur et résume (revue §B2).
  *
  * Deux raisons d'exister plutôt que de lancer les suites à la main :
  *
@@ -23,6 +23,9 @@ const BASE = process.argv[2] ?? "http://localhost:3000";
 
 /** Ordre d'exécution : du plus indépendant au plus dépendant de l'état. */
 const SUITES = [
+  // Déterministe et sans navigateur, mais il exige le même préalable que les
+  // suites — un build à jour — et c'est ici qu'on vérifie après avoir bâti.
+  "check-bundle",
   "verify-animations",
   "verify-accessibilite",
   "verify-questionnaire",
@@ -47,7 +50,16 @@ const SUITES = [
  * celui d'un échec d'assertion. Le code ne suffit donc pas à les distinguer :
  * c'est la ligne de bilan que chaque suite imprime en propre qui tranche.
  */
-const ASSERTION_SUMMARY = /point\(s\) en échec\./;
+/*
+ * `verify-animations` conclut « N point(s) DE LA CHECKLIST en échec. » — un mot
+ * de plus, que ce motif ne reconnaissait pas. Ses échecs d'assertion étaient
+ * donc pris pour des plantages et rejoués, ce que le commentaire d'en-tête de
+ * ce fichier interdit explicitement : une reprise sur assertion transforme la
+ * suite en machine à fabriquer du vert. Le rejeu était ici inoffensif — le
+ * budget est déterministe et échouait deux fois — mais la règle ne doit pas
+ * dépendre de la chance.
+ */
+const ASSERTION_SUMMARY = /point\(s\)(?: [^\n]*?)? en échec\./;
 const isAssertionFailure = (output) => ASSERTION_SUMMARY.test(output);
 
 function run(suite) {

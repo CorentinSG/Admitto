@@ -10,7 +10,11 @@ import { offers } from "@/content/homepage";
  * visible, périmètre clair. Aucune offre ne promet un volume de consultations
  * non borné.
  */
-export function Offers() {
+/**
+ * `asPageTitle` : la section est servie seule, sur /offres.
+ * Son titre devient alors le `h1` de la page — voir `SectionTitle`.
+ */
+export function Offers({ asPageTitle = false }: { asPageTitle?: boolean } = {}) {
   const [ref, inView] = useInView(thresholds.solution);
 
   return (
@@ -27,7 +31,7 @@ export function Offers() {
       <SectionLabel inView={inView} dark>
         {offers.label}
       </SectionLabel>
-      <SectionTitle inView={inView} dark>
+      <SectionTitle inView={inView} dark as={asPageTitle ? "h1" : "h2"}>
         {offers.title}
       </SectionTitle>
 

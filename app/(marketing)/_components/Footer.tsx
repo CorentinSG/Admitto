@@ -2,9 +2,13 @@
 
 import { colors, fonts, alpha } from "@/design/tokens";
 import { footer } from "@/content/homepage";
+import { usePathname } from "next/navigation";
+import { sectionHref } from "./anchors";
 
 /** Footer — liens en `color 0.2s` au survol, disclaimer permanent (CDC §7). */
 export function Footer() {
+  const pathname = usePathname();
+
   return (
     <footer
       style={{
@@ -61,7 +65,7 @@ export function Footer() {
               {column.links.map((link) => (
                 <li key={link.href} style={{ marginBottom: 10 }}>
                   <a
-                    href={link.href}
+                    href={sectionHref(pathname, link.href)}
                     style={{
                       fontFamily: fonts.sans,
                       fontSize: "0.85rem",

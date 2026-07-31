@@ -141,20 +141,31 @@ export function GhostCta({ href, children }: { href: string; children: ReactNode
   );
 }
 
-/** Titre de section (Cormorant, weight 300). */
+/**
+ * Titre de section (Cormorant, weight 300).
+ *
+ * `as` existe pour les pages autonomes `/offres`, `/faq`, `/a-propos`, qui
+ * servent la MÊME section que la page d'accueil. Sur l'accueil, ces sections
+ * sont des chapitres et leur titre est un `h2` ; servies seules, elles SONT la
+ * page, et une page sans `h1` n'a pas de titre — ni pour un moteur de
+ * recherche, ni pour un lecteur d'écran qui parcourt la structure. Le rendu
+ * visuel est identique dans les deux cas : seule la balise change.
+ */
 export function SectionTitle({
   children,
   inView,
   dark = false,
   style,
+  as: Tag = "h2",
 }: {
   children: ReactNode;
   inView: boolean;
   dark?: boolean;
   style?: CSSProperties;
+  as?: "h1" | "h2";
 }) {
   return (
-    <h2
+    <Tag
       style={{
         fontFamily: fonts.serif,
         fontWeight: 300,
@@ -170,6 +181,6 @@ export function SectionTitle({
       }}
     >
       {children}
-    </h2>
+    </Tag>
   );
 }

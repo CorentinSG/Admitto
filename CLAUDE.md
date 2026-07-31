@@ -15,18 +15,25 @@ que pour des changements durables (stabilité = cache prompt efficace).
 - `npm run check:rules` — règles du Moteur A : source + date de vérification obligatoires
 - `npm run check:legal` — tout modèle Prisma doit figurer dans la politique de
   confidentialité, et chaque document légal avoir sa page
+- `npm run check:bundle` — budget de JavaScript par route, hors socle commun (exige
+  un build). Un dépassement signale presque toujours un import qui traverse la
+  frontière serveur/client : une VALEUR tirée d'un module qui atteint Prisma.
 - `npm run check:suites` — chaque suite navigateur importe exactement les helpers
   qu'elle utilise (un oubli ne se voyait qu'après trois minutes d'exécution)
 - `npm run verify:degraded <url> --regime=minimal|complet` — toutes les routes,
   sans navigateur : aucune 5xx, aucune zone ouverte par erreur. À lancer contre un
   serveur démarré SANS aucune variable d'environnement pour le régime minimal.
-- `npm run verify:animations|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations|ecoles|acces|matrices|legal <url>`
+- `npm run verify:animations|accessibilite|questionnaire|backoffice|checkout|dashboard|simulator|espace|consultations|ecoles|acces|matrices|legal <url>`
   — checklists design, diagnostic, back-office, paiement, espace payant, simulateur, coffre,
   modules et consultations au navigateur (serveur lancé + Playwright ; `verify:backoffice` exige
   `AUTH_SECRET`, `DATABASE_URL` et `ADMITTO_MAIL_LOG` ; les suites du back-office exigent en
   plus `ADMITTO_ADMIN_EMAIL`. **Passer la même origine que celle vue par Auth.js** :
   un écart 127.0.0.1 / localhost fait tomber le cookie de session)
-- `npm run verify:all <url>` — enchaîne les douze suites et résume. Une seule reprise par
+- `npm run verify:seo <url>` — audit SEO Lighthouse des sept pages publiques (≥ 95).
+  Hors de `verify:all` : il exige un serveur déclaré PUBLIC (`ADMITTO_BASE_URL` non
+  local), sans quoi `robots.txt` interdit l'exploration et l'audit mesure cette
+  fermeture volontaire au lieu des pages.
+- `npm run verify:all <url>` — enchaîne le budget de bundle et les treize suites, puis résume. Une seule reprise par
   suite, et seulement sur plantage : un échec d'assertion reste rouge.
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run db:migrate` / `db:deploy` / `db:studio` — migrations Prisma (dev / prod / inspection)
@@ -176,6 +183,13 @@ Détails : `docs/TOKEN_OPTIMIZATION.md`. Cache : `docs/CACHE_OPTIMIZATION.md`.
 - `lib/access/result.ts` — un résultat revendiqué par un compte n'est plus consultable
   sur simple possession de l'URL ; non revendiqué, le lien suffit (le J0 part avant
   qu'aucun compte n'existe).
+- `lib/seo/site.ts` — le site est-il l'exemplaire PUBLIC ? Réponse tirée du seul
+  `ADMITTO_BASE_URL` (absent ou local = non). Fermé par défaut : `robots.txt`
+  interdit tout, le sitemap est vide, et aucune canonique n'est émise — une
+  canonique relative a l'air correcte sans remplir son rôle. `content/pages.ts`
+  tient la liste FERMÉE des pages indexables : rien n'est découvert par balayage
+  du système de fichiers, sans quoi la première route personnelle ajoutée s'y
+  retrouverait.
 - `next.config.ts` — en-têtes de sécurité. `style-src 'unsafe-inline'` est le prix
   assumé des styles inline ; tout le reste est verrouillé.
 - `scripts/lib/` — helpers des suites : `wait.mjs` (attentes sur condition, JAMAIS de

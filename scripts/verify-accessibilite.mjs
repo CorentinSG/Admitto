@@ -180,6 +180,9 @@ const page = await anonymous.newPage();
 for (const [label, url] of [
   ["accueil", "/"],
   ["diagnostic", "/diagnostic"],
+  ["offres", "/offres"],
+  ["faq", "/faq"],
+  ["à propos", "/a-propos"],
   ["connexion", "/connexion"],
   ["mentions légales", "/mentions-legales"],
   ["confidentialité", "/confidentialite"],

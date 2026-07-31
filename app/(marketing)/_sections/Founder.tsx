@@ -11,7 +11,11 @@ import { founder, hero } from "@/content/homepage";
  * comme un fait de parcours, jamais comme la qualité au titre de laquelle le
  * service serait rendu (CDC §6).
  */
-export function Founder() {
+/**
+ * `asPageTitle` : la section est servie seule, sur /a-propos.
+ * Son titre devient alors le `h1` de la page — voir `SectionTitle`.
+ */
+export function Founder({ asPageTitle = false }: { asPageTitle?: boolean } = {}) {
   const [ref, inView] = useInView(thresholds.solution);
 
   return (
@@ -21,7 +25,7 @@ export function Founder() {
       style={{ backgroundColor: colors.ivory, padding: layout.sectionPadding }}
     >
       <SectionLabel inView={inView}>{founder.label}</SectionLabel>
-      <SectionTitle inView={inView}>{founder.title}</SectionTitle>
+      <SectionTitle inView={inView} as={asPageTitle ? "h1" : "h2"}>{founder.title}</SectionTitle>
 
       <div style={{ maxWidth: 720, marginTop: 32 }}>
         {founder.paragraphs.map((paragraph, i) => (

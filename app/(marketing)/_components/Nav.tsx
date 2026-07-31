@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { colors, fonts, alpha, layout, gradients } from "@/design/tokens";
 import { nav } from "@/content/homepage";
+import { sectionHref } from "./anchors";
 
 /**
  * Navigation fixe (contrat d'animation §3).
@@ -21,6 +23,9 @@ import { nav } from "@/content/homepage";
  */
 export function Nav({ solid = false }: { solid?: boolean } = {}) {
   const [scrolled, setScrolled] = useState(false);
+  // Les ancres désignent des sections de l'accueil : hors de l'accueil, elles
+  // doivent y ramener plutôt que de ne rien faire.
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
   /**
@@ -83,7 +88,7 @@ export function Nav({ solid = false }: { solid?: boolean } = {}) {
       }}
     >
       <a
-        href="#top"
+        href={sectionHref(pathname, "#top")}
         className="nav-brand"
         style={{
           fontFamily: fonts.serif,
@@ -101,7 +106,7 @@ export function Nav({ solid = false }: { solid?: boolean } = {}) {
           {nav.links.map((link) => (
             <a
               key={link.href}
-              href={link.href}
+              href={sectionHref(pathname, link.href)}
               style={{
                 fontFamily: fonts.sans,
                 fontSize: "0.82rem",
@@ -148,7 +153,7 @@ export function Nav({ solid = false }: { solid?: boolean } = {}) {
         </button>
 
         <a
-          href="#commencer"
+          href={sectionHref(pathname, "#commencer")}
           className="nav-cta"
           style={{
             background: gradients.goldButton,
@@ -199,7 +204,7 @@ export function Nav({ solid = false }: { solid?: boolean } = {}) {
         {nav.links.map((link) => (
           <a
             key={link.href}
-            href={link.href}
+            href={sectionHref(pathname, link.href)}
             onClick={() => setMenuOpen(false)}
             style={{
               display: "block",

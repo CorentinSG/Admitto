@@ -123,6 +123,67 @@ check("Aucun débordement horizontal à 390 px", !overflow);
 // 11. Console propre
 check("Aucune erreur console", consoleErrors.length === 0, consoleErrors.join(" | "));
 
+/*
+ * 12. Budget de JavaScript de la page d'accueil (lot E).
+ *
+ * Mesure ce qui est réellement TÉLÉCHARGÉ — corps compressés, tels que les
+ * reçoit un navigateur — et non les tailles annoncées par le build, qui sont
+ * décompressées et ne disent pas ce que paie l'utilisateur.
+ *
+ * Ce qu'un budget attrape et qu'aucune relecture ne voit : un import qui
+ * traverse la frontière serveur/client. Sur `/admin/rapports/[id]`, importer
+ * une constante de trois chaînes depuis le module du store y amenait le client
+ * Prisma — 18,9 Ko pour trois boutons. Rien dans le diff ne le montrait.
+ *
+ * Contexte neuf, sans cache : une seconde visite ne télécharge rien et
+ * mesurerait zéro.
+ */
+const budgetContext = await browser.newContext();
+const budgetPage = await budgetContext.newPage();
+const budgetResponses = [];
+budgetPage.on("response", (response) => {
+  // Pas de `new URL(...)` ici : `URL` est déjà, dans ce script, l'adresse
+  // testée passée en argument. Le motif ignore donc la chaîne de requête
+  // à la main.
+  if (/\.js(\?|#|$)/.test(response.url().split(/[?#]/)[0])) budgetResponses.push(response);
+});
+await budgetPage.goto(URL, { waitUntil: "networkidle" });
+
+/*
+ * `sizes().responseBodySize` : les octets réellement passés sur le fil.
+ *
+ * Une première version lisait l'en-tête `content-length` quand il existait et
+ * la longueur du corps sinon — donc la taille COMPRESSÉE pour les unes et
+ * DÉCOMPRESSÉE pour les autres, dans la même somme. Le même chargement
+ * mesurait 21 Ko ou 174 Ko selon les réponses reçues. Un budget calculé sur
+ * une unité instable n'aurait rien protégé du tout.
+ */
+let jsBytes = 0;
+for (const response of budgetResponses) {
+  try {
+    jsBytes += (await response.request().sizes()).responseBodySize;
+  } catch {
+    // Requête déjà libérée : mieux vaut une ressource non comptée qu'une suite
+    // qui tombe sur sa propre mesure.
+  }
+}
+await budgetContext.close();
+
+/*
+ * 117 Ko mesurés au moment d'écrire ce budget, socle commun compris.
+ *
+ * Ce plafond-ci est nécessairement large : le socle partagé domine, et une
+ * régression de quinze kilo-octets s'y perdrait. Il attrape les accidents
+ * francs — une dépendance entière tirée dans le navigateur. Le contrôle fin,
+ * route par route et hors socle, est celui de `check:bundle`.
+ */
+const BUDGET_KO = 140;
+check(
+  `JavaScript de l'accueil sous ${BUDGET_KO} Ko`,
+  jsBytes / 1024 < BUDGET_KO,
+  `${(jsBytes / 1024).toFixed(1)} Ko`
+);
+
 await browser.close();
 
 if (failures.length) {

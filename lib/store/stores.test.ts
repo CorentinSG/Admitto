@@ -474,6 +474,31 @@ describe("schoolStore", () => {
     expect(stored.applicationDeadline).toBe("2027-01-15");
   });
 
+  it("refuse un doublon de nom normalisé, dans les deux implémentations", async () => {
+    const assessment = await newAssessment();
+    expect(await schoolStore.add(choice(assessment.id, `${assessment.id}-d1`))).toBe(true);
+
+    // Même école, saisie autrement : casse, accents et espaces ne font pas
+    // deux écoles. Le refus vient du STOCKAGE — `decideAdd` lit avant
+    // d'écrire, ce qui laisse passer deux soumissions simultanées.
+    const jumeau = {
+      ...choice(assessment.id, `${assessment.id}-d2`),
+      name: "  FÔRDHAM  ",
+    };
+    expect(await schoolStore.add(jumeau)).toBe(false);
+
+    expect(await schoolStore.list(assessment.id)).toHaveLength(1);
+  });
+
+  it("laisse le même nom coexister sur deux diagnostics", async () => {
+    // L'unicité porte sur (diagnostic, nom) : deux personnes visent
+    // évidemment les mêmes écoles.
+    const a = await newAssessment();
+    const b = await newAssessment();
+    expect(await schoolStore.add(choice(a.id, `${a.id}-same`))).toBe(true);
+    expect(await schoolStore.add(choice(b.id, `${b.id}-same`))).toBe(true);
+  });
+
   it("modifie sur place et rend false pour une école inconnue", async () => {
     const assessment = await newAssessment();
     await schoolStore.add(choice(assessment.id, `${assessment.id}-s2`));

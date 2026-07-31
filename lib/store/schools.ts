@@ -1,5 +1,6 @@
 import type { Ambition, SchoolChoice, SchoolStatus } from "@/lib/schools/types";
 import { db, usingDatabase } from "@/lib/db/client";
+import { normalizeName } from "@/lib/schools/types";
 
 /**
  * Liste d'écoles (tâche T-SEL-03).
@@ -65,16 +66,35 @@ export const schoolStore = {
     return rows.map(toDomain);
   },
 
-  async add(school: SchoolChoice): Promise<void> {
+  /**
+   * Ajoute une école. Rend `false` si le diagnostic en porte déjà une du même
+   * nom — normalisé, donc « NYU » et « nyu  » sont la même.
+   *
+   * Le refus vient du STOCKAGE et non d'une lecture préalable. `decideAdd`
+   * contrôle déjà les doublons, mais il lit la liste avant d'écrire : deux
+   * soumissions simultanées — un double-clic suffit — passaient toutes deux le
+   * contrôle. La clé normalisée est dérivée du nom à l'écriture, jamais portée
+   * par l'appelant : les deux ne peuvent pas se désaccorder.
+   */
+  async add(school: SchoolChoice): Promise<boolean> {
+    const nameKey = normalizeName(school.name);
+
     if (!usingDatabase()) {
-      memory.set(school.assessmentId, [...(memory.get(school.assessmentId) ?? []), school]);
-      return;
+      const list = memory.get(school.assessmentId) ?? [];
+      // La mémoire applique la MÊME contrainte que la base : deux
+      // implémentations qui divergent sur un refus se découvrent en production.
+      if (list.some((existing) => normalizeName(existing.name) === nameKey)) return false;
+      memory.set(school.assessmentId, [...list, school]);
+      return true;
     }
-    await db().schoolChoice.create({
+
+    try {
+      await db().schoolChoice.create({
       data: {
         id: school.id,
         assessmentId: school.assessmentId,
         name: school.name,
+        nameKey,
         partnershipId: school.partnershipId,
         ambition: school.ambition,
         status: school.status,
@@ -85,6 +105,14 @@ export const schoolStore = {
         addedAt: new Date(school.addedAt),
       },
     });
+    } catch (error) {
+      // P2002 = violation de contrainte d'unicité, le SEUL cas rattrapé ici.
+      // Tout avaler transformerait une panne d'écriture en « déjà présente »,
+      // et l'utilisateur croirait son école enregistrée.
+      if ((error as { code?: string }).code === "P2002") return false;
+      throw error;
+    }
+    return true;
   },
 
   /** Rend `true` si une ligne a bien été modifiée — donc si elle existait. */

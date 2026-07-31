@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { canonical } from "@/lib/seo/site";
 import { Nav } from "./_components/Nav";
 import { Footer } from "./_components/Footer";
 import { Hero } from "./_sections/Hero";
@@ -18,6 +20,15 @@ import { FinalCta } from "./_sections/FinalCta";
  * elle-même reste un server component et est prérendue statiquement, donc
  * servie depuis le CDN (voir docs/CACHE_OPTIMIZATION.md).
  */
+
+/**
+ * L'accueil se déclare canonique pour lui-même.
+ *
+ * Il porte les mêmes sections que `/offres`, `/faq` et `/a-propos` : sans
+ * canonique de part et d'autre, deux URL présenteraient le même texte sans que
+ * rien ne dise laquelle fait référence pour quel sujet.
+ */
+export const metadata: Metadata = { alternates: canonical("/") };
 
 const responsiveCss = `
 @media (max-width: 900px) {

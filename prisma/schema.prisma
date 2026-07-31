@@ -258,6 +258,12 @@ model SchoolChoice {
   id                 String   @id
   assessmentId       String
   name               String
+  /// Nom normalisé (sans accents, minuscules, espaces réduits) — la clé de la
+  /// contrainte d'unicité. Elle existe parce que le contrôle de doublon vivait
+  /// dans le code, qui LIT avant d'écrire : deux soumissions simultanées — un
+  /// double-clic suffit — passaient toutes deux le contrôle. Une contrainte
+  /// dans le code protège d'une erreur de saisie, pas d'une course.
+  nameKey            String
   partnershipId      String?
   ambition           String
   status             String
@@ -269,6 +275,7 @@ model SchoolChoice {
 
   assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 
+  @@unique([assessmentId, nameKey])
   @@index([assessmentId])
 }
 

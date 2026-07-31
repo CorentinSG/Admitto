@@ -249,6 +249,72 @@ d'exécution au navigateur, et un passage cron journalisant ses quatre résumés
 _Vérification : Lighthouse SEO ≥ 95 sur les pages publiques, budget de bundle
 dans `verify:animations`._
 
+**Livré**, malgré la condition d'entrée du lot — aucune date de mise en ligne
+n'existe et F4 reste ouvert. D'où le choix qui gouverne tout le lot :
+**l'indexation est fermée par défaut**. `lib/seo/site.ts` ne pose qu'une
+question, et à partir d'une variable qui existait déjà (`ADMITTO_BASE_URL`,
+nécessaire aux liens des emails) : ce serveur est-il l'exemplaire public ?
+Absente ou locale, `robots.txt` interdit tout et le sitemap est vide. Un second
+interrupteur « ce site est public » aurait fini par contredire le premier, et
+c'est celui qu'on oublie qui décide. Ce sens de défaut protège de deux choses :
+une prévisualisation qui concurrence le site réel, et un référencement obtenu
+avec des mentions légales encore incomplètes — une infraction qui a l'air d'un
+site normal.
+
+1. **`/offres`, `/faq`, `/a-propos`** servent EXACTEMENT les sections de
+   l'accueil : aucune copie dupliquée, c'est le même composant. Seule la balise
+   de son titre change — `h1` sur la page autonome, `h2` sur l'accueil où la
+   section est un chapitre. Une page sans `h1` n'a de titre ni pour un moteur
+   ni pour un lecteur d'écran.
+2. **`robots.ts`, `sitemap.ts`, `metadataBase`, OpenGraph.** La liste des pages
+   indexables est FERMÉE (`content/pages.ts`) : un sitemap construit par
+   balayage du système de fichiers publierait la première route personnelle
+   ajoutée.
+3. **Bundle `/admin/rapports/[id]` : 18,9 Ko → 2,88 Ko**, très en deçà de la
+   cible de 8 Ko. Une seule ligne l'expliquait : un composant client important
+   `REPORT_STATUSES` depuis le module du store y amenait le client Prisma —
+   18,9 Ko pour dessiner trois boutons. `import type` n'aurait rien coûté ; une
+   VALEUR charge le module. La constante vit désormais dans un module sans
+   dépendance.
+4. **Unicité (diagnostic, nom normalisé) sur la liste d'écoles.** Le contrôle
+   existait dans `decideAdd`, mais il LIT avant d'écrire : deux soumissions
+   simultanées le franchissaient toutes deux. La contrainte est passée au
+   stockage, et la mémoire applique la même — deux implémentations qui divergent
+   sur un refus se découvrent en production.
+
+Trois défauts trouvés à la vérification :
+
+- **`robots.txt` et `sitemap.xml` étaient figés au build.** Next.js les prérend :
+  `ADMITTO_BASE_URL` posée seulement au démarrage n'avait aucun effet. Le piège
+  est muet — le fichier existe, il est valide, il est vide — et le site
+  n'aurait jamais été indexé. Les deux routes sont désormais évaluées à chaque
+  requête.
+- **Les canoniques relatives.** Sans domaine connu à la compilation, Next
+  émettait `href="/offres"` : Lighthouse la refuse (92/100), et la balise a l'air
+  correcte tout en n'affirmant rien. Elle est maintenant absolue ou absente.
+  Les sept pages sont à **100/100** dans les deux régimes — build ignorant son
+  domaine, et build servi sur son domaine réel (vérifié via un alias d'hôte).
+- **Les ancres de section ne marchaient que sur l'accueil.** `#solution` depuis
+  une page légale ne faisait rien ; défaut préexistant que trois pages de plus
+  auraient étendu. Le préfixe n'est ajouté que hors de l'accueil, où
+  `/#solution` provoquerait un rechargement complet.
+
+Deux corrections d'outillage, découvertes en écrivant les budgets :
+
+- **La mesure de bundle mélangeait deux unités** — `content-length` (compressé)
+  pour les unes, longueur du corps (décompressé) pour les autres, dans la même
+  somme. Le même chargement donnait 21 Ko ou 174 Ko. Elle lit désormais les
+  octets réellement passés sur le fil.
+- **`verify-all` rejouait les échecs d'assertion de `verify-animations`**, dont
+  la ligne de bilan porte un mot de plus que le motif attendu. Son propre
+  en-tête l'interdit : une reprise sur assertion transforme la suite en machine
+  à fabriquer du vert.
+
+Le budget navigateur prescrit par le plan reste large par nature — le socle
+commun domine, une régression de quinze kilo-octets s'y perdrait, c'est-à-dire
+l'ordre de grandeur du défaut corrigé ici. `check:bundle` le complète : mesure
+déterministe, par route, hors socle, sans navigateur.
+
 ---
 
 ## Ordre recommandé et jalons

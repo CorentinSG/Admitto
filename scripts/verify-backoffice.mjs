@@ -98,6 +98,53 @@ check(
 );
 
 // ── Fiche rapport ──────────────────────────────────────────────────────────
+/*
+ * Budget de JavaScript de la fiche (lot E).
+ *
+ * C'est la page la plus lourde du produit, et elle l'était pour une raison
+ * qu'aucune relecture ne montrait : un composant client importait la liste des
+ * statuts depuis le module du store, ce qui y amenait le client Prisma —
+ * 18,9 Ko de JavaScript pour dessiner trois boutons. La constante vit
+ * désormais dans un module sans dépendance.
+ *
+ * Le budget est mesuré ici, sur la page réellement ouverte et authentifiée :
+ * `verify:animations` ne se connecte pas, il ne pourrait donc pas la voir.
+ * Contexte neuf pour ne pas mesurer un cache déjà rempli, mais MÊME session —
+ * sans quoi la page redirigerait vers la connexion et le budget mesurerait
+ * l'écran de connexion.
+ */
+const budgetContext = await browser.newContext({
+  storageState: await page.context().storageState(),
+});
+const budgetPage = await budgetContext.newPage();
+const budgetResponses = [];
+budgetPage.on("response", (response) => {
+  if (/\.js(\?|#|$)/.test(response.url().split(/[?#]/)[0])) budgetResponses.push(response);
+});
+await budgetPage.goto(`${BASE}/admin/rapports/${assessmentId}`, { waitUntil: "networkidle" });
+
+// Octets réellement transmis — voir `verify-animations.mjs` pour la raison de
+// ne pas mélanger `content-length` et longueur de corps.
+let ficheJsBytes = 0;
+for (const response of budgetResponses) {
+  try {
+    ficheJsBytes += (await response.request().sizes()).responseBodySize;
+  } catch {
+    // Requête libérée : ressource non comptée plutôt que suite en échec.
+  }
+}
+await budgetContext.close();
+
+// 110 Ko mesurés, socle commun compris — voir `verify-animations.mjs` : ce
+// plafond attrape les accidents francs, `check:bundle` la variation propre à
+// la route.
+const FICHE_BUDGET_KO = 132;
+check(
+  `JavaScript de la fiche rapport sous ${FICHE_BUDGET_KO} Ko`,
+  ficheJsBytes / 1024 < FICHE_BUDGET_KO,
+  `${(ficheJsBytes / 1024).toFixed(1)} Ko`
+);
+
 await page.goto(`${BASE}/admin/rapports/${assessmentId}`, { waitUntil: "networkidle" });
 // innerText restitue le texte RENDU : les titres en text-transform: uppercase
 // remontent en majuscules. La comparaison doit donc être insensible à la casse.

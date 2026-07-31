@@ -12,7 +12,11 @@ import { faq } from "@/content/homepage";
  * interdit d'inventer de nouveaux patterns (pas d'animation de hauteur).
  * Seule la couleur transitionne, en 0,2 s.
  */
-export function Faq() {
+/**
+ * `asPageTitle` : la section est servie seule, sur /faq.
+ * Son titre devient alors le `h1` de la page — voir `SectionTitle`.
+ */
+export function Faq({ asPageTitle = false }: { asPageTitle?: boolean } = {}) {
   const [ref, inView] = useInView(thresholds.problems);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
@@ -23,7 +27,7 @@ export function Faq() {
       style={{ backgroundColor: colors.ivory, padding: layout.sectionPadding }}
     >
       <SectionLabel inView={inView}>{faq.label}</SectionLabel>
-      <SectionTitle inView={inView}>{faq.title}</SectionTitle>
+      <SectionTitle inView={inView} as={asPageTitle ? "h1" : "h2"}>{faq.title}</SectionTitle>
 
       <div
         style={{

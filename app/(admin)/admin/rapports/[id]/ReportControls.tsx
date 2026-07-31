@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { colors, fonts, alpha, gradients } from "@/design/tokens";
 import { addCorrection, setReportStatus } from "../../actions";
-import { REPORT_STATUSES, type ReportStatus } from "@/lib/store/reports";
+import { REPORT_STATUSES, type ReportStatus } from "@/lib/store/report-status";
 import { STATUS_LABELS } from "@/content/admin";
 
 /**

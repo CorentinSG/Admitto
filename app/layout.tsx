@@ -3,6 +3,7 @@ import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { colors, fonts } from "@/design/tokens";
 import { globalCss } from "@/design/global-css";
 import { resetCss } from "@/design/reset";
+import { publicBaseUrl } from "@/lib/seo/site";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -17,10 +18,37 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
 });
 
+const TITLE = "Admitto — U.S. LL.M. & New York Bar, avec méthode";
+const DESCRIPTION =
+  "Un système personnalisé de décision, de planification et d'exécution pour les juristes formés en France qui visent un LL.M. américain et le barreau de New York.";
+
+/**
+ * Métadonnées communes (lot E).
+ *
+ * `metadataBase` n'est posé que si le site est public. Sans lui, Next.js rend
+ * les URL canoniques et OpenGraph en chemins relatifs — ce qui est le bon
+ * comportement en prévisualisation : une balise canonique absolue pointant
+ * vers un domaine de test survit au copier-coller et désigne le mauvais site.
+ *
+ * `title.template` évite de répéter la marque dans chaque page : une page qui
+ * pose son propre titre obtient « Titre — Admitto » sans le savoir. Les pages
+ * qui portent déjà la marque dans leur titre restent explicites, le gabarit ne
+ * s'applique qu'aux titres bruts.
+ */
 export const metadata: Metadata = {
-  title: "Admitto — U.S. LL.M. & New York Bar, avec méthode",
-  description:
-    "Un système personnalisé de décision, de planification et d'exécution pour les juristes formés en France qui visent un LL.M. américain et le barreau de New York.",
+  metadataBase: publicBaseUrl() ? new URL(publicBaseUrl() as string) : undefined,
+  title: { default: TITLE, template: "%s" },
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "Admitto",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  // Pas d'image OpenGraph : il n'en existe aucune. En déclarer une absente
+  // produirait un aperçu vide chez chaque destinataire d'un lien partagé.
+  twitter: { card: "summary", title: TITLE, description: DESCRIPTION },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

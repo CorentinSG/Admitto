@@ -276,14 +276,18 @@ export const footer = {
         { label: "Le défi", href: "#problematique" },
         { label: "La solution", href: "#solution" },
         { label: "Le parcours", href: "#parcours" },
-        { label: "Offres", href: "#offres" },
+        // Pages autonomes plutôt qu'ancres : le pied de page est le seul lien
+        // interne vers elles. Sans lui, /offres, /faq et /a-propos ne seraient
+        // atteignables que par le sitemap — une page qu'aucun lien ne désigne
+        // n'existe pas vraiment pour un moteur de recherche.
+        { label: "Offres", href: "/offres" },
       ],
     },
     {
       title: "RESSOURCES",
       links: [
-        { label: "Questions fréquentes", href: "#faq" },
-        { label: "Le fondateur", href: "#fondateur" },
+        { label: "Questions fréquentes", href: "/faq" },
+        { label: "À propos", href: "/a-propos" },
         { label: "Diagnostic gratuit", href: "#commencer" },
       ],
     },
