@@ -48,6 +48,16 @@ export const dashboard = {
     { label: "Vos données", href: "/app/donnees" },
   ],
   greeting: (firstName?: string) => (firstName ? `Bonjour ${firstName}.` : "Bonjour."),
+  timeline: {
+    title: "Votre timeline",
+    today: "Aujourd'hui",
+    progress: (done: number, total: number) => `${done} accomplie(s) sur ${total}`,
+    // Le pluriel est géré par le serveur, qui compose la phrase entière.
+    undated: (n: number) =>
+      `${n} tâche(s) sans échéance : elles rejoindront l'axe dès que votre rentrée visée sera décidée.`,
+    inDays: (n: number) => (n === 0 ? "aujourd'hui" : n === 1 ? "demain" : `dans ${n} jours`),
+    lateBy: (n: number) => `en retard de ${n} jour(s)`,
+  },
   sections: {
     phase: "Phase actuelle",
     nextBestAction: "Prochaine action",

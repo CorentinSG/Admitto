@@ -135,6 +135,48 @@ check(
 );
 check("Aucune éligibilité affirmée", !/vous êtes éligible/i.test(roadmap));
 
+// ── Timeline interactive (CDC §22) ─────────────────────────────────────────
+// `roadmap` est déjà en minuscules : innerText rend le texte TEL QU'AFFICHÉ,
+// donc « AUJOURD'HUI » à cause du text-transform — comparer en casse pliée.
+check("Timeline affichée", roadmap.includes("votre timeline"));
+check("Repère du jour planté sur l'axe", roadmap.includes("aujourd'hui"));
+check("Avancement compté", /\d+ accomplie\(s\) sur \d+/.test(roadmap));
+
+const dots = page.locator('section[aria-label="Timeline du parcours"] button[aria-pressed]');
+check("Une pastille par tâche datée", (await dots.count()) > 5, String(await dots.count()));
+
+// Cliquer une pastille sélectionne SA tâche dans le détail.
+const lastDot = dots.last();
+const dotTitle = ((await lastDot.getAttribute("aria-label")) ?? "").split(" — ")[0];
+await lastDot.click();
+check(
+  "La sélection au clic affiche la tâche visée",
+  Boolean(
+    await waitFor(async () => {
+      const detail = await page
+        .locator('section[aria-label="Timeline du parcours"]')
+        .innerText();
+      return detail.includes(dotTitle) ? detail : null;
+    })
+  ),
+  dotTitle
+);
+
+// La timeline AVANCE quand une tâche est cochée en dessous — c'est le même
+// état que la feuille de route, il n'y a pas de compteur propre à dériver.
+const countBefore = Number(roadmap.match(/(\d+) accomplie\(s\)/)?.[1] ?? "0");
+await page.getByRole("button", { name: "Complété", exact: true }).nth(3).click();
+check(
+  "La timeline avance quand une tâche est accomplie",
+  Boolean(
+    await waitFor(async () => {
+      const text = await page.locator("body").innerText();
+      const m = text.match(/(\d+) accomplie\(s\)/);
+      return m && Number(m[1]) === countBefore + 1 ? m[0] : null;
+    })
+  )
+);
+
 check("Aucune erreur console", consoleErrors.length === 0, consoleErrors.join(" | "));
 
 await browser.close();
