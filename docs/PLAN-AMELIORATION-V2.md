@@ -5,6 +5,16 @@
 > 11 suites navigateur (279 points, deux exécutions consécutives identiques),
 > 8 garde-fous, régimes dégradés sondés route par route.
 
+> **État : les cinq lots A à E sont livrés.** Vérifié : 465 tests unitaires
+> (mémoire et PostgreSQL), 14/14 suites (355 points), 10 garde-fous, les deux
+> régimes dégradés sondés sur les 39 routes de l'application, SEO 100/100 sur
+> les sept pages publiques.
+>
+> **La piste code s'arrête ici, délibérément.** Ce qui reste — F1 à F5 — ne
+> relève pas du code, et le CDC §2 place la bêta AVANT toute nouvelle
+> fonctionnalité. Ajouter du code maintenant inverserait à nouveau l'ordre
+> apprentissage → code, qui est la raison d'être de ce plan.
+
 ## Le principe qui ordonne ce plan
 
 **Le code n'est plus le chemin critique.** L'infrastructure couvre ~95 % du

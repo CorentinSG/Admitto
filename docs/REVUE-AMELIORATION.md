@@ -1,8 +1,11 @@
 # Revue complète du site — juillet 2026
 
-> **Plan suivant : `PLAN-AMELIORATION-V2.md`** — les lots 1 à 3 de ce document
-> sont livrés, le lot 4 aux deux tiers ; la V2 réordonne ce qui reste autour du
-> constat que le code n'est plus le chemin critique.
+> **Document historique. Plan suivant : `PLAN-AMELIORATION-V2.md`.**
+> Les lots 1 à 4 de ce document sont désormais livrés en entier — le lot 4 par
+> le lot B de la V2 — et le lot 5 par le lot E de la V2. Les mentions « à
+> faire » qui subsistent ci-dessous décrivent l'état de juillet 2026 au moment
+> de la revue, et non ce qui reste : elles sont annotées une à une plutôt que
+> réécrites, pour que le document garde sa valeur de constat daté.
 
 > État constaté, pas supposé : 295 tests unitaires verts (avec et sans base),
 > les huit suites navigateur conformes contre un serveur complet
@@ -198,7 +201,7 @@ Voir la section 4 pour ce que ces deux lots ont révélé.
 
 </details>
 
-### Lot 4 — Cycle de vie email — **point 1 FAIT**
+### Lot 4 — Cycle de vie email — **FAIT** (points 2 et 3 par le lot B de la V2)
 
 1. **Fait.** La séquence J+2 → J+25 est branchée sur le déclencheur cron
    existant, journalisée par clé composée, idempotente.
@@ -233,10 +236,16 @@ Voir la section 4 pour ce que ces deux lots ont révélé.
    figé (c'est la preuve du consentement) ; `Assessment.unsubscribedAt` porte le
    retrait.
 
-2. À faire : état « déduction expirée » affiché sur la page de paiement.
-3. À faire : événements produit minimaux (§36).
+2. **Fait** (lot B de la V2). L'état de la déduction est calculé par
+   `lib/payments/deduction-state.ts` et affiché sur la page de résultat :
+   `applyDeduction` rendait déjà `reason: "EXPIRED"`, mais rien ne le montrait
+   — le prix plein s'affichait sans sa raison.
+3. **Fait** (lot B de la V2). Les événements produit vivent dans
+   `lib/analytics/`, sans aucun identifiant : un événement est un triplet
+   (type, écran, instant), et deux lignes du même visiteur sont indiscernables
+   de deux lignes de deux visiteurs.
 
-### Lot 5 — Croissance (quand les lots 1-2 sont en production)
+### Lot 5 — Croissance — **FAIT** (lot E de la V2)
 
 1. Pages marketing autonomes /offres, /faq, /a-propos + `sitemap.ts`,
    `robots.ts`, `metadataBase`, OpenGraph.
