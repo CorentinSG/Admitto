@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MODULES, PRODUCTION_ORDER, findModule, isModulePublished } from "@/content/modules";
-import { isPublishable, publicationBlockers } from "./types";
+import { isPublishable, publicationBlockers, readingMinutes } from "./types";
 import { TASK_TEMPLATES } from "@/content/roadmap-tasks";
 
 /**
@@ -41,8 +41,10 @@ describe("catalogue", () => {
 
   it("annonce une durée de lecture plausible", () => {
     for (const entry of MODULES) {
-      expect(entry.readingMinutes, entry.slug).toBeGreaterThan(0);
-      expect(entry.readingMinutes, entry.slug).toBeLessThanOrEqual(60);
+      // La durée est dérivée du texte, elle ne peut donc plus être fausse ;
+      // ce qui reste à vérifier est qu'elle demeure plausible.
+      expect(readingMinutes(entry), entry.slug).toBeGreaterThan(0);
+      expect(readingMinutes(entry), entry.slug).toBeLessThanOrEqual(60);
     }
   });
 });

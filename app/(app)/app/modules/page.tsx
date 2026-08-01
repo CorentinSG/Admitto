@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { colors, fonts, alpha } from "@/design/tokens";
 import { currentAssessmentId } from "@/lib/auth/current";
-import { isPublishable } from "@/lib/modules/types";
+import { isPublishable, readingMinutes } from "@/lib/modules/types";
 import { MODULES, modulesCopy } from "@/content/modules";
 
 export const metadata: Metadata = {
@@ -84,7 +84,7 @@ export default async function ModulesPage() {
                   }}
                 >
                   {available
-                    ? `${modulesCopy.readingTime(entry.readingMinutes)} · ${modulesCopy.sectionsCount(entry.sections.length)}`
+                    ? `${modulesCopy.readingTime(readingMinutes(entry))} · ${modulesCopy.sectionsCount(entry.sections.length)}`
                     : modulesCopy.inProduction}
                 </span>
               </div>

@@ -42,8 +42,6 @@ export interface ModuleEntry {
   order: number;
   title: string;
   summary: string;
-  /** Durée de lecture annoncée, en minutes. */
-  readingMinutes: number;
   published: boolean;
   sections: ModuleSection[];
 }
@@ -86,4 +84,30 @@ export function publicationBlockers(entry: ModuleEntry): string[] {
 
 export function isPublishable(entry: ModuleEntry): boolean {
   return entry.published && publicationBlockers(entry).length === 0;
+}
+
+/**
+ * Durée de lecture annoncée, calculée depuis le texte.
+ *
+ * C'était un champ tenu à la main, et il l'était mal : les modules encore en
+ * plan annonçaient vingt-deux minutes pour des sections vides, et les quatre
+ * modules écrits en annonçaient vingt pour huit minutes de texte. Un chiffre
+ * qu'il faut penser à corriger après chaque paragraphe est un chiffre qui
+ * devient faux — et celui-ci est une promesse faite au lecteur.
+ *
+ * Le facteur deux reproduit la convention établie par le Module 0 : environ
+ * 200 mots par minute de lecture, doublés parce qu'un module se lit un
+ * document ouvert à côté et se termine par des réponses à écrire. Appliquée
+ * aux cinq modules publiés, la formule rend exactement les durées qui y
+ * étaient déclarées — c'est ce qui a permis de supprimer le champ sans rien
+ * changer à ce que voit le lecteur.
+ */
+export function readingMinutes(entry: ModuleEntry): number {
+  const words = entry.sections
+    .flatMap((section) => [...section.body, ...(section.keyPoints ?? [])])
+    .join(" ")
+    .split(/\s+/)
+    .filter(Boolean).length;
+
+  return Math.max(1, Math.round(words / 100));
 }

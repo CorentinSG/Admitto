@@ -16,12 +16,10 @@ import { isPublishable, publicationBlockers } from "@/lib/modules/types";
  * n'est pas de la décoration : il fixe, avant l'écriture, quelles sections
  * énonceront une règle officielle et devront donc être sourcées.
  *
- * `readingMinutes` suit la convention qu'établit le Module 0 : environ deux
- * fois le temps de lecture brut (200 mots/minute), parce qu'un module se lit
- * un document ouvert à côté et se termine par des réponses à écrire. Les
- * chiffres des modules encore en plan sont des estimations d'auteur — les
- * recalculer sur le texte réel au moment de la rédaction, sans quoi on annonce
- * vingt minutes pour un quart d'heure qui n'existe pas.
+ * La durée de lecture n'est pas déclarée ici : elle se calcule depuis le texte
+ * (`readingMinutes` dans `lib/modules/types.ts`). Un chiffre écrit à la main
+ * se désaccorde du contenu au premier paragraphe ajouté, et c'est une promesse
+ * faite au lecteur.
  */
 
 export type { ModuleEntry };
@@ -33,7 +31,6 @@ export const MODULES: ModuleEntry[] = [
     title: "Faut-il faire ce parcours ?",
     summary:
       "JD ou LL.M., parcours sur trois à cinq ans, coût, retour sur investissement, risques, profils types, raisons de faire ou de ne pas faire le projet.",
-    readingMinutes: 18,
     published: true,
     sections: [
       {
@@ -177,7 +174,6 @@ export const MODULES: ModuleEntry[] = [
     title: "Stratégie de carrière",
     summary:
       "Grands cabinets, niches, retour en France, entreprise, arbitrage, immigration, organisations internationales.",
-    readingMinutes: 8,
     published: true,
     sections: [
       {
@@ -245,12 +241,54 @@ export const MODULES: ModuleEntry[] = [
     title: "Choisir le bon LL.M.",
     summary:
       "Ranking, coût, bourses, networking, placement, accès au barreau, partenariats, LSAC et candidatures directes.",
-    readingMinutes: 22,
     published: false,
     sections: [
-      { kind: "METHOD", id: "m2-criteres", title: "Sept critères, et leur ordre d'importance", body: [] },
-      { kind: "METHOD", id: "m2-ranking", title: "Ce que le classement mesure et ce qu'il ignore", body: [] },
-      { kind: "METHOD", id: "m2-partenariats", title: "Tirer parti des accords de votre université", body: [] },
+      {
+        kind: "METHOD",
+        id: "m2-criteres",
+        title: "Sept critères, et leur ordre d'importance",
+        body: [
+          "Sept critères suffisent à départager les programmes : les conditions d'accès à l'examen du barreau que le programme permet de satisfaire, le coût net après aides, la qualité et l'accessibilité du réseau d'anciens, le placement observé des diplômés étrangers, la spécialisation offerte, la localisation, et la réputation générale.",
+          "Leur ordre compte plus que la liste. Le premier critère est éliminatoire : si le programme ne vous permet pas de satisfaire les conditions posées par l'autorité que vous visez, les six autres sont sans objet. Ces conditions sont traitées dans la section suivante, qui porte sa source — elles ne se déduisent d'aucun classement et se vérifient programme par programme.",
+          "Les critères deux à quatre — coût net, réseau, placement — décident en pratique. Le coût net n'est pas le prix affiché : il se calcule après bourses et après accords inter-universitaires, et l'écart entre deux programmes peut dépasser une année de revenus. La réputation générale, que la plupart des candidats placent en tête, arrive en dernier : elle influe peu sur ce que vous ferez de l'année.",
+          "Construisez un tableau à sept colonnes avant de candidater, pas après les réponses. Une école éliminée sur le premier critère est une candidature que vous n'aurez pas à écrire — et le temps ainsi gagné se reporte sur les dossiers qui comptent.",
+        ],
+        keyPoints: [
+          "Le premier critère est éliminatoire : sans lui, les six autres ne servent à rien.",
+          "Le coût net après aides et accords, pas le prix affiché.",
+          "La réputation générale arrive en dernier, pas en premier.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m2-ranking",
+        title: "Ce que le classement mesure et ce qu'il ignore",
+        body: [
+          "Les classements de law schools mesurent des grandeurs réelles — sélectivité à l'entrée, ressources, insertion des diplômés — mais ils les mesurent sur le programme de JD, qui est le cœur de ces écoles. Le LL.M. n'y entre pratiquement pas. Un classement élevé vous renseigne donc sur la maison, pas sur l'année que vous y passerez.",
+          "Trois choses qu'un classement ignore et qui vous concernent directement : le nombre d'étudiants étrangers dans la promotion et l'attention qu'on leur porte, l'existence d'un accompagnement à la recherche d'emploi ouvert aux LL.M. — souvent réservé aux JD —, et le devenir réel des diplômés étrangers du programme, qui n'est presque jamais publié.",
+          "Ces informations existent, mais elles se demandent. Écrivez au responsable du programme et à deux ou trois anciens : combien d'étudiants dans la promotion, d'où viennent-ils, où sont-ils un an après. Une école qui répond précisément à ces questions vous en dit plus qu'un rang ; une école qui les esquive vous en dit autant.",
+        ],
+        keyPoints: [
+          "Le classement mesure le JD, pas le LL.M. que vous suivrez.",
+          "Trois angles morts : taille de la promotion étrangère, accès au service carrière, devenir des diplômés étrangers.",
+          "Ces chiffres se demandent — et la qualité de la réponse est elle-même une information.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m2-partenariats",
+        title: "Tirer parti des accords de votre université",
+        body: [
+          "Beaucoup d'universités françaises ont conclu des accords avec des law schools américaines. Ces accords portent selon les cas sur des places réservées, une dispense partielle ou totale de frais de scolarité, ou une procédure de candidature allégée. Ils constituent souvent le levier financier le plus lourd du parcours, devant les bourses — et une part des candidats concernés ignore qu'ils existent.",
+          "La plateforme les détecte à partir de l'université et du niveau d'études que vous avez déclarés, et les fait apparaître dans le sélecteur d'écoles. Ce qui est détecté reste à confirmer auprès du service des relations internationales de votre université : un accord évolue, se suspend, change de conditions, et c'est ce service qui en détient l'état courant.",
+          "Deux points de méthode. Le premier : demandez l'état de l'accord tôt, car les places réservées ont leurs propres dates limites, généralement antérieures à celles des candidatures directes. Le second : un accord n'est pas une raison suffisante de choisir un programme. Il déplace le coût net, ce qui est considérable, mais il ne change rien aux six autres critères — un programme gratuit qui ne mène pas où vous allez reste un mauvais choix.",
+        ],
+        keyPoints: [
+          "Les accords pèsent souvent plus lourd que les bourses sur le coût net.",
+          "Ce que détecte la plateforme se confirme auprès des relations internationales.",
+          "Un accord déplace le coût, il ne remplace pas les autres critères.",
+        ],
+      },
       {
         kind: "OFFICIAL_RULE",
         id: "m2-acces-barreau",
@@ -258,7 +296,22 @@ export const MODULES: ModuleEntry[] = [
         body: [],
         source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
       },
-      { kind: "METHOD", id: "m2-lsac", title: "LSAC ou candidature directe", body: [] },
+      {
+        kind: "METHOD",
+        id: "m2-lsac",
+        title: "LSAC ou candidature directe",
+        body: [
+          "Deux voies coexistent pour candidater : le service centralisé auquel une partie des écoles est rattachée, et la candidature directe auprès de l'établissement. Certaines écoles n'acceptent qu'une des deux, d'autres les deux — cela se vérifie sur le site de chaque programme, pour l'année où vous candidatez.",
+          "Le service centralisé mutualise le travail : un dossier, des relevés de notes traités une fois, des recommandations transmises à plusieurs écoles. Il ajoute en contrepartie des frais et un délai de traitement qui n'est pas de votre ressort — c'est ce délai qui piège les candidats pressés, car il s'ajoute au vôtre sans que vous puissiez l'accélérer.",
+          "La candidature directe est plus rapide et moins coûteuse quand vous visez peu d'écoles, au prix d'un dossier à reconstituer pour chacune. La règle pratique : au-delà de trois ou quatre écoles rattachées au service centralisé, il devient rentable ; en deçà, la voie directe l'emporte.",
+          "Quelle que soit la voie, comptez le délai de traitement des relevés de notes comme un poste de calendrier à part entière, et faites-le figurer sur votre feuille de route. C'est le point où les dossiers arrivent en retard, et le retard n'y est jamais rattrapable.",
+        ],
+        keyPoints: [
+          "Chaque école dit laquelle des deux voies elle accepte — à vérifier pour l'année en cours.",
+          "Le service centralisé devient rentable au-delà de trois ou quatre écoles.",
+          "Le traitement des relevés de notes est un délai subi : il se planifie comme tel.",
+        ],
+      },
     ],
   },
   {
@@ -267,7 +320,6 @@ export const MODULES: ModuleEntry[] = [
     title: "Candidatures et financement",
     summary:
       "CV, personal statement, recommandations, relevés de notes, traductions, candidatures et bourses.",
-    readingMinutes: 10,
     published: true,
     sections: [
       {
@@ -341,7 +393,6 @@ export const MODULES: ModuleEntry[] = [
     title: "Panorama migratoire",
     summary:
       "F-1, OPT, H-1B, O-1, L-1, sponsoring, limites et erreurs courantes. Information générale uniquement.",
-    readingMinutes: 16,
     published: false,
     sections: [
       {
@@ -351,8 +402,37 @@ export const MODULES: ModuleEntry[] = [
         body: [],
         source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
       },
-      { kind: "METHOD", id: "m4-erreurs", title: "Erreurs de séquencement les plus fréquentes", body: [] },
-      { kind: "METHOD", id: "m4-limites", title: "Ce que ce module ne peut pas faire pour vous", body: [] },
+      {
+        kind: "METHOD",
+        id: "m4-erreurs",
+        title: "Erreurs de séquencement les plus fréquentes",
+        body: [
+          "Les difficultés migratoires de ce parcours viennent rarement d'une règle mal comprise. Elles viennent presque toujours d'un ordre d'opérations : une démarche engagée trop tard, ou engagée avant celle dont elle dépend. Cette section ne dit pas quelles sont les règles — c'est l'objet de la section précédente, qui porte sa source — mais comment éviter que le calendrier ne décide à votre place.",
+          "La première erreur est de traiter les démarches administratives comme une formalité de fin de parcours. Elles ont leurs propres délais, indépendants de votre disponibilité et de votre diligence, et ces délais s'additionnent à ceux des écoles plutôt que de s'y superposer. Une démarche engagée le jour de l'admission arrive parfois après la rentrée.",
+          "La deuxième est de laisser la recherche d'emploi et les démarches de statut avancer séparément, chacune en attendant l'autre. C'est le blocage le plus coûteux du parcours, parce qu'il ne se voit qu'au moment où il est trop tard pour le défaire.",
+          "La méthode tient en deux gestes. Écrivez la liste des démarches dans l'ordre où elles se conditionnent, en notant pour chacune ce qu'elle exige d'obtenu au préalable. Puis, pour chaque délai que vous ne maîtrisez pas, ajoutez une marge explicite plutôt qu'un espoir. La feuille de route de la plateforme porte ces jalons ; à vous d'y inscrire les marges.",
+        ],
+        keyPoints: [
+          "Le problème est presque toujours l'ordre des démarches, pas la règle elle-même.",
+          "Les délais administratifs s'ajoutent à ceux des écoles, ils ne s'y superposent pas.",
+          "Chaque délai non maîtrisé mérite une marge écrite, pas un espoir.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m4-limites",
+        title: "Ce que ce module ne peut pas faire pour vous",
+        body: [
+          "Ce module décrit un cadre et une méthode. Il ne se substitue pas à l'avis d'un professionnel du droit de l'immigration, et il ne peut pas trancher votre cas : les situations individuelles font intervenir des éléments — antécédents, nationalité, séjours antérieurs, situation familiale — qu'aucun contenu général ne peut apprécier.",
+          "La règle que suit ce module est celle de toute la plateforme : rien qui énonce une procédure d'autorité n'y figure sans sa source et sa date de vérification. Vous verrez donc, dans la section correspondante, un lien vers le texte officiel plutôt qu'un résumé qui vous dispenserait de le lire. C'est délibéré : ces règles évoluent, et un résumé périmé est plus dangereux qu'une absence de résumé, parce qu'il a l'air d'une réponse.",
+          "Appliquez la même exigence à ce que vous lirez ailleurs. Un témoignage sur un forum décrit ce qui s'est passé pour quelqu'un, à une date donnée, dans une situation que vous ne connaissez pas entièrement. C'est utile pour savoir quelles questions poser ; ce n'est jamais une réponse à votre cas.",
+        ],
+        keyPoints: [
+          "Ce module ne remplace pas l'avis d'un professionnel sur votre situation.",
+          "Un résumé périmé est plus dangereux qu'une absence de résumé.",
+          "Un témoignage sert à formuler des questions, pas à conclure.",
+        ],
+      },
     ],
   },
   {
@@ -361,10 +441,23 @@ export const MODULES: ModuleEntry[] = [
     title: "Dossier d'évaluation et conditions d'accès à l'examen",
     summary:
       "Évaluation préalable, pièces à réunir, communication avec l'autorité, échéances et responsabilités.",
-    readingMinutes: 24,
     published: false,
     sections: [
-      { kind: "METHOD", id: "m5-principe", title: "Pourquoi une évaluation préalable", body: [] },
+      {
+        kind: "METHOD",
+        id: "m5-principe",
+        title: "Pourquoi une évaluation préalable",
+        body: [
+          "Un juriste formé hors des États-Unis ne s'inscrit pas directement à un examen du barreau : sa formation doit d'abord être examinée par l'autorité compétente de l'État visé, qui apprécie si elle satisfait les conditions posées. Cette étape est un dossier à constituer, avec ses pièces, ses délais et son propre calendrier — les conditions elles-mêmes sont énoncées dans les sections suivantes, qui portent leurs sources.",
+          "Comprendre le principe change la façon de mener le parcours. L'évaluation ne se prépare pas après le diplôme : une partie des pièces concerne vos études françaises et se demande d'autant plus facilement que vous êtes encore en lien avec votre université. Un candidat qui s'y prend deux ans après avoir quitté sa faculté passe plusieurs mois à retrouver des documents qu'il aurait obtenus en quelques jours à l'époque.",
+          "Retenez surtout que la décision n'est pas la vôtre et qu'elle prend du temps. Vous ne pouvez pas la précipiter ; vous pouvez seulement déposer un dossier complet, tôt, et bâtir votre calendrier en supposant que la réponse arrivera tard plutôt que tôt.",
+        ],
+        keyPoints: [
+          "L'évaluation est une étape à part entière, avec son dossier et son calendrier.",
+          "Les pièces relatives aux études françaises s'obtiennent plus facilement tôt.",
+          "La seule variable que vous maîtrisez est la date de dépôt.",
+        ],
+      },
       {
         kind: "OFFICIAL_RULE",
         id: "m5-conditions",
@@ -379,8 +472,37 @@ export const MODULES: ModuleEntry[] = [
         body: [],
         source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
       },
-      { kind: "METHOD", id: "m5-calendrier", title: "Reconstituer son calendrier à rebours", body: [] },
-      { kind: "METHOD", id: "m5-tiers", title: "Obtenir des pièces qui dépendent de tiers", body: [] },
+      {
+        kind: "METHOD",
+        id: "m5-calendrier",
+        title: "Reconstituer son calendrier à rebours",
+        body: [
+          "Un calendrier de parcours se construit toujours dans le sens inverse de son déroulement. Partez de la session d'examen que vous visez, puis remontez : date à laquelle l'évaluation doit être rendue, date de dépôt du dossier, dates d'obtention de chaque pièce, dates de demande de ces pièces. Chaque étape hérite de la contrainte de la suivante, jamais l'inverse.",
+          "Cette construction met en évidence la seule information qui compte à ce stade : la date après laquelle il devient impossible de tenir la session visée. Tant que vous n'avez pas écrit cette date, vous ne savez pas si votre projet tient — vous savez seulement qu'il n'est pas encore démenti.",
+          "Deux précautions rendent le calendrier utilisable. Distinguez ce que vous maîtrisez de ce que vous subissez : une pièce que vous rédigez et une pièce qu'un tiers vous délivre n'appellent pas la même marge. Et vérifiez chaque date d'échéance officielle à sa source, pour l'année où vous candidatez — une date recopiée d'un témoignage de l'an dernier n'engage personne.",
+          "La feuille de route de la plateforme fait ce calcul à rebours à partir de la rentrée que vous déclarez, et projette les échéances sur un axe où l'on voit ce qui est en retard, ce qui approche et ce qui reste à commencer.",
+        ],
+        keyPoints: [
+          "On part de la session visée et on remonte, jamais l'inverse.",
+          "La date qui compte est celle après laquelle la session n'est plus tenable.",
+          "Une pièce délivrée par un tiers appelle une marge que vous n'êtes pas seul à tenir.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m5-tiers",
+        title: "Obtenir des pièces qui dépendent de tiers",
+        body: [
+          "La difficulté d'un dossier d'évaluation n'est pas de le remplir : c'est d'obtenir des documents que d'autres détiennent — scolarité de votre université, traducteurs assermentés, anciens employeurs. Ces délais ne dépendent pas de votre organisation, et c'est précisément pourquoi ils doivent être engagés en premier.",
+          "Trois pratiques réduisent le risque. Demandez par écrit, avec un objet précis et la date à laquelle il vous faut la pièce : une demande sans échéance est traitée après celles qui en portent une. Demandez plus tôt que nécessaire, en tenant compte des périodes où les services universitaires sont fermés ou réduits. Et relancez une fois, poliment, à une date que vous avez notée au moment de la demande — pas quand vous y repensez.",
+          "Conservez chaque pièce obtenue au format exigé dès sa réception, plutôt qu'au moment du dépôt. Le coffre de documents de la plateforme est prévu pour cela : il suit ce que vous avez, ce que vous attendez, et ce qui reste à demander. Un dossier qui échoue pour une pièce égarée échoue pour la raison la plus évitable de tout le parcours.",
+        ],
+        keyPoints: [
+          "Les pièces détenues par des tiers s'engagent en premier, pas en dernier.",
+          "Une demande écrite avec une échéance passe avant une demande sans date.",
+          "Chaque pièce se range au format attendu dès sa réception.",
+        ],
+      },
     ],
   },
   {
@@ -388,7 +510,6 @@ export const MODULES: ModuleEntry[] = [
     order: 6,
     title: "Préparation de l'examen du barreau",
     summary: "UBE, MBE, MEE, MPT, épreuves complémentaires, prestataires et planning de révision.",
-    readingMinutes: 26,
     published: false,
     sections: [
       {
@@ -398,9 +519,54 @@ export const MODULES: ModuleEntry[] = [
         body: [],
         source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
       },
-      { kind: "METHOD", id: "m6-prestataires", title: "Choisir un programme de préparation", body: [] },
-      { kind: "METHOD", id: "m6-planning", title: "Construire un planning de révision tenable", body: [] },
-      { kind: "METHOD", id: "m6-methode", title: "Méthode d'entraînement et correction", body: [] },
+      {
+        kind: "METHOD",
+        id: "m6-prestataires",
+        title: "Choisir un programme de préparation",
+        body: [
+          "Les programmes commerciaux de préparation à l'examen se ressemblent davantage qu'ils ne le prétendent : même matière, même logique d'entraînement massif. Ce qui les distingue utilement pour un candidat étranger tient à trois choses — la place faite aux fondamentaux que les diplômés américains ont acquis pendant trois ans, la qualité de la correction des épreuves rédigées, et le rythme imposé.",
+          "Le premier point est le plus important et le moins mis en avant. Un programme conçu pour des diplômés de JD suppose acquis un socle que votre formation française n'a pas eu à construire. Demandez explicitement ce qui est prévu pour les candidats formés à l'étranger : une réponse vague sur ce point est un signal suffisant.",
+          "Sur la correction, cherchez une correction individualisée et argumentée plutôt qu'une note. Progresser sur une épreuve rédigée suppose de comprendre l'écart entre ce que vous avez écrit et ce qui était attendu ; un score seul ne l'apprend pas.",
+          "Attention enfin au calendrier : ces programmes s'alignent sur les sessions d'examen, et s'y inscrire tard signifie commencer en retard sur un rythme déjà tendu. La structure de l'examen et ses épreuves sont décrites dans la section qui porte sa source.",
+        ],
+        keyPoints: [
+          "Le critère décisif : ce qui est prévu pour les candidats formés hors des États-Unis.",
+          "Une correction argumentée vaut mieux qu'un score.",
+          "S'inscrire tard, c'est commencer en retard sur un rythme déjà tendu.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m6-planning",
+        title: "Construire un planning de révision tenable",
+        body: [
+          "Un planning de révision échoue presque toujours de la même façon : il est construit pour un candidat qui ne tombe pas malade, ne prend pas de retard et ne travaille pas à côté. Au premier écart, il devient faux, et un planning faux cesse d'être consulté — c'est ainsi qu'on se retrouve sans plan trois semaines avant l'épreuve.",
+          "Construisez-le donc avec du jeu délibéré : une demi-journée par semaine sans contenu prévu, qui absorbe les retards, et une semaine entière en réserve avant l'échéance. Ce n'est pas du temps perdu, c'est ce qui rend le reste crédible. Un plan tenu à quatre-vingts pour cent vaut infiniment mieux qu'un plan parfait abandonné au bout d'un mois.",
+          "Raisonnez en séances plutôt qu'en heures. Une séance a un objet, un support et un résultat vérifiable — « traiter et corriger deux cas pratiques sur tel thème » plutôt que « réviser trois heures ». La quantité d'heures ne dit rien de ce qui a été acquis, et c'est la mesure qui trompe le plus.",
+          "Si vous travaillez en parallèle, dimensionnez sur les semaines chargées, pas sur les semaines calmes. Un plan calibré sur vos meilleures semaines est un plan que vous ne tiendrez pas.",
+        ],
+        keyPoints: [
+          "Du jeu délibéré : une demi-journée par semaine, une semaine en réserve.",
+          "On planifie des séances à objet vérifiable, pas des heures.",
+          "Dimensionner sur les semaines chargées, jamais sur les calmes.",
+        ],
+      },
+      {
+        kind: "METHOD",
+        id: "m6-methode",
+        title: "Méthode d'entraînement et correction",
+        body: [
+          "La révision passive — relire, surligner, réécouter — donne un sentiment de progression sans en produire. L'entraînement actif, lui, consiste à produire une réponse dans les conditions de l'épreuve puis à la confronter à ce qui était attendu. C'est inconfortable, et c'est ce qui fait la différence.",
+          "Adoptez tôt un rythme simple : produire, corriger, noter l'écart, refaire plus tard sur le même thème. La troisième étape est celle que tout le monde saute. Tenez une liste de vos erreurs récurrentes — non pas « je ne connais pas ce point », mais « je conclus avant d'avoir qualifié », « j'oublie l'exception ». Ces erreurs de méthode coûtent plus de points que les lacunes de connaissance, et elles se corrigent plus vite.",
+          "Travaillez en temps limité dès le début, même quand vous vous sentez mal préparé. Une réponse moyenne produite dans le temps imparti vous apprend davantage qu'une excellente réponse écrite en deux fois plus de temps : c'est la première qui ressemble à ce que vous ferez le jour de l'épreuve.",
+          "Pour un candidat formé en France, un point mérite une attention particulière : l'attente de rédaction diffère de celle des exercices français. Faire relire vos premières productions par quelqu'un qui connaît l'exercice attendu vous épargne des semaines de travail dans la mauvaise direction.",
+        ],
+        keyPoints: [
+          "Produire puis confronter, jamais relire.",
+          "Tenir la liste de ses erreurs de MÉTHODE, pas seulement de ses lacunes.",
+          "Travailler en temps limité dès le premier jour.",
+        ],
+      },
     ],
   },
   {
@@ -408,7 +574,6 @@ export const MODULES: ModuleEntry[] = [
     order: 7,
     title: "Admission",
     summary: "Character and Fitness, pièces, références, prestation de serment et formation continue.",
-    readingMinutes: 14,
     published: false,
     sections: [
       {
@@ -418,7 +583,22 @@ export const MODULES: ModuleEntry[] = [
         body: [],
         source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
       },
-      { kind: "METHOD", id: "m7-references", title: "Réunir ses références en amont", body: [] },
+      {
+        kind: "METHOD",
+        id: "m7-references",
+        title: "Réunir ses références en amont",
+        body: [
+          "La procédure d'admission — décrite dans la section qui porte sa source — suppose de réunir des attestations émanant de personnes qui vous ont connu professionnellement, parfois sur plusieurs années et plusieurs pays. C'est la partie du dossier qui prend le plus de temps, et la seule dont le rythme ne dépend pas de vous.",
+          "Anticipez en tenant à jour, dès le début du parcours, une liste de vos employeurs, encadrants et confrères, avec leurs coordonnées personnelles — pas seulement l'adresse professionnelle du moment. Les gens changent de poste, les cabinets fusionnent, les adresses disparaissent : retrouver dans cinq ans le maître de stage de votre M2 est un travail que vous vous épargnez en notant son contact aujourd'hui.",
+          "Prévenez ces personnes avant qu'on les sollicite. Une demande officielle qui arrive sans préavis reste souvent plusieurs semaines en attente, et vous n'en saurez rien. Un message de deux lignes annonçant la démarche suffit à transformer un délai subi en délai maîtrisé.",
+          "Rangez ces informations là où vous les retrouverez : le coffre de documents de la plateforme est prévu pour ce suivi, avec les pièces qui l'accompagnent.",
+        ],
+        keyPoints: [
+          "La liste des personnes se tient à jour dès le début, avec des contacts durables.",
+          "Prévenir avant la sollicitation officielle transforme un délai subi en délai maîtrisé.",
+          "C'est la partie du dossier dont le rythme dépend le moins de vous.",
+        ],
+      },
     ],
   },
   {
@@ -426,10 +606,24 @@ export const MODULES: ModuleEntry[] = [
     order: 8,
     title: "Autres barreaux et équivalences",
     summary: "UBE, Californie, autres juridictions, France et Europe.",
-    readingMinutes: 15,
     published: false,
     sections: [
-      { kind: "METHOD", id: "m8-comparer", title: "Comparer les juridictions sur les bons critères", body: [] },
+      {
+        kind: "METHOD",
+        id: "m8-comparer",
+        title: "Comparer les juridictions sur les bons critères",
+        body: [
+          "New York n'est pas la seule juridiction ouverte aux juristes formés à l'étranger, et elle n'est pas toujours la plus pertinente. Comparer suppose d'abord de savoir sur quoi comparer : les conditions posées à votre formation d'origine, la charge de préparation, le coût total, et surtout l'utilité réelle du résultat pour le marché que vous visez.",
+          "Ce dernier critère est celui qu'on oublie. Un examen réussi dans une juridiction où vous n'exercerez jamais a une valeur de signal, parfois appréciable, mais il ne vous ouvre pas de porte par lui-même. Posez-vous la question dans l'autre sens : quelle est la juridiction dont l'admission changerait quelque chose à ce que je ferai dans trois ans ?",
+          "La méthode : une ligne par juridiction envisagée, quatre colonnes pour les critères ci-dessus, et la source officielle en regard de chaque condition. Les conditions elles-mêmes ne se déduisent d'aucune généralité — chaque juridiction a les siennes, elles évoluent, et la section suivante traite ce point avec sa source.",
+          "Écartez enfin l'idée qu'une juridiction serait « plus facile ». Ce qui varie n'est pas la difficulté mais la nature des conditions posées : telle juridiction sera plus accessible à un profil et fermée à un autre.",
+        ],
+        keyPoints: [
+          "Le critère décisif est l'utilité du résultat pour le marché visé, pas la difficulté.",
+          "Une ligne par juridiction, une source officielle en regard de chaque condition.",
+          "« Plus facile » n'existe pas : les conditions diffèrent, pas le niveau.",
+        ],
+      },
       {
         kind: "OFFICIAL_RULE",
         id: "m8-transfert",
@@ -437,7 +631,21 @@ export const MODULES: ModuleEntry[] = [
         body: [],
         source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
       },
-      { kind: "METHOD", id: "m8-france", title: "Retour en France et exercice en Europe", body: [] },
+      {
+        kind: "METHOD",
+        id: "m8-france",
+        title: "Retour en France et exercice en Europe",
+        body: [
+          "Le retour vers un exercice en France ou en Europe suit des règles propres, qui ne se déduisent ni du parcours américain ni de votre formation initiale. Elles dépendent de votre situation exacte — diplôme d'origine, admission éventuelle à un barreau, expérience acquise — et elles se vérifient auprès de l'autorité compétente, jamais auprès d'un témoignage.",
+          "Ce que ce module peut vous dire relève de la méthode : posez la question tôt, avant le départ plutôt qu'au retour. La réponse conditionne des choix qui se prennent en amont — le moment de passer un examen, l'opportunité de s'inscrire à un barreau, la durée de séjour utile. Découvrir au retour qu'une démarche aurait dû être engagée avant coûte parfois une année entière.",
+          "Formulez votre question par écrit, avec votre situation précise, et adressez-la à l'autorité compétente. Une réponse officielle sur votre cas vaut mieux qu'une centaine de récits sur des cas voisins — et elle vous laisse une trace opposable, ce qu'un forum ne fournit jamais.",
+        ],
+        keyPoints: [
+          "Ces règles ne se déduisent pas du parcours américain : elles se demandent.",
+          "La question se pose avant le départ, car elle conditionne des choix en amont.",
+          "Une réponse écrite de l'autorité compétente vaut mieux que cent témoignages.",
+        ],
+      },
     ],
   },
   {
@@ -445,7 +653,6 @@ export const MODULES: ModuleEntry[] = [
     order: 9,
     title: "Recherche de stage et d'emploi",
     summary: "Networking, alumni, cold emails, CV américain, LinkedIn, entretiens et suivi des candidatures.",
-    readingMinutes: 9,
     published: true,
     sections: [
       {
@@ -518,7 +725,6 @@ export const MODULES: ModuleEntry[] = [
     order: 10,
     title: "Rester, rentrer ou aller ailleurs",
     summary: "Rester aux États-Unis, rentrer en France ou travailler dans un autre pays.",
-    readingMinutes: 6,
     published: true,
     sections: [
       {

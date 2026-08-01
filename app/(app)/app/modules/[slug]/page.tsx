@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { colors, fonts, alpha } from "@/design/tokens";
 import { currentAssessmentId } from "@/lib/auth/current";
-import { isPublishable } from "@/lib/modules/types";
+import { isPublishable, readingMinutes } from "@/lib/modules/types";
 import { findModule, modulesCopy } from "@/content/modules";
 
 export const metadata: Metadata = {
@@ -56,7 +56,7 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
           MODULE {entry.order}
         </span>
         <span style={{ fontFamily: fonts.sans, fontSize: "0.72rem", color: colors.slate }}>
-          {modulesCopy.readingTime(entry.readingMinutes)}
+          {modulesCopy.readingTime(readingMinutes(entry))}
         </span>
       </div>
 
