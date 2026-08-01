@@ -19,6 +19,15 @@ import type { Rule } from "./types";
  *
  * Les règles purement structurelles (informations manquantes, cursus en cours)
  * n'énoncent aucune règle de droit et sont actives.
+ *
+ * ⚠️ Ce que l'activation change, MESURÉ sur 1 080 profils complets :
+ * R-NY-001 seule fait passer la revue humaine de 83 % à 0 % — elle se déclenche
+ * pour tout profil au-delà de la licence. R-NY-002 l'emporte sur elle quand les
+ * deux se déclenchent. R-ALT-001 devient inopérante dès que R-NY-001 est active,
+ * `ALTERNATIVE_TO_EXAMINE` étant la voie la moins prioritaire.
+ *
+ * Le protocole de vérification, question par question, est dans
+ * `docs/VERIFICATION-REGLES.md`.
  */
 
 export const RULES: Rule[] = [
@@ -56,6 +65,17 @@ export const RULES: Rule[] = [
     id: "R-NY-001",
     // Diplôme de droit français complet + LL.M. dans une law school américaine :
     // voie New York couramment empruntée, sous réserve de l'évaluation du BOLE.
+    //
+    // À VÉRIFIER AVANT ACTIVATION — deux points portent sur la condition
+    // elle-même, pas sur le texte :
+    //   1. M1 figure dans la liste au même titre que M2. Si la condition
+    //      officielle comporte une exigence de DURÉE d'études, les deux ne sont
+    //      pas équivalents et M1 doit en sortir.
+    //   2. CRFPA désigne une école d'avocats EN COURS. Est-ce une formation
+    //      achevée au sens de la condition officielle ?
+    // La seconde clause (`journeyType neq null`) n'exclut personne : les cinq
+    // statuts possibles donnent tous une valeur. La règle se déclenche donc sur
+    // le seul niveau d'études.
     condition: {
       all: [
         { field: "education", op: "in", value: ["M1", "M2", "CRFPA", "CAPA", "DOCTORAT"] },
@@ -72,6 +92,12 @@ export const RULES: Rule[] = [
   {
     id: "R-NY-002",
     // Admission à un barreau étranger : peut ouvrir un examen de voie directe.
+    //
+    // À VÉRIFIER AVANT ACTIVATION : la règle traite FRANCE et OTHER_COUNTRY à
+    // l'identique. Si un avocat français et un avocat admis dans un pays de
+    // common law ne relèvent pas du même traitement, il faut DEUX règles.
+    // Vérifier aussi la priorité : cette voie l'emporte aujourd'hui sur la voie
+    // LL.M. quand les deux se déclenchent.
     condition: { field: "foreignBar", op: "in", value: ["FRANCE", "OTHER_COUNTRY"] },
     factProduced: "DIRECT_PATH_TO_EXAMINE",
     textBlockId: "TB-DIRECT-PATH",
@@ -84,6 +110,12 @@ export const RULES: Rule[] = [
     id: "R-ALT-001",
     // Objectif de retour en France : d'autres voies que le barreau de New York
     // méritent d'être examinées.
+    //
+    // N'énonce AUCUN droit américain — sa source est le profil déclaré. Ce
+    // qu'elle affirme est un jugement stratégique : qu'un projet de retour
+    // oriente ailleurs qu'un barreau américain. Beaucoup de juristes passent le
+    // barreau de New York puis rentrent. Décision métier, pas vérification de
+    // source. Sans effet une fois R-NY-001 active (voir l'en-tête).
     condition: {
       all: [
         { field: "geoGoal", op: "eq", value: "RETURN_FRANCE" },
