@@ -57,6 +57,10 @@ export const dashboard = {
       `${n} tâche(s) sans échéance : elles rejoindront l'axe dès que votre rentrée visée sera décidée.`,
     inDays: (n: number) => (n === 0 ? "aujourd'hui" : n === 1 ? "demain" : `dans ${n} jours`),
     lateBy: (n: number) => `en retard de ${n} jour(s)`,
+    // Une tâche dont la date idéale était passée AVANT l'inscription : la
+    // personne arrive après, elle n'a rien laissé filer. Compter les jours
+    // écoulés lui imputerait un retard qui ne lui appartient pas.
+    behind: "à rattraper",
     deadlineLegend: "Échéance officielle",
     toStart: "À commencer maintenant",
   },
@@ -79,6 +83,8 @@ export const dashboard = {
   nbaRisk: "Risque en cas de retard",
   nbaResource: "Ouvrir la ressource",
   nbaUrgent: "Échéance proche",
+  // Une date déjà passée à l'arrivée : le badge le dit sans accuser.
+  nbaBehind: "À rattraper",
   markDone: "Marquer comme complété",
   statsLabels: {
     tasksDone: "Tâches accomplies",

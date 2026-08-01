@@ -97,6 +97,55 @@ options, cumulables :
 
 Recommandation : 1 puis 2. Ne pas faire 3.
 
+> **Option 1 livrée.** Un état `BEHIND` (« à rattraper ») distingue désormais ce
+> qui était déjà passé le jour de l'arrivée de ce qui a filé depuis. Aucune date
+> n'a été modifiée : le produit ne prétend pas qu'il est tôt, il cesse
+> d'accuser. Sur le profil témoin, la feuille de route est passée de 4 mentions
+> « en retard » à 0, et la première phrase du tableau de bord de « L'échéance
+> est proche ou dépassée » à « Cette date était déjà passée quand vous avez
+> commencé ». **Option 2 — proposer la rentrée suivante — reste à faire.**
+
+### Ce que la feuille de route ignore encore du profil — mesuré
+
+Sur les douze réponses du questionnaire, **deux seulement** influencent la
+feuille de route : le statut (qui filtre les tâches) et la rentrée (qui les
+date). Vérifié en modifiant chaque champ isolément :
+
+| Réponse                       | Effet sur la feuille de route |
+| ----------------------------- | ----------------------------- |
+| `status` → parcours           | filtre : de 11/20 à 4/20 tâches selon le parcours |
+| `intake`                      | date les tâches               |
+| `english`, `budget`, `funding`, `foreignBar`, `usStatus`, `careerGoal`, `geoGoal` | **aucun** |
+
+Deux conséquences visibles, et indéfendables parce que la personne a
+explicitement répondu le contraire :
+
+- **« Programmer le test d'anglais »** est proposée à qui a répondu « test déjà
+  passé ».
+- **« Préparer votre dossier de statut étudiant »** est proposée à un binational
+  américain — alors que le questionnaire sait déjà qu'il n'a pas besoin de visa
+  (`needsVisaBranch`).
+
+Le second cas est du **périmètre** : le modèle sait déjà l'exprimer
+(`NOT_APPLICABLE`), il suffit de l'utiliser. Rien à décider.
+
+Le premier touche à une règle du CDC §24 et demande votre arbitrage. Le code
+pose aujourd'hui : « c'est l'utilisateur qui coche, jamais le système à sa
+place » — et il a raison de refuser de PRÉSUMER. Mais honorer une réponse
+explicite n'est pas présumer, c'est écouter. Trois lectures possibles :
+
+1. **Marquer accomplie** ce que la personne a déclaré fait. Simple, mais un
+   Milestone Challenge pourrait être acquis sans clic — c'est précisément ce
+   que le §24 proscrit.
+2. **Proposer la confirmation** : la tâche apparaît avec « vous avez indiqué
+   l'avoir déjà fait — confirmer ? ». Un clic, et la règle « c'est
+   l'utilisateur qui coche » est respectée à la lettre.
+3. **Ne rien changer** et assumer que le questionnaire et la feuille de route
+   sont deux moments distincts.
+
+Recommandation : 2. C'est la seule qui adapte l'expérience sans toucher à
+l'intégrité de la progression.
+
 _Coût : moyen. Le calcul est isolé dans `dueDateFor` et `timeline.ts` ; la
 difficulté est le vocabulaire, pas le code._
 

@@ -137,7 +137,9 @@ describe("progression et challenges (CDC §24)", () => {
     expect(avant.achieved).toBe(false);
 
     const apres = milestoneStates(
-      tasks.map((t) => (t.milestone === "SCHOOL_LIST_COMPLETED" ? { ...t, status: "DONE" as const } : t))
+      tasks.map((t) =>
+        t.milestone === "SCHOOL_LIST_COMPLETED" ? { ...t, status: "DONE" as const } : t
+      )
     ).find((m) => m.milestone === "SCHOOL_LIST_COMPLETED")!;
     expect(apres.achieved).toBe(true);
   });
@@ -196,5 +198,24 @@ describe("cohérence des modèles de tâches", () => {
     for (const template of TASK_TEMPLATES) {
       expect(dueDateFor(template, APPLICANT, REF)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
+  });
+});
+
+describe("prochaine action : arrivée tardive", () => {
+  it("ne reproche pas une échéance que le produit a datée avant l'inscription", () => {
+    // On part d'une vraie tâche du catalogue et on ne force que sa date : un
+    // objet fabriqué de toutes pièces testerait un modèle, pas le produit.
+    const tasks: Task[] = [{ ...TASK_TEMPLATES[0], status: "TODO", dueDate: "2026-06-15" }];
+    const now = new Date("2026-08-01T12:00:00Z");
+
+    const sans = selectNextBestAction(tasks, now);
+    expect(sans?.behind).toBe(false);
+    expect(sans?.reason).toContain("proche ou dépassée");
+
+    // Arrivée en août sur une échéance de juin : la personne n'a rien laissé
+    // filer, le produit a daté la tâche avant qu'elle n'existe pour lui.
+    const avec = selectNextBestAction(tasks, now, "2026-08-01T09:00:00.000Z");
+    expect(avec?.behind).toBe(true);
+    expect(avec?.reason).toContain("à rattraper");
   });
 });

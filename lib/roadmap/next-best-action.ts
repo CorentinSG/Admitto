@@ -24,6 +24,15 @@ export interface NextBestAction {
   resourceUrl: string | null;
   /** Vrai lorsque l'échéance est dépassée ou imminente. */
   urgent: boolean;
+  /**
+   * Vrai lorsque l'échéance était DÉJÀ passée le jour de l'arrivée.
+   *
+   * La distinction gouverne la toute première phrase que lit un nouvel
+   * arrivant. Sans elle, le tableau de bord annonçait « échéance proche ou
+   * dépassée » sur une date que le produit avait lui-même placée avant
+   * l'inscription — jusqu'à 12 tâches sur 20 pour une arrivée en novembre.
+   */
+  behind: boolean;
 }
 
 const IMPORTANCE_RANK: Record<Importance, number> = { CRITICAL: 0, HIGH: 1, NORMAL: 2 };
@@ -36,7 +45,10 @@ export function formatDuration(minutes: number): string {
   return `≈ ${hours % 1 === 0 ? hours : hours.toFixed(1)} h`;
 }
 
-function reasonFor(task: Task, urgent: boolean): string {
+function reasonFor(task: Task, urgent: boolean, behind: boolean): string {
+  if (behind) {
+    return "Cette date était déjà passée quand vous avez commencé : elle est à rattraper, pas en retard.";
+  }
   if (urgent) return "L'échéance est proche ou dépassée.";
   if (task.importance === "CRITICAL") {
     return "Cette action conditionne les suivantes de la même phase.";
@@ -52,7 +64,12 @@ function reasonFor(task: Task, urgent: boolean): string {
  * comme « prochaine action » serait mensonger, l'utilisateur ne peut pas les
  * faire avancer.
  */
-export function selectNextBestAction(tasks: Task[], reference: Date): NextBestAction | null {
+export function selectNextBestAction(
+  tasks: Task[],
+  reference: Date,
+  /** Jour d'arrivée de la personne — voir `behind`. */
+  startedOn: string | null = null
+): NextBestAction | null {
   const candidates = tasks.filter((t) => !NOT_ACTIONABLE.includes(t.status));
   if (candidates.length === 0) return null;
 
@@ -82,10 +99,13 @@ export function selectNextBestAction(tasks: Task[], reference: Date): NextBestAc
 
   const task = sorted[0];
   const urgent = isUrgent(task);
+  const arrivee = startedOn ? startedOn.slice(0, 10) : null;
+  const behind = task.dueDate !== null && arrivee !== null && task.dueDate < arrivee;
 
   return {
     task,
-    reason: reasonFor(task, urgent),
+    reason: reasonFor(task, urgent, behind),
+    behind,
     duration: formatDuration(task.estimatedMinutes),
     dueDate: task.dueDate,
     delayRisk: task.delayRisk,

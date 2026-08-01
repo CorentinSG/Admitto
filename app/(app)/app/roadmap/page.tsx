@@ -41,7 +41,15 @@ export default async function RoadmapPage() {
   // Timeline (CDC §22) : mêmes tâches et mêmes échéances officielles,
   // projetées sur l'axe du temps. La projection est PARTAGÉE avec le tableau
   // de bord : deux projections divergeraient sans que rien ne le signale.
-  const timelineView = buildTimelineView(tasks, loaded.assessment.deadlines, now);
+  const timelineView = buildTimelineView(
+    tasks,
+    loaded.assessment.deadlines,
+    now,
+    // Jour d'arrivée : une tâche déjà passée ce jour-là est « à rattraper »,
+    // pas « en retard ». Sans lui, la feuille de route accuse d'un retard
+    // qu'elle a elle-même daté dans le passé.
+    loaded.assessment.createdAt
+  );
 
   const phases = progressByPhase(tasks);
   const applicable = applicableTasks(tasks);
@@ -210,7 +218,9 @@ export default async function RoadmapPage() {
       ))}
 
       {notApplicable.length > 0 && (
-        <section style={{ marginTop: 64, paddingTop: 28, borderTop: `1px solid ${alpha.cardGridGap}` }}>
+        <section
+          style={{ marginTop: 64, paddingTop: 28, borderTop: `1px solid ${alpha.cardGridGap}` }}
+        >
           <h2
             style={{
               fontFamily: fonts.sans,

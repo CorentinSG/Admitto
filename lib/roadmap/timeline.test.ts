@@ -126,14 +126,10 @@ describe("timeline du parcours", () => {
   });
 
   it("place les échéances officielles sur l'axe, l'étendant s'il le faut", () => {
-    const model = buildTimeline(
-      [task({ id: "t", dueDate: "2026-10-01" })],
-      REFERENCE,
-      [
-        deadline({ key: "VISA", date: "2027-05-01", label: "Visa" }),
-        deadline({ key: "ENGLISH", date: "2026-06-01", label: "Test d'anglais" }),
-      ]
-    )!;
+    const model = buildTimeline([task({ id: "t", dueDate: "2026-10-01" })], REFERENCE, [
+      deadline({ key: "VISA", date: "2027-05-01", label: "Visa" }),
+      deadline({ key: "ENGLISH", date: "2026-06-01", label: "Test d'anglais" }),
+    ])!;
     // L'axe s'étend jusqu'à l'échéance la plus lointaine ET la plus ancienne :
     // un marqueur hors axe serait invisible.
     const byKey = Object.fromEntries(model.deadlines.map((d) => [d.key, d]));
@@ -171,5 +167,54 @@ describe("timeline du parcours", () => {
     for (const tick of long.ticks) {
       expect(tick.date.endsWith("-01")).toBe(true);
     }
+  });
+});
+
+describe("« à rattraper » n'est pas « en retard » (arrivée tardive)", () => {
+  /*
+   * Le défaut mesuré : la rentrée est ancrée au 15 août de l'année suivante et
+   * les tâches sont datées « N mois avant ». Pour qui s'inscrit en novembre, 12
+   * tâches sur 20 sont déjà dépassées le premier jour — contre 0 en janvier ou
+   * en mai. Le produit reprochait ce retard à la personne, dès l'écran
+   * d'accueil, alors qu'il l'avait lui-même daté dans le passé.
+   */
+  const tache = (id: string, dueDate: string): Task => task({ id, status: "TODO", dueDate });
+
+  it("distingue ce qui était déjà passé à l'arrivée de ce qui a filé depuis", () => {
+    const arrivee = "2026-11-01";
+    const aujourdhui = new Date("2026-12-01T12:00:00Z");
+
+    const model = buildTimeline(
+      [
+        tache("avant", "2026-06-15"), // datée avant même l'inscription
+        tache("depuis", "2026-11-20"), // passée pendant que la personne l'avait
+        tache("venir", "2027-06-15"),
+      ],
+      aujourdhui,
+      [],
+      arrivee
+    )!;
+
+    const etat = (id: string) => model.entries.find((e) => e.id === id)!.state;
+    expect(etat("avant")).toBe("BEHIND");
+    expect(etat("depuis")).toBe("OVERDUE");
+    expect(etat("venir")).toBe("UPCOMING");
+  });
+
+  it("sans jour d'arrivée, tout retard reste un retard", () => {
+    // Le comportement d'origine est préservé quand l'information manque : on
+    // n'invente pas une indulgence qu'aucune donnée ne justifie.
+    const model = buildTimeline([tache("avant", "2026-06-15")], new Date("2026-12-01T12:00:00Z"))!;
+    expect(model.entries[0].state).toBe("OVERDUE");
+  });
+
+  it("une tâche accomplie reste accomplie, quelle que soit sa date", () => {
+    const model = buildTimeline(
+      [task({ id: "faite", status: "DONE", dueDate: "2026-06-15" })],
+      new Date("2026-12-01T12:00:00Z"),
+      [],
+      "2026-11-01"
+    )!;
+    expect(model.entries[0].state).toBe("DONE");
   });
 });

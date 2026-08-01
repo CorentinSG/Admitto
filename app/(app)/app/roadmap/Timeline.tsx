@@ -76,12 +76,15 @@ const STATE_STYLES: Record<
 > = {
   DONE: { fill: colors.gold, border: colors.gold, label: "Accompli" },
   OVERDUE: { fill: colors.navy900, border: colors.navy900, label: "En retard" },
+  // Contour ardoise plein mais non rempli : visible sans être une alarme. Une
+  // tâche déjà passée à l'arrivée n'est pas un manquement de la personne.
+  BEHIND: { fill: colors.ivory, border: colors.slate, label: "À rattraper" },
   URGENT: { fill: colors.ivory, border: colors.gold, label: "Approche", pulse: true },
   IN_PROGRESS: { fill: alpha.goldBadgeBg, border: colors.gold, label: "En cours" },
   UPCOMING: { fill: colors.ivory, border: alpha.cardNumIdle, label: "À venir" },
 };
 
-const LEGEND: TimelineState[] = ["DONE", "IN_PROGRESS", "URGENT", "UPCOMING", "OVERDUE"];
+const LEGEND: TimelineState[] = ["DONE", "IN_PROGRESS", "URGENT", "UPCOMING", "BEHIND", "OVERDUE"];
 
 export function Timeline({ view }: { view: TimelineView }) {
   // La première tâche non accomplie est présélectionnée : c'est celle que la

@@ -37,9 +37,11 @@ const leftLabel = (daysLeft: number): string =>
 export function buildTimelineView(
   tasks: Task[],
   deadlines: Deadline[],
-  reference: Date
+  reference: Date,
+  /** Jour d'arrivée : départage « à rattraper » de « en retard ». */
+  startedOn: string | null = null
 ): TimelineView | null {
-  const model = buildTimeline(tasks, reference, deadlines);
+  const model = buildTimeline(tasks, reference, deadlines, startedOn);
   if (!model) return null;
 
   const points = model.entries.map((entry) => ({
@@ -48,7 +50,14 @@ export function buildTimelineView(
     state: entry.state,
     position: entry.position,
     dateLabel: dateFr(entry.date),
-    leftLabel: entry.state === "DONE" ? STATUS_LABELS[entry.status] : leftLabel(entry.daysLeft),
+    leftLabel:
+      entry.state === "DONE"
+        ? STATUS_LABELS[entry.status]
+        : // « en retard de 240 jours » sur une tâche déjà passée à l'inscription
+          // compte un retard qui n'appartient pas à la personne.
+          entry.state === "BEHIND"
+          ? dashboard.timeline.behind
+          : leftLabel(entry.daysLeft),
     statusLabel: STATUS_LABELS[entry.status],
     delayRisk: entry.delayRisk,
     toolHref: entry.toolHref,

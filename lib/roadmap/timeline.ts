@@ -20,7 +20,8 @@ import { applicableTasks } from "./generate";
 /** Lecture d'une tâche sur l'axe. Un seul mot par état, exclusifs. */
 export const TIMELINE_STATES = [
   "DONE", // accomplie (ou accomplie côté utilisateur, tiers en attente)
-  "OVERDUE", // échéance passée sans accomplissement
+  "OVERDUE", // échéance passée sans accomplissement, APRÈS l'arrivée
+  "BEHIND", // échéance déjà passée le jour où la feuille de route a été créée
   "URGENT", // échéance dans la fenêtre d'alerte
   "IN_PROGRESS", // commencée
   "UPCOMING", // à venir, hors fenêtre d'alerte
@@ -99,10 +100,31 @@ const toMs = (isoDay: string) => new Date(`${isoDay}T00:00:00.000Z`).getTime();
  */
 const isDone = (status: TaskStatus) => status === "DONE" || status === "WAITING_THIRD_PARTY";
 
-function stateOf(task: Task, todayIso: string, reference: Date): TimelineState {
+/**
+ * `startedOn` : jour où la feuille de route a été créée, c'est-à-dire où la
+ * personne est arrivée.
+ *
+ * Il départage deux retards que le produit confondait sous un seul mot. Une
+ * tâche datée « quatorze mois avant la rentrée » est déjà dépassée pour qui
+ * s'inscrit neuf mois avant — sans que cette personne ait rien laissé filer.
+ * Mesuré : 12 tâches sur 20 en retard dès le premier jour pour une inscription
+ * en novembre, contre 0 en janvier ou en mai. Le tableau de bord reprochait
+ * donc un retard que l'utilisateur n'avait pas causé, à l'écran d'accueil, en
+ * pleine saison de candidatures.
+ *
+ * `BEHIND` dit « vous arrivez après la date idéale », `OVERDUE` dit « c'est
+ * passé pendant que vous l'aviez ». Aucune date n'est modifiée : le produit ne
+ * ment pas en prétendant qu'il est tôt, il cesse seulement d'accuser.
+ */
+function stateOf(
+  task: Task,
+  todayIso: string,
+  reference: Date,
+  startedOn: string | null
+): TimelineState {
   if (isDone(task.status)) return "DONE";
   const date = dayOf(task.dueDate!);
-  if (date < todayIso) return "OVERDUE";
+  if (date < todayIso) return startedOn && date < startedOn ? "BEHIND" : "OVERDUE";
   const days = Math.ceil((toMs(date) - reference.getTime()) / DAY);
   if (days <= URGENT_WINDOW_DAYS) return "URGENT";
   if (task.status === "IN_PROGRESS") return "IN_PROGRESS";
@@ -117,7 +139,9 @@ function stateOf(task: Task, todayIso: string, reference: Date): TimelineState {
 export function buildTimeline(
   tasks: Task[],
   reference: Date,
-  officialDeadlines: Deadline[] = []
+  officialDeadlines: Deadline[] = [],
+  /** Jour d'arrivée de la personne — voir `stateOf`. */
+  startedOn: string | null = null
 ): TimelineModel | null {
   const applicable = applicableTasks(tasks);
   const dated = applicable
@@ -147,7 +171,7 @@ export function buildTimeline(
       id: task.id,
       title: task.title,
       status: task.status,
-      state: stateOf(task, todayIso, reference),
+      state: stateOf(task, todayIso, reference, startedOn && dayOf(startedOn)),
       date,
       position: position(toMs(date)),
       daysLeft: Math.ceil((toMs(date) - todayMs) / DAY),

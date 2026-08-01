@@ -55,8 +55,21 @@ export default async function DashboardPage() {
   // La même timeline que la feuille de route — même constructeur, donc mêmes
   // libellés, mêmes positions, même axe. Elle vit aussi ici parce que le
   // tableau de bord est l'écran d'arrivée : « où j'en suis » se lit avant tout.
-  const timelineView = buildTimelineView(tasks, loaded.assessment.deadlines, now);
-  const nba = selectNextBestAction(tasks, now);
+  const timelineView = buildTimelineView(
+    tasks,
+    loaded.assessment.deadlines,
+    now,
+    // Même argument que sur la feuille de route : la projection est partagée,
+    // elle doit l'être jusque dans ce qu'elle sait de la personne.
+    loaded.assessment.createdAt
+  );
+  const nba = selectNextBestAction(
+    tasks,
+    now,
+    // Même jour d'arrivée que la timeline : la première phrase du tableau de
+    // bord ne doit pas accuser d'un retard que le produit a lui-même daté.
+    loaded.assessment.createdAt
+  );
   const progress = computeProgress(tasks);
   const stats = personalStats(tasks, now);
   const milestones = milestoneStates(tasks).filter((m) => !m.notApplicable);
@@ -69,9 +82,7 @@ export default async function DashboardPage() {
 
   const recommendedModule =
     findModule(nba?.task.moduleSlug) ??
-    findModule(
-      applicableTasks(tasks).find((t) => t.status !== "DONE" && t.moduleSlug)?.moduleSlug
-    );
+    findModule(applicableTasks(tasks).find((t) => t.status !== "DONE" && t.moduleSlug)?.moduleSlug);
 
   const actionable = applicableTasks(tasks)
     .filter((t) => !NOT_ACTIONABLE.includes(t.status))
@@ -130,7 +141,7 @@ export default async function DashboardPage() {
           >
             {dashboard.sections.nextBestAction}
           </span>
-          {nba?.urgent && (
+          {(nba?.urgent || nba?.behind) && (
             <span
               style={{
                 fontFamily: fonts.sans,
@@ -142,7 +153,7 @@ export default async function DashboardPage() {
                 padding: "4px 10px",
               }}
             >
-              {dashboard.nbaUrgent}
+              {nba.behind ? dashboard.nbaBehind : dashboard.nbaUrgent}
             </span>
           )}
         </div>
@@ -279,7 +290,10 @@ export default async function DashboardPage() {
         >
           <Stat label={dashboard.statsLabels.tasksDone} value={String(stats.tasksDone)} />
           <Stat label={dashboard.statsLabels.tasksRemaining} value={String(stats.tasksRemaining)} />
-          <Stat label={dashboard.statsLabels.waitingOnOthers} value={String(stats.waitingOnOthers)} />
+          <Stat
+            label={dashboard.statsLabels.waitingOnOthers}
+            value={String(stats.waitingOnOthers)}
+          />
           <Stat
             label={dashboard.statsLabels.overdue}
             value={String(stats.overdue)}
@@ -379,7 +393,10 @@ export default async function DashboardPage() {
               >
                 <span
                   aria-hidden
-                  style={{ color: m.achieved ? colors.goldText : alpha.cardNumIdle, fontSize: "0.9rem" }}
+                  style={{
+                    color: m.achieved ? colors.goldText : alpha.cardNumIdle,
+                    fontSize: "0.9rem",
+                  }}
                 >
                   ✦
                 </span>
@@ -420,7 +437,12 @@ export default async function DashboardPage() {
       {recommendedModule && (
         <Section title={dashboard.sections.module}>
           <span
-            style={{ display: "block", fontFamily: fonts.serif, fontSize: "1.2rem", color: colors.navy900 }}
+            style={{
+              display: "block",
+              fontFamily: fonts.serif,
+              fontSize: "1.2rem",
+              color: colors.navy900,
+            }}
           >
             {recommendedModule.title}
           </span>
@@ -470,7 +492,15 @@ export default async function DashboardPage() {
       {/* 8. Documents */}
       <Section title={dashboard.sections.documents}>
         {documents.length === 0 ? (
-          <p style={{ fontFamily: fonts.sans, fontSize: "0.88rem", lineHeight: 1.7, margin: 0, color: colors.slate }}>
+          <p
+            style={{
+              fontFamily: fonts.sans,
+              fontSize: "0.88rem",
+              lineHeight: 1.7,
+              margin: 0,
+              color: colors.slate,
+            }}
+          >
             {vault.dashboardEmpty}
           </p>
         ) : (
@@ -542,7 +572,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ padding: "16px 16px", backgroundColor: alpha.whiteFaint, border: `1px solid ${alpha.goldBorderFaint}` }}>
+    <div
+      style={{
+        padding: "16px 16px",
+        backgroundColor: alpha.whiteFaint,
+        border: `1px solid ${alpha.goldBorderFaint}`,
+      }}
+    >
       <span
         style={{
           display: "block",
