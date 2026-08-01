@@ -239,40 +239,52 @@ describe("règles effectives", () => {
   });
 
   it("écarte une révision qui violerait « active ⇒ sourcée et vérifiée »", () => {
+    // Sur R-NY-002, INACTIVE en code : une révision sans source ne doit pas
+    // pouvoir l'activer. Le test portait auparavant sur R-NY-001, ce qui a
+    // cessé d'avoir un sens le jour où cette règle a été vérifiée et activée —
+    // il constatait alors l'état du code plutôt que le refus de la révision.
     const rules = effectiveRules(
-      new Map([["R-NY-001", revision({ sourceUrl: "", verifiedAt: null })]])
+      new Map([["R-NY-002", revision({ ruleId: "R-NY-002", sourceUrl: "", verifiedAt: null })]])
     );
-    expect(rules.find((r) => r.id === "R-NY-001")!.active).toBe(false);
+    expect(rules.find((r) => r.id === "R-NY-002")!.active).toBe(false);
   });
 
-  it("une règle activée gouverne réellement le moteur", () => {
-    // Le test de bout en bout : profil avocate au barreau français, règle
-    // R-NY-002 activée par révision → voie directe au lieu de revue humaine.
+  it("une règle activée par révision entre réellement dans l'évaluation", () => {
+    // Profil avocat admis à un barreau ÉTRANGER hors France : depuis la
+    // vérification du 2026-08-01, R-NY-002 ne vise plus la France (§ 520.6(b)(2)
+    // est réservé aux systèmes de common law).
     const answers: Answers = {
       status: "LAWYER_EXPLORING",
       education: "CAPA",
-      foreignBar: "FRANCE",
-      careerGoal: "BIG_LAW",
+      university: "assas",
+      foreignBar: "OTHER_COUNTRY",
+      careerGoal: "ARBITRATION",
       geoGoal: "KEEP_BOTH",
       budget: "60_100K",
       funding: "BOTH",
       intake: "Y1",
       english: "TEST_TAKEN",
       usStatus: "FR_NO_STATUS",
-      firstName: "Inès",
-      email: "ines@example.com",
+      firstName: "Alex",
+      email: "alex@example.com",
     };
     const profile = flattenForRules(answers, deriveProfile(answers, NOW));
 
     const dormant = runEngineA(profile, effectiveRules(new Map()));
-    expect(dormant.path).toBe("HUMAN_REVIEW_REQUIRED");
+    expect(dormant.firedRules.map((r) => r.id)).not.toContain("R-NY-002");
 
     const awake = runEngineA(
       profile,
       effectiveRules(new Map([["R-NY-002", revision({ ruleId: "R-NY-002" })]]))
     );
-    expect(awake.path).toBe("DIRECT_PATH_TO_EXAMINE");
     expect(awake.firedRules).toContainEqual({ id: "R-NY-002", version: 2 });
+
+    // La VOIE reste celle du LL.M. : depuis la correction de `PATH_PRIORITY`,
+    // `NY_VIA_LLM_SUBJECT_TO_BOLE` prime `DIRECT_PATH_TO_EXAMINE`, parce que la
+    // voie de l'avocat étranger suppose un LL.M. EN PLUS de l'admission — elle
+    // en est un cas particulier, pas une dispense. L'assertion est ici pour
+    // qu'un retour à l'ancien ordre se voie immédiatement.
+    expect(awake.path).toBe("NY_VIA_LLM_SUBJECT_TO_BOLE");
   });
 });
 
@@ -296,8 +308,12 @@ describe("matrices dans le calcul et l'assemblage", () => {
   };
 
   it("un bloc de voie révisé apparaît dans le diagnostic suivant", () => {
+    // Le bloc révisé est celui de la voie que ce profil emprunte RÉELLEMENT.
+    // C'était « TB-HUMAN-REVIEW » tant que R-NY-001 dormait ; ce profil M2
+    // reçoit désormais la voie LL.M., et réviser un bloc qu'il n'atteint plus
+    // n'aurait rien testé du mécanisme de révision.
     const assessment = computeAssessment(answers, NOW, "m-1", {
-      voieBlocks: { ...TEXT_BLOCKS, "TB-HUMAN-REVIEW": "Texte de voie révisé." },
+      voieBlocks: { ...TEXT_BLOCKS, "TB-NY-VIA-LLM": "Texte de voie révisé." },
     });
     expect(assessment.textBlocks).toContain("Texte de voie révisé.");
   });

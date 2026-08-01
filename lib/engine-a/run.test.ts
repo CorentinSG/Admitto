@@ -18,12 +18,25 @@ describe("Moteur A", () => {
     expect(out.textBlocks[0]).toMatch(/ne suffisent pas/);
   });
 
-  it("retombe sur la revue humaine quand aucune règle ne se déclenche", () => {
+  it("emprunte la voie LL.M. pour un diplôme français complet", () => {
     const out = runEngineA(
       profileOf({ status: "APPLYING", education: "M2", usStatus: "FR_NO_STATUS" })
     );
-    // Les règles de droit sont inactives tant qu'elles ne sont pas vérifiées :
-    // le moteur ne doit surtout pas conclure à leur place.
+    // R-NY-001 a été vérifiée contre le texte en vigueur le 2026-08-01 : ce
+    // profil ne relève plus de la revue humaine par défaut. Le filet n'a pas
+    // disparu, il a changé de place — la condition de durée du § 520.6 est
+    // devenue un point BLOQUANT de la revue avant envoi, que le moteur ne peut
+    // pas tester faute de recueillir le décompte de crédits.
+    expect(out.path).toBe("NY_VIA_LLM_SUBJECT_TO_BOLE");
+  });
+
+  it("retombe sur la revue humaine quand aucune règle de voie ne se déclenche", () => {
+    // Le repli existe toujours, et c'est ce qu'il faut protéger : un profil
+    // qu'aucune règle active ne couvre ne reçoit JAMAIS de voie par défaut.
+    const out = runEngineA(
+      profileOf({ status: "APPLYING", education: "M2", usStatus: "FR_NO_STATUS" }),
+      RULES.map((rule) => ({ ...rule, active: rule.id.startsWith("R-STRUCT-") && rule.active }))
+    );
     expect(out.path).toBe("HUMAN_REVIEW_REQUIRED");
   });
 

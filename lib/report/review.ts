@@ -78,6 +78,29 @@ export function reviewChecklist(assessment: Assessment, report: Report): ReviewP
     });
   }
 
+  // ── Condition de durée du § 520.6 ────────────────────────────────────────
+  //
+  // Le Moteur A ne peut pas la tester : le questionnaire ne recueille pas le
+  // décompte de crédits, et les douze écrans du CDC §12.4 ne s'étendent pas
+  // sans décision produit. Or un candidat ne régularise que la déficience de
+  // DURÉE ou celle de SUBSTANCE, jamais les deux ; la France étant civiliste,
+  // le LL.M. est intégralement consommé par la seconde, et la durée doit être
+  // atteinte par le seul diplôme français.
+  //
+  // Conséquence : un profil qui n'atteint pas le seuil ne peut être régularisé
+  // par aucune voie, et recevrait pourtant le texte de la voie LL.M. Le
+  // contrôle vit donc ici, à l'endroit où le CDC §17 place la relecture — et il
+  // est BLOQUANT, parce qu'un envoi non relu affirmerait une voie que la
+  // formation ne permet pas d'emprunter.
+  if (assessment.rulesSnapshot.some((rule) => rule.id === "R-NY-001")) {
+    points.push({
+      id: "durational-requirement",
+      severity: "BLOCKING",
+      label: "Confirmer le seuil de crédits du diplôme français (83 dont 64 présentiels)",
+      why: "La voie LL.M. a été retenue, mais aucune condition du moteur ne teste la durée des études : le questionnaire ne recueille pas ce décompte. La régularisation substantielle consommant le LL.M., ce seuil doit être atteint par le seul diplôme français — vérifiez le relevé avant envoi.",
+    });
+  }
+
   // ── Verdict du Moteur B ──────────────────────────────────────────────────
   const verdictReason = VERDICTS_REQUIRING_ARBITRATION[report.verdict];
   if (verdictReason) {

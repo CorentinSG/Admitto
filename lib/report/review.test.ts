@@ -61,6 +61,27 @@ describe("points dérivés du profil (CDC §17)", () => {
     expect(ids(without(COMPLETE, "budget"))).toContain("budget-default");
   });
 
+  it("exige la confirmation du seuil de crédits dès que la voie LL.M. est retenue", () => {
+    // Le point le plus important de cette revue : le Moteur A ne peut pas
+    // tester la condition de durée du § 520.6 — le questionnaire ne recueille
+    // pas le décompte de crédits. Le filet que l'activation de R-NY-001 retire
+    // au moteur est ici, et il est BLOQUANT.
+    const { assessment, points } = checklistFor(COMPLETE);
+    expect(assessment.path).toBe("NY_VIA_LLM_SUBJECT_TO_BOLE");
+
+    const point = points.find((p) => p.id === "durational-requirement");
+    expect(point?.severity).toBe("BLOCKING");
+    expect(canSend(points, []).ok).toBe(false);
+  });
+
+  it("n'exige pas ce seuil quand la voie LL.M. n'a pas été retenue", () => {
+    // Un cursus encore en cours ne déclenche pas R-NY-001 : lui demander un
+    // décompte de crédits n'aurait aucun sens, et un point de revue qui se pose
+    // toujours cesse d'être lu.
+    const licence = { ...COMPLETE, education: "LICENCE" as const };
+    expect(ids(licence)).not.toContain("durational-requirement");
+  });
+
   it("remonte les règles non vérifiées effectivement utilisées", () => {
     // Les règles juridiques du Moteur A sont livrées sans date de vérification.
     // Toute règle de ce type qui entre dans un rapport doit apparaître en revue.

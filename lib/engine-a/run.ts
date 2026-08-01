@@ -12,13 +12,23 @@ import type { EngineAOutput, PreliminaryPath, Rule } from "./types";
  * Le moteur ne conclut JAMAIS à une éligibilité définitive.
  */
 
-/** Du plus prioritaire au moins prioritaire. */
+/**
+ * Du plus prioritaire au moins prioritaire.
+ *
+ * `NY_VIA_LLM_SUBJECT_TO_BOLE` passe DEVANT `DIRECT_PATH_TO_EXAMINE` depuis la
+ * vérification du 2026-08-01. L'ordre inverse disait le contraire du texte : un
+ * profil admis à un barreau étranger recevait la voie directe et jamais la voie
+ * LL.M., alors que le § 520.6(b)(2) exige un LL.M. en plus de l'admission
+ * étrangère — et qu'il est réservé aux systèmes de common law. La voie qui
+ * suppose le plus de conditions ne peut pas primer celle qui en suppose moins :
+ * elle en est un cas particulier, pas une dispense.
+ */
 const PATH_PRIORITY: PreliminaryPath[] = [
   "INSUFFICIENT_INFORMATION",
   "HUMAN_REVIEW_REQUIRED",
   "EDUCATION_LIKELY_INSUFFICIENT",
-  "DIRECT_PATH_TO_EXAMINE",
   "NY_VIA_LLM_SUBJECT_TO_BOLE",
+  "DIRECT_PATH_TO_EXAMINE",
   "ALTERNATIVE_TO_EXAMINE",
 ];
 

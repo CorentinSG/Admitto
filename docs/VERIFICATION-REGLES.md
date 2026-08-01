@@ -1,143 +1,134 @@
-# Vérifier et activer les règles du Moteur A (jalon F1)
+# Règles du Moteur A — vérification du 1er août 2026 (jalon F1)
 
-> Ce document ne contient aucune affirmation de droit américain. Il dit ce qu'il
-> faut vérifier, où, et ce que chaque réponse implique. Les trois règles restent
-> `active: false` tant que vous ne les avez pas confrontées vous-même à la
-> source — c'est le comportement voulu par le CDC §1, pas un oubli.
+> **Vérification faite par le fondateur**, contre le texte en vigueur
+> (22 NYCRR partie 520) et le handbook du NYS BOLE — les textes eux-mêmes, pas
+> des résumés. Ce document est le compte rendu de cette vérification et de ce
+> qu'elle a changé dans le code.
+>
+> **Résultat** : R-NY-001 activée · R-NY-002 corrigée et **maintenue inactive**
+> · R-ALT-001 laissée à l'arbitrage métier.
 
-## Ce que l'activation change, mesuré
+## Le point qui commande les trois réponses
 
-Balayage de 1 080 profils complets (produit cartésien de : niveau d'études ×
-type de parcours × barreau étranger × objectif géographique × objectif de
-carrière ; `hasBlockingGaps: false`). Ces nombres décrivent la **structure des
-conditions**, pas le trafic réel — ils disent quelle part de l'espace des
-profils chaque règle capture.
+Un candidat ne peut régulariser **que** la déficience de durée **ou** celle de
+substance, jamais les deux (§ 520.6). La France étant civiliste, le LL.M. est
+intégralement consommé par la régularisation substantielle : la durée — 83
+crédits juridiques, dont 64 présentiels — doit donc être atteinte par le **seul
+diplôme français**.
 
-| Règles actives      | Revue humaine | Autres voies                                    |
-| ------------------- | ------------- | ----------------------------------------------- |
-| aucune (aujourd'hui) | 900 (83 %)    | études insuffisantes : 180                       |
-| R-ALT-001 seule     | 800 (74 %)    | + alternative : 100                              |
-| **R-NY-001 seule**  | **0 (0 %)**   | + voie LL.M. : 900                               |
-| R-NY-002 seule      | 450 (42 %)    | + voie directe : 450                             |
-| les trois           | 0 (0 %)       | voie LL.M. : 450, voie directe : 450             |
+Tout le reste en découle, y compris la conclusion contre-intuitive sur M1.
 
-Trois enseignements, à lire avant de décider :
+## R-NY-001 — voie du LL.M. : **activée**
 
-1. **R-NY-001 supprime la revue humaine.** Elle se déclenche pour tout profil
-   dont les études dépassent la licence, quel que soit le reste. Ce n'est pas
-   une règle d'appoint : c'est elle qui décide de la sortie du moteur pour
-   l'écrasante majorité des profils.
-2. **R-NY-002 l'emporte sur R-NY-001** quand les deux se déclenchent
-   (`DIRECT_PATH_TO_EXAMINE` est prioritaire dans `PATH_PRIORITY`). Un profil
-   admis à un barreau étranger reçoit la voie directe, jamais la voie LL.M.
-3. **R-ALT-001 devient inopérante dès que R-NY-001 est active.**
-   `ALTERNATIVE_TO_EXAMINE` est la voie la moins prioritaire, et R-NY-001 se
-   déclenche pour les mêmes profils : son texte ne serait jamais affiché.
-   L'activer seule a du sens ; l'activer après R-NY-001 n'en a aucun.
+Source `https://www.nycourts.gov/ctapps/520rules10.htm`, vérifiée le
+`2026-08-01`. La voie existe, le NY BOLE est bien l'autorité, l'appréciation est
+individuelle : le texte affiché est exact.
 
-## R-NY-001 — voie du LL.M.
+**M1 reste dans la condition**, à l'inverse de ce que suggérait l'analyse du
+code. Le § 520.6(b)(1) demande la preuve de l'accomplissement des conditions de
+formation pour l'accès à la profession dans le pays d'origine — en France, c'est
+le M1 qui ouvre le CRFPA, pas la licence. Le retirer aurait exclu précisément le
+diplôme visé.
 
-**Se déclenche pour** : études ∈ {M1, M2, CRFPA, CAPA, DOCTORAT} **et**
-type de parcours renseigné.
+**CRFPA est redondant sans être faux** : le M1 en étant le prérequis, ces
+profils déclenchent déjà la règle par la première valeur de la liste.
 
-> Note : la seconde condition n'exclut personne en pratique. Le type de parcours
-> est dérivé du statut déclaré, et les cinq statuts possibles donnent tous une
-> valeur. La règle se déclenche donc sur le seul niveau d'études.
+**Le vrai risque était ailleurs, et il est traité** : aucune condition ne teste
+la durée, alors qu'un profil qui n'atteint pas 83/64 crédits ne peut être
+régularisé par aucune voie et recevrait quand même le texte. Le questionnaire ne
+recueille pas ce décompte, et les douze écrans du CDC §12.4 ne s'étendent pas
+sans décision produit. Le contrôle a donc été placé dans la **revue avant
+envoi** : point `durational-requirement`, **bloquant**, déclenché dès que
+R-NY-001 a produit la voie. Aucun rapport ne part sans qu'un humain ait confirmé
+le décompte.
 
-**Texte reçu par l'utilisateur** : « Votre formation correspond au profil des
-juristes qui empruntent la voie du LL.M. américain avant de demander l'accès à
-l'examen du barreau de New York. Cette voie suppose une évaluation individuelle
-par le New York Board of Law Examiners, seule autorité compétente pour se
-prononcer. »
+> Le filet humain n'a pas disparu, il a changé de place — du moteur vers la
+> relecture, là où le CDC §17 le prévoit.
 
-**À vérifier, dans cet ordre :**
+## R-NY-002 — avocat admis à un barreau étranger : **inactive**
 
-1. Une voie existe-t-elle par laquelle un juriste formé à l'étranger peut être
-   admis à se présenter à l'examen de New York après un LL.M. ? (Si non, la
-   règle ne s'active pas et son texte est à réécrire.)
-2. Le NY BOLE est-il bien l'autorité qui se prononce, et l'appréciation est-elle
-   individuelle ?
-3. **Le point le plus important : M1 a-t-il sa place dans la liste ?** Si la
-   condition officielle comporte une exigence de durée d'études, un M1 et un M2
-   ne sont pas équivalents. La règle les traite aujourd'hui de la même façon.
-   Si M1 ne satisfait pas la condition, **retirez-le de la liste avant
-   d'activer** — la condition vit dans `lib/engine-a/rules.seed.ts` et se
-   modifie en code, pas au back-office (une logique de règle se teste).
-4. Même question pour CRFPA, qui désigne une école d'avocats **en cours** :
-   est-ce un état de formation achevée au sens de la condition officielle ?
+La vérification a conclu **contre** la règle, ce qui est un résultat et non un
+report. Trois corrections ont été apportées, et elle reste `active: false`.
 
-## R-NY-002 — voie directe
+1. **FRANCE est sortie de la condition.** Le § 520.6(b)(2), seul texte visant
+   les avocats déjà admis, est réservé aux pays « whose jurisprudence is based
+   upon principles of English Common Law ». La France en est exclue, et le
+   § 520.10(a)(1)(ii) pose la même limite pour l'admission sans examen.
+2. **« Voie directe » était inexact même pour les profils légitimes** : le
+   § 520.6(b)(2) exige un LL.M. **en plus** de l'admission étrangère. Le bloc
+   `TB-DIRECT-PATH` a été réécrit — il ne promet plus d'examen de voie directe
+   et dit que l'admission étrangère ne dispense par elle-même d'aucune
+   condition.
+3. **La priorité était inversée.** `NY_VIA_LLM_SUBJECT_TO_BOLE` passe désormais
+   devant `DIRECT_PATH_TO_EXAMINE` dans `PATH_PRIORITY`. L'ordre précédent
+   disait le contraire du texte : un avocat français recevait la voie directe et
+   jamais la voie LL.M.
 
-**Se déclenche pour** : barreau étranger ∈ {FRANCE, OTHER_COUNTRY}. L'écran
-n'est posé qu'aux profils « avocat qui explore », « vise le barreau », ou dont
-les études valent CRFPA, CAPA ou DOCTORAT — la règle ne peut donc pas se
-déclencher ailleurs.
+**Ce qui reste à trancher avant toute activation** : `OTHER_COUNTRY` ne dit pas
+de quel pays il s'agit. Un avocat allemand ou espagnol relève d'un système
+civiliste au même titre qu'un avocat français — la condition de common law n'est
+donc pas davantage établie pour lui. Sortir la France était nécessaire, ce n'est
+pas suffisant. Deux options : recueillir le pays d'admission, ou faire de cette
+règle un renvoi explicite en revue humaine.
 
-**Texte reçu** : « Une admission à un barreau étranger peut, selon les cas,
-ouvrir un examen de voie directe. Cette appréciation relève exclusivement du New
-York Board of Law Examiners et suppose l'examen de votre dossier complet. »
+## R-ALT-001 — alternatives : arbitrage métier
 
-**À vérifier :**
+Rien à vérifier : sa source reste `interne:profil`, elle n'énonce aucun droit
+américain. Ce qu'elle affirme est un jugement stratégique — qu'un projet de
+retour oriente ailleurs qu'un barreau américain — alors que beaucoup de juristes
+passent le barreau de New York puis rentrent.
 
-1. Une admission à un barreau étranger peut-elle ouvrir une voie distincte de
-   celle du LL.M. ?
-2. **La règle traite FRANCE et OTHER_COUNTRY à l'identique.** Un avocat français
-   et un avocat admis dans un pays de common law relèvent-ils du même traitement
-   au regard de la condition officielle ? Si non, il faut deux règles, pas une.
-3. La priorité est-elle la bonne ? Aujourd'hui la voie directe l'emporte sur la
-   voie LL.M. quand les deux se déclenchent. Si l'admission à un barreau
-   étranger ne dispense de rien, cette priorité induit l'utilisateur en erreur.
+Elle est de toute façon **masquée par R-NY-001** : `ALTERNATIVE_TO_EXAMINE` est
+la voie la moins prioritaire et R-NY-001 vise les mêmes profils. L'activer
+aujourd'hui n'afficherait jamais son texte.
 
-## R-ALT-001 — alternatives
+## État mesuré après corrections
 
-**Se déclenche pour** : objectif géographique = retour en France **et** objectif
-de carrière = retour en France.
+Balayage de 1 080 profils complets (produit cartésien : niveau d'études × type
+de parcours × barreau étranger × objectif géographique × objectif de carrière).
+Ces nombres décrivent la **structure des conditions**, pas le trafic réel.
 
-**Texte reçu** : « Votre objectif géographique et professionnel oriente vers
-d'autres options que l'admission à un barreau américain. Ces alternatives sont
-examinées dans votre rapport. »
+| Configuration                    | Voies produites                                          |
+| -------------------------------- | -------------------------------------------------------- |
+| **État livré** (R-NY-001 active) | voie LL.M. : 900 · études insuffisantes : 180             |
+| si R-NY-002 était activée        | inchangé — voie directe : **0**                           |
+| si R-ALT-001 était activée       | inchangé — alternative : **0**                            |
 
-**Cette règle n'énonce aucun droit américain** : sa source est `interne:profil`,
-elle constate ce que l'utilisateur a déclaré. Ce qu'elle affirme est en revanche
-un **jugement stratégique** — qu'un projet de retour oriente ailleurs qu'un
-barreau américain. Beaucoup de juristes passent le barreau de New York puis
-rentrent. À vous de décider si cette orientation est celle que vous voulez
-énoncer ; c'est de la compétence métier, pas de la vérification de source.
+**Conséquence à connaître, et à trancher** : depuis la correction de la
+priorité, `DIRECT_PATH_TO_EXAMINE` est **structurellement inatteignable**. Tout
+profil pouvant déclencher R-NY-002 déclenche aussi R-NY-001 (ou R-STRUCT-002),
+qui priment. Même activée et corrigée, R-NY-002 n'afficherait jamais son texte.
 
-**Conséquence à connaître** : l'activer sort ces profils de la revue humaine.
-Et, comme indiqué plus haut, elle est masquée par R-NY-001 dès que celle-ci est
-active.
+C'est cohérent avec le droit — la voie de l'avocat étranger est un cas
+particulier de la voie LL.M., pas une dispense — mais cela signifie que la
+nuance « vous êtes déjà admis à un barreau » disparaît du rapport, puisque
+`runEngineA` ne collecte les blocs de texte que de la voie retenue. Si cette
+nuance doit apparaître, elle relève d'un **bloc complémentaire** et non d'une
+voie concurrente. Décision à prendre ; rien n'a été fait dans un sens ou dans
+l'autre.
 
-## Comment enregistrer la vérification
+## Enregistrer une révision au back-office
 
-Aucun développement n'est nécessaire. Depuis `/admin/matrices`, chaque règle
-porte trois champs modifiables : source, date de vérification, activation. Le
-même garde-fou qu'au commit s'applique à l'enregistrement — une règle active
-sans source ni date est refusée (`decideRuleRevision`, et `npm run check:rules`).
+Aucun développement n'est nécessaire pour activer ou désactiver une règle.
+Depuis `/admin/matrices`, chaque règle porte trois champs : source, date de
+vérification, activation. Le même garde-fou qu'au commit s'applique à
+l'enregistrement — une règle active sans source ni date est refusée
+(`decideRuleRevision`, et `npm run check:rules`). Format de date attendu :
+`AAAA-MM-JJ` strict.
 
-1. Ouvrez `/admin/matrices` (compte administrateur requis).
-2. Pour chaque règle vérifiée : collez l'URL de la source consultée, la date du
-   jour au format `AAAA-MM-JJ`, cochez l'activation, enregistrez.
-3. Les révisions sont **append-only** : un rapport déjà produit continue de
-   citer la version de règle qui l'a produit (`rulesSnapshot`).
+Les révisions sont **append-only** : un rapport déjà produit continue de citer
+la version de règle qui l'a produit (`rulesSnapshot`).
 
-Si une **condition** doit changer — retirer M1, scinder FRANCE et
-OTHER_COUNTRY — cela passe par le code (`lib/engine-a/rules.seed.ts`) et non par
-le back-office : une logique de règle se teste, et `lib/engine-a/run.test.ts`
-plus le balayage de `lib/assessment/exhaustive.test.ts` couvrent l'effet du
+En revanche, une **condition** se modifie en code (`lib/engine-a/rules.seed.ts`)
+et non au back-office : une logique de règle se teste. `lib/engine-a/run.test.ts`
+et le balayage de `lib/assessment/exhaustive.test.ts` couvrent l'effet du
 changement sur l'ensemble des profils.
 
-## Où chercher la source
+## Sources consultées
 
-Les textes applicables n'étaient pas accessibles depuis l'environnement de
-développement (accès réseau sortant fermé). Les points d'entrée à consulter :
-
-- **New York State Board of Law Examiners** — `nybarexam.org`, rubrique relative
-  à la formation juridique étrangère.
-- **Rules of the Court of Appeals for the Admission of Attorneys and Counselors
-  at Law** — titre 22 du NYCRR, partie 520, publiées par les juridictions de
-  l'État de New York.
-
-Vérifiez le texte **en vigueur à la date où vous l'activez**, et non un résumé :
-c'est cette date que vous inscrirez dans le champ de vérification, et c'est elle
-qui rend la règle réactivable en confiance dans un an.
+- [22 NYCRR partie 520 — Rules of the Court of Appeals for the Admission of Attorneys](https://www.nycourts.gov/ctapps/520rules10.htm)
+- [NYS BOLE — Foreign Legal Education](https://www.nybarexam.org/Foreign/ForeignLegalEducation.htm)
+- [NYS BOLE — Foreign Legal Education Handbook, rév. 30 octobre 2025](https://www.nybarexam.org/Foreign/NY%20Bar%20Exam%20Foreign%20Legal%20Education%20Handbook_10.30.2025.pdf)
+- [LII — 22 NYCRR § 520.6](https://www.law.cornell.edu/regulations/new-york/22-NYCRR-520.6)
+- [Duke Law — New York Bar FAQ, janvier 2024](https://law.duke.edu/sites/default/files/international/Duke_Law_NY_Bar_FAQs_for_January_2024.pdf)
+- [NYU School of Law — New York Bar Exam Eligibility](https://www.law.nyu.edu/graduateaffairs/handbook/new-york-bar-eligibility)

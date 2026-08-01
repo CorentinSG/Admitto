@@ -87,8 +87,10 @@ const { id: beforeId } = await submitDiagnostic(anon, BASE, {
 });
 await anon.goto(`${BASE}/resultat/${beforeId}`, { waitUntil: "networkidle" });
 check(
+  // Depuis la vérification du 2026-08-01, ce profil M2 emprunte la voie LL.M.
+  // et non plus la revue humaine par défaut.
   "Diagnostic d'avant : texte de voie d'origine",
-  contains(await anon.locator("body").innerText(), "lecture humaine")
+  contains(await anon.locator("body").innerText(), "New York Board of Law Examiners")
 );
 
 // ── Back-office ────────────────────────────────────────────────────────────
@@ -145,7 +147,9 @@ async function submitAndAwait(form, buttonName) {
 }
 
 // ── Refus : vocabulaire interdit dans un bloc ──────────────────────────────
-const voieKey = "VOIE:TB-HUMAN-REVIEW";
+// Le bloc révisé est celui de la voie que ce profil emprunte RÉELLEMENT :
+// réviser un bloc qu'il n'atteint plus ne testerait rien du mécanisme.
+const voieKey = "VOIE:TB-NY-VIA-LLM";
 const originalVoie = await blockForm(voieKey).locator('textarea[name="text"]').inputValue();
 {
   await blockForm(voieKey).locator('textarea[name="text"]').fill("Votre admission garantie.");
@@ -248,47 +252,46 @@ check(
   !contains(await page.locator("body").innerText(), `(${TAG})`)
 );
 
-// ── Activer une règle change la voie produite ──────────────────────────────
+// ── Une révision gouverne réellement le moteur ─────────────────────────────
+//
+// La démonstration se fait dans le sens de la FERMETURE : on désactive
+// R-NY-001 depuis le back-office et le diagnostic suivant retombe en revue
+// humaine. Le sens inverse ne se démontre plus — depuis la correction de
+// `PATH_PRIORITY`, R-ALT-001 et R-NY-002 sont masquées par R-NY-001, qui vise
+// les mêmes profils et prime. C'est d'ailleurs ce que cette suite a constaté la
+// première.
+//
+// Ce sens est aussi le plus sûr : si la suite tombe en cours de route, elle
+// laisse une règle de droit ÉTEINTE, jamais allumée.
 await page.goto(`${BASE}/admin/matrices`, { waitUntil: "networkidle" });
 {
-  const form = ruleForm("R-ALT-001");
-  await form.locator('input[name="sourceUrl"]').fill("interne:profil");
-  await form.locator('input[name="verifiedAt"]').fill(new Date().toISOString().slice(0, 10));
-  await form.locator('input[name="active"]').check();
+  const form = ruleForm("R-NY-001");
+  await form.locator('input[name="active"]').uncheck();
   check(
-    "Règle activée avec source et date",
-    contains(await submitAndAwait(form, "Enregistrer la règle — R-ALT-001"), "Révision enregistrée")
+    "Désactivation enregistrée avec sa source et sa date",
+    contains(await submitAndAwait(form, "Enregistrer la règle — R-NY-001"), "Révision enregistrée")
   );
 }
 
 const { id: altId } = await submitDiagnostic(anon, BASE, {
-  labels: [
-    "Je prépare mes candidatures",
-    "Master 2",
-    "Université Paris 1 Panthéon-Sorbonne",
-    "Valoriser le parcours en France",
-    "Rentrer en France",
-    "60 000 à 100 000 $",
-    "Les deux",
-    "L'an prochain",
-    "Test déjà passé",
-    "Français, sans statut américain",
-  ],
-  firstName: "Retour",
-  email: verifyEmail("retour"),
+  labels: LABELS,
+  firstName: "Ferme",
+  email: verifyEmail("ferme"),
 });
 await anon.goto(`${BASE}/resultat/${altId}`, { waitUntil: "networkidle" });
 check(
-  "La règle activée gouverne la voie du diagnostic suivant",
-  contains(await anon.locator("body").innerText(), "d'autres options que l'admission")
+  "La règle désactivée retire réellement la voie du diagnostic suivant",
+  contains(await anon.locator("body").innerText(), "lecture humaine")
 );
 
 // ── Remise en état ─────────────────────────────────────────────────────────
 await page.goto(`${BASE}/admin/matrices`, { waitUntil: "networkidle" });
 {
-  const form = ruleForm("R-ALT-001");
-  await form.locator('input[name="active"]').uncheck();
-  await submitAndAwait(form, "Enregistrer la règle — R-ALT-001");
+  const form = ruleForm("R-NY-001");
+  await form.locator('input[name="sourceUrl"]').fill("https://www.nycourts.gov/ctapps/520rules10.htm");
+  await form.locator('input[name="verifiedAt"]').fill("2026-08-01");
+  await form.locator('input[name="active"]').check();
+  await submitAndAwait(form, "Enregistrer la règle — R-NY-001");
 
   await blockForm(voieKey).locator('textarea[name="text"]').fill(originalVoie);
   await submitAndAwait(blockForm(voieKey), `Enregistrer le bloc — ${voieKey}`);
@@ -306,7 +309,10 @@ const { id: finalId } = await submitDiagnostic(anon, BASE, {
 });
 await anon.goto(`${BASE}/resultat/${finalId}`, { waitUntil: "networkidle" });
 const finalText = await anon.locator("body").innerText();
-check("État d'origine rétabli", !contains(finalText, TAG) && contains(finalText, "lecture humaine"));
+check(
+  "État d'origine rétabli",
+  !contains(finalText, TAG) && contains(finalText, "New York Board of Law Examiners")
+);
 
 check("Aucune erreur console", consoleErrors.length === 0, consoleErrors.join(" | "));
 
