@@ -1,0 +1,34 @@
+# PostgreSQL de développement.
+#
+# Facultatif : sans DATABASE_URL, les stores retombent sur la mémoire du
+# processus et le parcours complet reste jouable. Cette base sert dès qu'on veut
+# que les données survivent à un redémarrage, ou vérifier l'implémentation
+# Prisma des stores (c'est le second passage que joue la CI).
+#
+# Les identifiants sont ceux de la CI et du script setup:local — les trois
+# doivent rester identiques, sans quoi `--with-db` pointerait à côté.
+#
+#   docker compose up -d db
+#   node scripts/setup-local.mjs --with-db
+#   npm run db:deploy
+
+services:
+  db:
+    image: postgres:16
+    container_name: admitto-db
+    environment:
+      POSTGRES_USER: admitto
+      POSTGRES_PASSWORD: admitto
+      POSTGRES_DB: admitto
+    ports:
+      - "5432:5432"
+    volumes:
+      - admitto-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admitto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  admitto-db-data:

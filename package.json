@@ -5,6 +5,7 @@
   "description": "Plateforme LL.M. & Barreau américain — système personnalisé de décision, planification et exécution.",
   "scripts": {
     "dev": "next dev",
+    "setup:local": "node scripts/setup-local.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

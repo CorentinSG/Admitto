@@ -18,6 +18,11 @@ coverage/
 graphify-out/*
 !graphify-out/GRAPH_REPORT.md
 
+# Fichiers de travail locaux : coffre de documents et boîte aux lettres du
+# transport « console ». Contiennent des pièces déposées et des liens de
+# connexion — jamais dans le dépôt.
+.admitto-local/
+
 # Divers
 .DS_Store
 *.tsbuildinfo
