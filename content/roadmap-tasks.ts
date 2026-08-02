@@ -196,7 +196,14 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     importance: "CRITICAL",
     estimatedMinutes: 300,
     monthsBeforeIntake: 4,
-    journeyTypes: ["LLM_APPLICANT"],
+    /*
+     * `CURRENT_LLM_STUDENT` couvre « admis ou inscrit ». La tâche manquait
+     * exactement à qui elle est le plus urgente : la personne admise, qui a
+     * ses documents d'université en main et rien pour lui dire d'entamer les
+     * démarches. Celle déjà sur place l'a faite et la coche ; celle qui n'a
+     * besoin d'aucun visa la voit passer en « sans objet » (`needsVisaBranch`).
+     */
+    journeyTypes: ["LLM_APPLICANT", "CURRENT_LLM_STUDENT"],
     moduleSlug: "module-4-immigration",
     delayRisk:
       "Les délais de rendez-vous varient fortement selon les périodes et ne dépendent pas de vous.",

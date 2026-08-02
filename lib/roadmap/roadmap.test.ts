@@ -275,4 +275,17 @@ describe("adaptation au profil réel", () => {
     const brut = build({ usStatus: "US_DUAL_NATIONAL" });
     expect(brut.find((t) => t.phase === "VISA")!.status).toBe("NOT_APPLICABLE");
   });
+
+  it("donne le dossier de statut à qui vient d'être admis", () => {
+    // La tâche manquait exactement à qui elle est le plus urgente : la personne
+    // admise a ses documents d'université en main, et rien ne lui disait
+    // d'entamer les démarches. Le binational reste écarté, comme ailleurs.
+    const admis = applicableTasks(
+      build({ status: "ADMITTED_OR_ENROLLED", usStatus: "FR_NO_STATUS" })
+    );
+    expect(admis.some((t) => t.id === "T-VISA-01")).toBe(true);
+
+    const binational = build({ status: "ADMITTED_OR_ENROLLED", usStatus: "US_DUAL_NATIONAL" });
+    expect(binational.find((t) => t.id === "T-VISA-01")!.status).toBe("NOT_APPLICABLE");
+  });
 });
