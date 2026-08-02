@@ -33,6 +33,13 @@ export const result = {
     n === 1
       ? "Un accord confirmé concerne votre université et votre niveau d'études. Ses conditions relèvent de l'université et de la law school, qui décident seules de l'admission."
       : `${n} accords confirmés concernent votre université et votre niveau d'études. Leurs conditions relèvent des universités et des law schools, qui décident seules de l'admission.`,
+  /* Dit une fois au-dessus de la liste quand toutes les fiches portent la
+     même phrase : répétée sous chaque école, elle noyait ce qui les
+     distingue. */
+  partnershipsCommonTuition: (phrase: string, universal: boolean) =>
+    universal
+      ? `Frais, pour tous ces accords : ${phrase}`
+      : `Frais, sauf mention contraire sous l'école : ${phrase}`,
   partnershipsNoneAtLevel:
     "Des accords existent pour votre université, mais aucun ne correspond au niveau d'études que vous avez indiqué. Ils sont listés ci-dessous à titre d'information.",
   partnershipsToConfirm: (n: number) =>
@@ -66,6 +73,11 @@ export const result = {
   nextDelay: (delay: string) => `Délai annoncé : ${delay}.`,
   nextCta: "Voir ce que contient le rapport",
   emailConfirmation: (email: string) => `Une confirmation vient d'être envoyée à ${email}.`,
+  /* Régime Phase 1A : le transport journalise sans expédier. Annoncer un
+     email qui ne partira jamais laisserait la personne l'attendre — et le lien
+     de cette page EST son résultat, l'email n'en était que le rappel. */
+  emailPending: (email: string) =>
+    `Aucun email n'est expédié pendant la bêta : conservez ce lien, c'est votre accès à ce résultat. Votre adresse (${email}) est enregistrée pour l'envoi de votre rapport.`,
   homeCta: "Revenir à l'accueil",
   disclaimer:
     "Ce diagnostic est un produit éducatif et stratégique fondé sur les informations que vous avez communiquées, des sources publiques, des parcours documentés et l'expérience personnelle du fondateur. Il ne constitue pas un conseil juridique, ne crée aucune relation avocat-client et ne vaut décision d'aucune université, autorité de barreau, autorité migratoire ou employeur.",

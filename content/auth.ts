@@ -28,6 +28,12 @@ export const auth = {
   checkTitle: "Vérifiez votre boîte email",
   checkBody:
     "Si un compte peut être créé pour cette adresse, un lien de connexion vient d'être envoyé. Il est valable quinze minutes et ne fonctionne qu'une fois.",
+  /* Même défaut que sur la page de résultat : sans transport configuré, le
+     lien est journalisé côté serveur et n'arrive nulle part. Laisser quelqu'un
+     surveiller ses indésirables pour un message qui ne partira jamais est la
+     seule chose que cette page pouvait faire de pire. */
+  checkBodyUndelivered:
+    "Aucun email n'est expédié depuis cette instance : le transport n'est pas configuré. Un lien a bien été produit, mais il reste dans le journal du serveur — inutile de surveiller votre boîte.",
   checkNote:
     "Rien reçu ? Vérifiez les indésirables, puis redemandez un lien depuis la page de connexion.",
   backToSignIn: "Retour à la connexion",

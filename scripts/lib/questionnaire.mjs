@@ -9,6 +9,23 @@ import { waitFor, waitForTextChange } from "./wait.mjs";
  * le reste du temps. Ici, chaque clic attend que l'écran ait réellement changé.
  */
 
+/**
+ * Entre dans le questionnaire, que la page propose « Commencer » ou la
+ * reprise d'un brouillon.
+ *
+ * Une suite qui parcourt le questionnaire DEUX fois dans le même contexte
+ * retrouve son propre brouillon au second passage : « Commencer » a laissé la
+ * place à « Reprendre mes N réponses » / « Repartir de zéro », et l'attente
+ * expirait sur un bouton qui n'existe plus.
+ */
+export async function startQuestionnaire(page) {
+  const before = await page.locator("body").innerText();
+  const restart = page.getByRole("button", { name: "Repartir de zéro" });
+  const entry = (await restart.count()) > 0 ? restart : page.getByRole("button", { name: "Commencer" });
+  await entry.click();
+  await waitForTextChange(page, before);
+}
+
 /** Clique une réponse par écran, en attendant le changement d'écran à chaque fois. */
 export async function answerScreens(page, labels) {
   const totals = [];

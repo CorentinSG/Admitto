@@ -55,6 +55,15 @@ s'y conformer, comme `robots.txt` se conforme à `ADMITTO_BASE_URL`.
 
 _Coût : faible. Une condition et un bloc de copie._
 
+> **Livré.** `emailsAreDelivered()` (`lib/email/transport.ts`) répond à la
+> question, et deux pages s'y conforment : le résultat annonce désormais
+> « aucun email n'est expédié pendant la bêta : conservez ce lien, c'est votre
+> accès à ce résultat », et la page de vérification du lien de connexion cesse
+> d'inviter à surveiller des indésirables pour un message qui ne partira pas.
+> Cette seconde page était atteinte du même défaut, sans que le présent plan
+> l'ait vue. Elle passe en `force-dynamic` : figé au build, le texte
+> annoncerait le régime de la machine qui a compilé.
+
 ---
 
 ## 2. La feuille de route naît en retard — **le plus gros défaut d'expérience**
@@ -103,7 +112,16 @@ Recommandation : 1 puis 2. Ne pas faire 3.
 > d'accuser. Sur le profil témoin, la feuille de route est passée de 4 mentions
 > « en retard » à 0, et la première phrase du tableau de bord de « L'échéance
 > est proche ou dépassée » à « Cette date était déjà passée quand vous avez
-> commencé ». **Option 2 — proposer la rentrée suivante — reste à faire.**
+> commencé ».
+>
+> **Option 2 livrée** à son tour. `intakeWindow` (`lib/roadmap/window.ts`)
+> rapproche deux chiffres que le produit connaissait séparément — les mois qui
+> restent, les mois que son calendrier suppose — et l'encart ne paraît que
+> lorsque le premier est plus petit que le second. Il chiffre l'écart, dit que
+> ce retard n'est pas du fait de la personne, et **nomme** le cycle suivant sans
+> le prescrire. Le calendrier est lu sur les tâches du profil et non sur le
+> catalogue : un parcours qui n'a que des tâches tardives serait déclaré serré à
+> tort. L'option 3 reste écartée.
 
 > **Analyse exhaustive des trente formes possibles de timeline :
 > `docs/ANALYSE-TIMELINE.md`.** Neuf sont saines, vingt-et-une présentent au
@@ -152,6 +170,14 @@ explicite n'est pas présumer, c'est écouter. Trois lectures possibles :
 Recommandation : 2. C'est la seule qui adapte l'expérience sans toucher à
 l'intégrité de la progression.
 
+> **Option 2 livrée** : `declaredDone` (`lib/roadmap/declared.ts`) redit la
+> réponse sur la tâche concernée et laisse le clic à la personne. Aucun statut
+> n'est changé. La liste des correspondances est fermée et courte — « test
+> passé » y entre, « test programmé » et « préparation commencée » non : un
+> « à confirmer » posé sur une tâche à moitié faite ferait plus de dégâts que
+> l'oubli qu'il corrige. Le cas du binational américain (tâche de visa proposée
+> à qui n'en a pas besoin) est traité à part, par `NOT_APPLICABLE`.
+
 _Coût : moyen. Le calcul est isolé dans `dueDateFor` et `timeline.ts` ; la
 difficulté est le vocabulaire, pas le code._
 
@@ -177,6 +203,17 @@ s'efface à la soumission et se périme de lui-même.
 
 _Coût : faible à moyen. Un effet de persistance, une reprise au chargement, et
 un test de bout en bout qui ferme puis rouvre l'onglet._
+
+> **Livré.** `lib/questionnaire/draft.ts`. Le brouillon reste local, se périme
+> à sept jours, et n'enregistre **que les choix fermés** : ni prénom, ni
+> adresse, ni commentaire — un navigateur est souvent partagé — ni le
+> consentement marketing, dont la restauration reviendrait à le pré-cocher
+> (CDC §34). Chaque valeur relue est confrontée à la liste fermée de son champ :
+> une option retirée depuis produirait sinon un profil que les moteurs ne
+> savent pas lire. La reprise est **proposée, jamais imposée** : deux boutons,
+> « Reprendre mes N réponses » et « Repartir de zéro », le second effaçant le
+> brouillon. L'écran d'arrivée est recalculé et non relu, la logique
+> conditionnelle ayant pu déplacer les écrans entre-temps.
 
 ---
 
@@ -219,6 +256,15 @@ ce qui varie. La donnée le permet déjà, c'est un problème de rendu.
 
 _Coût : faible._
 
+> **Livré.** `commonTuitionDisplay` (`lib/partnerships/detect.ts`) remonte la
+> phrase de frais partagée par la plupart des fiches ; l'école qui en porte une
+> autre garde la sienne, et l'énoncé commun se déclare alors non universel
+> (« sauf mention contraire sous l'école »). Une seule fiche **sans** phrase de
+> frais annule toute factorisation : elle n'afficherait rien sous son nom, et
+> le lecteur lui appliquerait l'énoncé commun — une information inventée sur ce
+> qu'elle coûte. Mesuré sur le profil Paris 1 : la page passe de 5 371 à
+> 4 745 caractères, et la phrase répétée huit fois n'apparaît plus qu'une.
+
 ---
 
 ## 6. « Douze écrans » annoncés, « Étape 1 sur 11 » affichés
@@ -235,20 +281,25 @@ la rigueur, l'écart se remarque.
 
 _Coût : une ligne de copie._
 
+> **Livré.** « Onze à douze écrans selon votre profil ».
+
 ---
 
 ## Ordre recommandé
 
 ```
-Avant la bêta (F2)     1. Envoi affirmé sans avoir lieu      faible
-                       6. Douze / onze écrans                une ligne
+Avant la bêta (F2)     1. Envoi affirmé sans avoir lieu      LIVRÉ
+                       6. Douze / onze écrans                LIVRÉ
 
-Pendant la bêta        2. Feuille de route née en retard     moyen
-                       3. Reprise du questionnaire           faible-moyen
-                       5. Répétition du résultat             faible
+Pendant la bêta        2. Feuille de route née en retard     options 1 et 2 LIVRÉES
+                       3. Reprise du questionnaire           LIVRÉ
+                       5. Répétition du résultat             LIVRÉ
 
 Après la bêta          4. Correction d'une réponse           moyen-élevé
 ```
+
+Reste le point 4, délibérément : la bêta dira quels champs les gens veulent
+corriger, et une reprise conçue avant cette donnée serait conçue à l'aveugle.
 
 Le point 1 est le seul qui soit une **inexactitude** plutôt qu'une gêne : il
 part avec les premiers utilisateurs réels et doit être traité avant eux. Le

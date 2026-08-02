@@ -5,6 +5,7 @@ import { colors, fonts, alpha, gradients } from "@/design/tokens";
 import { SCREENS, intro, ui } from "@/content/diagnostic";
 import { CAREER_GOAL, type Answers, type ScreenId } from "@/lib/questionnaire/types";
 import { careerGoalOptions, visibleScreens } from "@/lib/questionnaire/visibility";
+import { clearDraft, readDraft, writeDraft, type Draft } from "@/lib/questionnaire/draft";
 import { submitQuestionnaire } from "./actions";
 import { track } from "@/lib/analytics/track";
 
@@ -27,6 +28,25 @@ export function Questionnaire() {
   const currentId: ScreenId = screens[Math.min(index, screens.length - 1)];
   const screen = SCREENS.find((s) => s.id === currentId)!;
   const isLast = index >= screens.length - 1;
+
+  /**
+   * Brouillon local (voir `lib/questionnaire/draft.ts`).
+   *
+   * La lecture vit dans un effet, pas dans l'état initial : le rendu serveur
+   * n'a pas de `localStorage`, et un état initial qui en dépend produirait
+   * deux arbres différents — React régénère alors la page entière, ce que le
+   * reste du produit évite avec soin (dates formatées côté serveur, etc.).
+   */
+  const [draft, setDraft] = useState<Draft | null>(null);
+  useEffect(() => setDraft(readDraft(new Date())), []);
+
+  /*
+   * Enregistrement à chaque réponse, une fois commencé seulement : ouvrir la
+   * page sans rien répondre ne doit rien écrire.
+   */
+  useEffect(() => {
+    if (started) writeDraft(answers, new Date());
+  }, [started, answers]);
 
   /**
    * Mesure de l'entonnoir (CDC §36) : un compteur par écran atteint, sans
@@ -82,14 +102,45 @@ export function Questionnaire() {
     setTimeout(() => setIndex((i) => Math.min(i + 1, screens.length - 1)), 180);
   }
 
+  /** Départ à neuf : le brouillon est effacé AVANT, pas laissé derrière. */
+  function start() {
+    track("QUESTIONNAIRE_STARTED");
+    clearDraft();
+    setDraft(null);
+    setStarted(true);
+  }
+
+  /**
+   * Reprise. L'écran d'arrivée est RECALCULÉ, jamais relu : la logique
+   * conditionnelle peut avoir inséré ou retiré un écran depuis
+   * l'enregistrement, et un index mémorisé désignerait alors la mauvaise
+   * question.
+   */
+  function resume(saved: Draft) {
+    track("QUESTIONNAIRE_STARTED");
+    const restored = visibleScreens(saved.answers);
+    const first = restored.findIndex((id) => saved.answers[id as keyof Answers] === undefined);
+    setAnswers(saved.answers);
+    setIndex(first === -1 ? restored.length - 1 : first);
+    setStarted(true);
+  }
+
   function submit() {
     setError(null);
+    // Le brouillon disparaît à la soumission : le réoffrir à quelqu'un qui a
+    // déjà son résultat le renverrait refaire ce qu'il vient de faire. Il est
+    // remis en cas d'échec — sinon un serveur momentanément indisponible
+    // coûterait le parcours entier.
+    clearDraft();
     startTransition(async () => {
       const result = await submitQuestionnaire(answers as Record<string, unknown>);
       // Rien ne peut être mesuré ici : en cas de succès l'action redirige, et
       // `redirect()` lève — le code qui suit ne s'exécute jamais. La soumission
       // est donc comptée dans l'action elle-même (voir actions.ts).
-      if (result?.error) setError(result.error);
+      if (result?.error) {
+        setError(result.error);
+        writeDraft(answers, new Date());
+      }
     });
   }
 
@@ -132,17 +183,47 @@ export function Questionnaire() {
         >
           {intro.body}
         </p>
+        {/* Un parcours interrompu se reprend, il ne se refait pas. La reprise
+            passe devant : c'est ce que veut quelqu'un dont les réponses sont
+            là. Repartir de zéro reste offert, sans être le geste par défaut. */}
+        {draft && (
+          <div style={{ marginTop: 40 }}>
+            <button
+              type="button"
+              onClick={() => resume(draft)}
+              style={{
+                background: gradients.goldButton,
+                color: colors.navy900,
+                border: "none",
+                padding: "18px 44px",
+                fontSize: "0.88rem",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                fontFamily: fonts.sans,
+                cursor: "pointer",
+                transition: "transform 0.2s, box-shadow 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = "0 15px 45px rgba(201, 168, 76, 0.42)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              {intro.resume(draft.count)}
+            </button>
+          </div>
+        )}
         <button
           type="button"
-          onClick={() => {
-            track("QUESTIONNAIRE_STARTED");
-            setStarted(true);
-          }}
+          onClick={start}
           style={{
-            marginTop: 40,
-            background: gradients.goldButton,
-            color: colors.navy900,
-            border: "none",
+            marginTop: draft ? 20 : 40,
+            background: draft ? "none" : gradients.goldButton,
+            color: draft ? alpha.whiteCtaText : colors.navy900,
+            border: draft ? `1px solid ${alpha.goldBorderFaint}` : "none",
             padding: "18px 44px",
             fontSize: "0.88rem",
             letterSpacing: "0.06em",
@@ -153,15 +234,29 @@ export function Questionnaire() {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = "translateY(-2px)";
-            e.currentTarget.style.boxShadow = "0 15px 45px rgba(201, 168, 76, 0.42)";
+            if (!draft) e.currentTarget.style.boxShadow = "0 15px 45px rgba(201, 168, 76, 0.42)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "translateY(0)";
             e.currentTarget.style.boxShadow = "none";
           }}
         >
-          {intro.cta}
+          {draft ? intro.restart : intro.cta}
         </button>
+        {draft && (
+          <p
+            style={{
+              fontFamily: fonts.sans,
+              fontSize: "0.78rem",
+              lineHeight: 1.7,
+              margin: "24px 0 0",
+              maxWidth: 520,
+              color: alpha.whiteDesc,
+            }}
+          >
+            {intro.resumeNote}
+          </p>
+        )}
         <p
           style={{
             fontFamily: fonts.sans,

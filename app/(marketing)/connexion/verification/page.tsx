@@ -2,11 +2,16 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { colors, fonts } from "@/design/tokens";
 import { auth as copy } from "@/content/auth";
+import { emailsAreDelivered } from "@/lib/email/transport";
 
 export const metadata: Metadata = {
   title: "Vérifiez votre email — Admitto",
   robots: { index: false, follow: false },
 };
+
+/* Le régime d'envoi est lu à la requête, pas à la construction : figé au build,
+   le texte annoncerait le régime de la machine qui a compilé. */
+export const dynamic = "force-dynamic";
 
 /**
  * Confirmation d'envoi (CDC §10).
@@ -16,6 +21,7 @@ export const metadata: Metadata = {
  * d'énumération des clients.
  */
 export default function VerifyRequestPage() {
+  const delivered = emailsAreDelivered();
   return (
     <main id="contenu" tabIndex={-1} style={{ backgroundColor: colors.ivory, minHeight: "100vh", padding: "120px 8%" }}>
       <div style={{ maxWidth: 620 }}>
@@ -39,19 +45,21 @@ export default function VerifyRequestPage() {
             color: colors.slate,
           }}
         >
-          {copy.checkBody}
+          {delivered ? copy.checkBody : copy.checkBodyUndelivered}
         </p>
-        <p
-          style={{
-            fontFamily: fonts.sans,
-            fontSize: "0.88rem",
-            lineHeight: 1.8,
-            margin: "14px 0 0",
-            color: colors.slate,
-          }}
-        >
-          {copy.checkNote}
-        </p>
+        {delivered && (
+          <p
+            style={{
+              fontFamily: fonts.sans,
+              fontSize: "0.88rem",
+              lineHeight: 1.8,
+              margin: "14px 0 0",
+              color: colors.slate,
+            }}
+          >
+            {copy.checkNote}
+          </p>
+        )}
 
         <Link
           href="/connexion"

@@ -39,6 +39,65 @@ page.on("pageerror", (e) => consoleErrors.push(String(e)));
 page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
 
 await warmUp(page, BASE);
+
+// ── Reprise d'un parcours interrompu ───────────────────────────────────────
+// Douze écrans souvent parcourus sur mobile : l'interruption est la règle, pas
+// l'exception. Le rechargement ci-dessous EST l'interruption.
+{
+  await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
+  const avant = await page.locator("body").innerText();
+  await page.getByRole("button", { name: "Commencer" }).click();
+  await waitForTextChange(page, avant);
+  await answerScreens(page, [
+    "Je suis avocat et j'étudie mes options",
+    "CAPA obtenu",
+    "Université Paris-Panthéon-Assas",
+  ]);
+
+  await page.reload({ waitUntil: "networkidle" });
+  const reprise = page.getByRole("button", { name: /Reprendre mes \d+ réponses/ });
+  check("Reprise proposée après rechargement", (await reprise.count()) > 0);
+  check(
+    "Le nombre de réponses reprises est annoncé",
+    // Le bouton est en capitales par `text-transform`, et `innerText` rend le
+    // texte TEL QU'AFFICHÉ : comparer en casse pliée.
+    /Reprendre mes 3 réponses/i.test(await page.locator("body").innerText())
+  );
+
+  // Un navigateur est souvent partagé, et le brouillon survit à la fermeture
+  // de l'onglet : rien de ce qui identifie ne doit s'y trouver.
+  const brouillon = await page.evaluate(() =>
+    window.localStorage.getItem("admitto.diagnostic.brouillon")
+  );
+  check(
+    "Aucun champ identifiant dans le brouillon",
+    Boolean(brouillon) && !/firstName|email|comment|consentMarketing/.test(brouillon),
+    brouillon ?? "absent"
+  );
+
+  await reprise.click();
+  check(
+    "Reprise à la première question sans réponse",
+    Boolean(await waitForText(page, "Êtes-vous admis à un barreau ?"))
+  );
+  // L'écran « barreau » n'existe QUE pour un profil avocat : le voir prouve
+  // que les réponses précédentes ont bien été restituées, pas seulement l'index.
+  check(
+    "L'écran conditionnel suit le profil restitué",
+    /Étape 4 sur 12/.test(await page.locator("body").innerText())
+  );
+
+  // Repartir de zéro efface : sinon le brouillon reviendrait au chargement
+  // suivant, contre le geste qui vient d'être fait.
+  await page.reload({ waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Repartir de zéro" }).click();
+  await page.reload({ waitUntil: "networkidle" });
+  check(
+    "« Repartir de zéro » efface le brouillon",
+    (await page.getByRole("button", { name: /Reprendre mes/ }).count()) === 0
+  );
+}
+
 await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
 const beforeStart = await page.locator("body").innerText();
 await page.getByRole("button", { name: "Commencer" }).click();
@@ -104,6 +163,23 @@ check(
   /accords? confirmés? concernent? votre université|accord confirmé concerne votre université/i.test(body)
 );
 check("Fiabilité rendue lisible", !/partenariat garanti/i.test(body));
+
+// La liste n'énonce plus sous chaque école ce qui vaut pour toutes : ce qui
+// les distingue — ville, niveau attendu — s'y noyait.
+const commune = body.match(
+  /Frais, (?:pour tous ces accords|sauf mention contraire sous l'école) : (.+)/
+);
+check("Condition de frais commune énoncée une fois", Boolean(commune));
+
+// Le défaut mesuré valait pour une phrase de frais LONGUE, répétée sous
+// chacune des neuf écoles. Le seuil écarte les lignes courtes — ville, type
+// d'accord, catégorie de frais — qui se ressemblent légitimement.
+const longues = body
+  .split("\n")
+  .map((l) => l.trim())
+  .filter((l) => l.length > 80);
+const repetee = longues.find((l, i) => longues.indexOf(l) !== i);
+check("Aucune phrase longue répétée dans le résultat", !repetee, repetee ?? "");
 
 check("Aucune erreur console", consoleErrors.length === 0, consoleErrors.join(" | "));
 

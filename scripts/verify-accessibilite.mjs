@@ -53,7 +53,7 @@ const AXE_SOURCE = readFileSync(require.resolve("axe-core/axe.min.js"), "utf8");
 
 const { signInByEmail } = await import("./lib/sign-in.mjs");
 const { waitForTextChange, warmUp } = await import("./lib/wait.mjs");
-const { answerScreens } = await import("./lib/questionnaire.mjs");
+const { answerScreens, startQuestionnaire } = await import("./lib/questionnaire.mjs");
 const { verifyEmail } = await import("./lib/identity.mjs");
 
 const failures = [];
@@ -320,9 +320,19 @@ for (const [label, url] of [
   // montrer : une page vide ne prouverait rien sur ses couleurs.
   const EMAIL = verifyEmail("acces");
   await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
-  const avant = await page.locator("body").innerText();
-  await page.getByRole("button", { name: "Commencer" }).click();
-  await waitForTextChange(page, avant);
+  // Second passage dans le même contexte : le brouillon du premier est encore
+  // là, et l'entrée s'appelle alors « Repartir de zéro ». Cet écran de reprise
+  // est un état visuel à part — deux boutons dont un secondaire — et il
+  // n'apparaît qu'après un parcours interrompu : l'audit d'ouverture ne le
+  // voit jamais.
+  await revealAll(page);
+  const reprise = (await analyse(page)).filter((v) => SERIOUS.has(v.impact));
+  check(
+    "axe — diagnostic avec brouillon",
+    reprise.length === 0,
+    reprise.map((v) => `${v.id} (${v.impact}, ×${v.count}) ${v.sample}`).join(" | ")
+  );
+  await startQuestionnaire(page);
   await answerScreens(page, [
     "Je prépare mes candidatures",
     "Master 2",

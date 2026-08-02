@@ -15,10 +15,11 @@ import { assembleReportLive } from "@/lib/matrices/load";
 import { OFFERS } from "@/lib/payments/offers";
 import { checkout } from "@/content/checkout";
 import { usingDatabase } from "@/lib/db/client";
+import { emailsAreDelivered } from "@/lib/email/transport";
 import { resultAccess } from "@/lib/access/result";
 import { AccessButton } from "./AccessButton";
 import { PARTNERSHIP_LABELS, TUITION_LABELS } from "@/content/partnerships-labels";
-import type { PartnershipDetection } from "@/lib/partnerships/detect";
+import { commonTuitionDisplay, type PartnershipDetection } from "@/lib/partnerships/detect";
 import type { Partnership } from "@/lib/partnerships/types";
 
 export const metadata: Metadata = {
@@ -110,7 +111,9 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
               color: alpha.whiteDesc,
             }}
           >
-            {result.emailConfirmation(answers.email)}
+            {emailsAreDelivered()
+              ? result.emailConfirmation(answers.email)
+              : result.emailPending(answers.email)}
           </p>
         )}
 
@@ -505,6 +508,7 @@ function Paragraph({ children }: { children: React.ReactNode }) {
  */
 function PartnershipList({ detection }: { detection: PartnershipDetection }) {
   const { confirmed, toConfirm, aboveLevel, universityCovered } = detection;
+  const commonTuition = commonTuitionDisplay(confirmed);
 
   if (!universityCovered) {
     return <Paragraph>{result.partnershipsNone}</Paragraph>;
@@ -515,9 +519,22 @@ function PartnershipList({ detection }: { detection: PartnershipDetection }) {
       {confirmed.length > 0 ? (
         <>
           <Paragraph>{result.partnershipsFound(confirmed.length)}</Paragraph>
+          {/* Énoncé une fois quand il est commun ; sinon chaque fiche garde le
+              sien. Voir `commonTuitionDisplay`. */}
+          {commonTuition && (
+            <Paragraph>
+              {result.partnershipsCommonTuition(commonTuition.phrase, commonTuition.universal)}
+            </Paragraph>
+          )}
           <div style={{ marginTop: 20 }}>
             {confirmed.map((p) => (
-              <PartnershipRow key={p.id} partnership={p} />
+              <PartnershipRow
+                key={p.id}
+                partnership={p}
+                // Seules les fiches qui portent la phrase commune la taisent :
+                // celle qui dit autre chose garde son texte.
+                hideTuition={p.tuitionDisplay === commonTuition?.phrase}
+              />
             ))}
           </div>
         </>
@@ -555,7 +572,13 @@ function PartnershipList({ detection }: { detection: PartnershipDetection }) {
   );
 }
 
-function PartnershipRow({ partnership }: { partnership: Partnership }) {
+function PartnershipRow({
+  partnership,
+  hideTuition,
+}: {
+  partnership: Partnership;
+  hideTuition: boolean;
+}) {
   return (
     <div style={{ padding: "16px 0", borderTop: `1px solid ${alpha.goldBorderFaint}` }}>
       <span
@@ -583,7 +606,7 @@ function PartnershipRow({ partnership }: { partnership: Partnership }) {
         {" · "}
         {TUITION_LABELS[partnership.tuitionCategory]}
       </span>
-      {partnership.tuitionDisplay && (
+      {partnership.tuitionDisplay && !hideTuition && (
         <span
           style={{
             display: "block",

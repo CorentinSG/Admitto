@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   bestCostAdvantage,
+  commonTuitionDisplay,
   coverageRate,
   detectPartnerships,
   meetsLevel,
@@ -185,5 +186,45 @@ describe("taux de détection (CDC §27)", () => {
     expect(coverageRate(["assas", "paris1"])).toBe(100);
     expect(coverageRate([])).toBe(0);
     expect(coverageRate([undefined, "assas"])).toBe(50);
+  });
+});
+
+describe("condition de frais commune", () => {
+  const avec = (phrases: Array<string | null>) =>
+    commonTuitionDisplay(phrases.map((p, i) => fake({ id: `p${i}`, tuitionDisplay: p })));
+
+  it("remonte la phrase quand toutes les fiches la portent à l'identique", () => {
+    expect(avec(["Frais à payer auprès de Paris 1", "Frais à payer auprès de Paris 1"])).toEqual({
+      phrase: "Frais à payer auprès de Paris 1",
+      universal: true,
+    });
+  });
+
+  it("remonte la majoritaire, et se déclare non universelle", () => {
+    // C'est le cas réel : sur neuf accords Paris 1, huit portent la même
+    // phrase et le neuvième une autre. La fiche qui diffère garde la sienne.
+    expect(avec(["Frais réduits", "Frais réduits", "Exonération totale"])).toEqual({
+      phrase: "Frais réduits",
+      universal: false,
+    });
+  });
+
+  it("annule tout dès qu'une fiche n'a AUCUNE phrase de frais", () => {
+    // Elle n'afficherait rien sous son nom, et le lecteur lui appliquerait
+    // l'énoncé commun — une information inventée sur ce qu'elle coûte.
+    expect(avec(["Frais réduits", "Frais réduits", null])).toBeNull();
+    expect(avec([null, null])).toBeNull();
+  });
+
+  it("ne factorise pas une phrase unique dans la liste", () => {
+    // Deux fiches, deux phrases : rien n'est commun, rien n'est sorti.
+    expect(avec(["Frais réduits", "Exonération totale"])).toBeNull();
+  });
+
+  it("ne factorise pas une fiche seule", () => {
+    // Sortir la phrase au-dessus d'une liste d'un élément ne fait que
+    // l'éloigner de l'école qu'elle concerne.
+    expect(avec(["Frais réduits"])).toBeNull();
+    expect(commonTuitionDisplay([])).toBeNull();
   });
 });

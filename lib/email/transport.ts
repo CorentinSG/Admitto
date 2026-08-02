@@ -83,6 +83,19 @@ export function getTransport(): EmailTransport {
 }
 
 /**
+ * Un email posté part-il réellement ?
+ *
+ * L'interface avait besoin de la question : la page de résultat annonçait
+ * « une confirmation vient d'être envoyée » sous la seule condition qu'une
+ * adresse existe, alors qu'en régime Phase 1A le transport journalise sans
+ * expédier. C'était le seul endroit du produit qui affirmait un fait sans le
+ * savoir, et il partait avec les premiers utilisateurs réels.
+ */
+export function emailsAreDelivered(): boolean {
+  return getTransport().name !== consoleTransport.name;
+}
+
+/**
  * Envoi contrôlé : un email dont la base légale est le consentement ne part
  * jamais sans consentement, quelle que soit la façon dont il a été planifié.
  * Dernier verrou avant le transport (CDC §34).

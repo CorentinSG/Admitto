@@ -23,8 +23,18 @@ export interface Screen {
 export const intro = {
   badge: "✦ DIAGNOSTIC GRATUIT",
   title: "Quelques questions pour situer votre projet.",
-  body: "Douze écrans, une question à la fois, trois à quatre minutes. Aucune création de compte. Vous obtenez votre résultat préliminaire immédiatement.",
+  /* « Douze écrans » était faux pour la plupart : l'écran « barreau étranger »
+     est conditionnel, si bien que la première chose lue à l'écran suivant —
+     « Étape 1 sur 11 » — contredisait la promesse. */
+  body: "Onze à douze écrans selon votre profil, une question à la fois, trois à quatre minutes. Aucune création de compte. Vous obtenez votre résultat préliminaire immédiatement.",
   cta: "Commencer",
+  /* Reprise d'un parcours interrompu. Le nombre est annoncé : « reprendre »
+     sans dire ce qui sera repris demande une confiance qu'on n'a pas à
+     demander. */
+  resume: (count: number) => `Reprendre mes ${count} réponses`,
+  restart: "Repartir de zéro",
+  resumeNote:
+    "Vos réponses sont conservées dans ce navigateur pendant sept jours, et nulle part ailleurs. Ni votre prénom ni votre adresse n'y figurent : seuls vos choix parmi les réponses proposées.",
   legal:
     "Vos réponses servent à préparer votre résultat préliminaire et votre rapport. Elles ne sont ni revendues ni utilisées pour de la prospection sans votre accord distinct.",
 };

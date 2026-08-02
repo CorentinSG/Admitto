@@ -103,6 +103,50 @@ export function reducesCost(partnership: Partnership): boolean {
   );
 }
 
+/**
+ * La condition de frais que la PLUPART de ces fiches énoncent à l'identique.
+ *
+ * Un profil Paris 1 remonte neuf accords confirmés dont huit portent la même
+ * phrase de frais, mot pour mot — deux lignes répétées huit fois. Ce qui
+ * distingue les neuf écoles (la ville, le niveau attendu) se noyait dans ce
+ * qui leur est commun, et le lecteur décrochait là où le produit voulait le
+ * convaincre.
+ *
+ * Deux garde-fous, parce qu'il est question d'argent :
+ *
+ * - Les fiches qui portent une AUTRE phrase gardent la leur, et l'énoncé
+ *   commun se déclare alors non universel : le lecteur est renvoyé à la
+ *   mention sous l'école.
+ * - Une seule fiche SANS phrase de frais annule toute factorisation. Elle
+ *   n'afficherait rien sous son nom, et le lecteur lui appliquerait l'énoncé
+ *   commun — une information inventée sur ce qu'elle coûte.
+ */
+export interface CommonTuition {
+  phrase: string;
+  /** Vrai si toutes les fiches portent cette phrase, sans exception. */
+  universal: boolean;
+}
+
+export function commonTuitionDisplay(partnerships: Partnership[]): CommonTuition | null {
+  if (partnerships.length < 2) return null;
+  if (partnerships.some((p) => !p.tuitionDisplay)) return null;
+
+  const counts = new Map<string, number>();
+  for (const p of partnerships) {
+    counts.set(p.tuitionDisplay!, (counts.get(p.tuitionDisplay!) ?? 0) + 1);
+  }
+
+  let phrase: string | null = null;
+  let best = 1; // en dessous de deux, factoriser n'économise rien
+  for (const [candidate, n] of counts) {
+    if (n > best) {
+      phrase = candidate;
+      best = n;
+    }
+  }
+  return phrase ? { phrase, universal: best === partnerships.length } : null;
+}
+
 /** Meilleur avantage financier confirmé, ou null. */
 export function bestCostAdvantage(detection: PartnershipDetection): Partnership | null {
   const order = ["no_tuition", "fixed_fee", "reduced_tuition"];
