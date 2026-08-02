@@ -105,6 +105,12 @@ Recommandation : 1 puis 2. Ne pas faire 3.
 > est proche ou dépassée » à « Cette date était déjà passée quand vous avez
 > commencé ». **Option 2 — proposer la rentrée suivante — reste à faire.**
 
+> **Analyse exhaustive des trente formes possibles de timeline :
+> `docs/ANALYSE-TIMELINE.md`.** Neuf sont saines, vingt-et-une présentent au
+> moins une pathologie — dont deux que ce plan n'avait pas vues : « j'ai déjà
+> commencé » produit 100 % de tâches à rattraper, et « je ne sais pas encore
+> quand » ne produit aucun axe du tout.
+
 ### Ce que la feuille de route ignore encore du profil — mesuré
 
 Sur les douze réponses du questionnaire, **deux seulement** influencent la
