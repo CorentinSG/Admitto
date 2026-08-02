@@ -81,7 +81,45 @@ export default async function RoadmapPage() {
         {dashboard.roadmapIntro}
       </p>
 
-      {timelineView ? <Timeline view={timelineView} /> : null}
+      {timelineView ? (
+        <Timeline view={timelineView} />
+      ) : (
+        /* Sans rentrée décidée, pas d'axe — mais on dit pourquoi plutôt que de
+           laisser un blanc. Les tâches suivent, dans leur ordre. */
+        <section
+          style={{
+            marginTop: 32,
+            padding: "24px 26px",
+            border: `1px solid ${alpha.cardGridGap}`,
+          }}
+        >
+          <h2
+            style={{
+              fontFamily: fonts.serif,
+              fontWeight: 400,
+              fontSize: "1.2rem",
+              margin: 0,
+              color: colors.navy900,
+            }}
+          >
+            {dashboard.timeline.noAxisTitle}
+          </h2>
+          <p
+            style={{
+              fontFamily: fonts.sans,
+              fontSize: "0.9rem",
+              lineHeight: 1.8,
+              margin: "12px 0 0",
+              maxWidth: 640,
+              color: colors.slate,
+            }}
+          >
+            {loaded.assessment.answers.intake === "ALREADY_STARTED"
+              ? dashboard.timeline.noAxisStarted
+              : dashboard.timeline.noAxisUndecided}
+          </p>
+        </section>
+      )}
 
       {phases.map((phase) => (
         <section key={phase.phase} style={{ marginTop: 48 }}>

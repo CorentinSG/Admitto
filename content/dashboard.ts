@@ -63,6 +63,21 @@ export const dashboard = {
     behind: "à rattraper",
     deadlineLegend: "Échéance officielle",
     toStart: "À commencer maintenant",
+    /*
+     * Pas de rentrée décidée : il n'y a pas d'axe du temps, et en dessiner un
+     * serait une invention. Mais ne RIEN afficher — ce que faisait la page —
+     * laissait un sixième des utilisateurs devant un blanc, sans savoir si
+     * quelque chose manquait. Les tâches restent listées par phase juste en
+     * dessous : ce qui manque est la date, pas la séquence.
+     */
+    noAxisTitle: "Pas d'axe du temps",
+    /* Deux causes distinctes, et les confondre serait dire une contrariété à
+       la moitié des personnes concernées : celle qui n'a pas décidé sa rentrée
+       n'est pas celle qui a déjà commencé son parcours. */
+    noAxisUndecided:
+      "Votre rentrée visée n'est pas encore décidée : sans elle, aucune échéance ne peut être calculée, et en inventer serait vous induire en erreur. Vos tâches restent ci-dessous dans leur ordre d'enchaînement. Décider une rentrée, même provisoire, est la première chose qui les datera toutes.",
+    noAxisStarted:
+      "Votre parcours a déjà commencé : les tâches qui se comptaient « avant la rentrée » n'ont plus d'échéance à afficher, et leur en donner une serait faux. Elles restent ci-dessous dans leur ordre. Celles qui viennent après la rentrée — évaluation, barreau, admission — gardent la leur.",
   },
   sections: {
     phase: "Phase actuelle",

@@ -219,3 +219,60 @@ describe("prochaine action : arrivée tardive", () => {
     expect(avec?.reason).toContain("à rattraper");
   });
 });
+
+describe("adaptation au profil réel", () => {
+  const now = new Date("2026-11-01T12:00:00Z");
+  const answers = (over: Partial<Answers>): Answers => ({ ...APPLICANT, ...over }) as Answers;
+  const build = (over: Partial<Answers>) => {
+    const a = answers(over);
+    return generateRoadmap(a, deriveProfile(a, now).journeyType, now);
+  };
+
+  it("ne date pas les tâches d'avant la rentrée quand celle-ci est déjà passée", () => {
+    // « J'ai déjà commencé » plaçait la rentrée au 15 août de l'année COURANTE :
+    // tout ce qui se compte « N mois avant » tombait dans le passé, soit 12
+    // tâches sur 12 à rattraper dès le premier jour.
+    const tasks = applicableTasks(build({ intake: "ALREADY_STARTED" }));
+    expect(tasks.length).toBeGreaterThan(0);
+    expect(tasks.every((t) => t.dueDate === null)).toBe(true);
+  });
+
+  it("place la rentrée dans le PASSÉ toute l'année pour un parcours commencé", () => {
+    /*
+     * Le décalage de zéro année plaçait la rentrée au 15 août de l'année
+     * courante — donc dans le futur pour qui s'inscrit entre janvier et
+     * mi-août, sept mois sur douze. Une inscription en février datait ainsi
+     * « finaliser votre liste d'écoles » pour le mois d'avril suivant, à
+     * quelqu'un déjà en cours de scolarité.
+     */
+    for (const jour of ["2027-02-01", "2027-05-01", "2027-08-01", "2027-11-01"]) {
+      const ref = new Date(`${jour}T12:00:00Z`);
+      const a = answers({ intake: "ALREADY_STARTED" });
+      const avantRentree = TASK_TEMPLATES.filter((t) => t.monthsBeforeIntake > 0);
+      for (const t of avantRentree) {
+        expect(dueDateFor(t, a, ref), `${t.id} au ${jour}`).toBeNull();
+      }
+    }
+  });
+
+  it("garde les échéances d'APRÈS la rentrée pour un parcours commencé", () => {
+    // Évaluation, barreau, admission : ce sont précisément celles qui comptent
+    // à ce stade, et elles restent datées.
+    const tasks = applicableTasks(
+      build({ status: "ADMITTED_OR_ENROLLED", intake: "ALREADY_STARTED" })
+    );
+    expect(tasks.some((t) => t.dueDate !== null)).toBe(true);
+  });
+
+  it("écarte le dossier de statut pour un binational américain", () => {
+    // Réponse explicite ignorée jusqu'ici : le questionnaire lui épargnait déjà
+    // la branche visa, la feuille de route lui proposait quand même la tâche.
+    const avec = applicableTasks(build({ usStatus: "FR_NO_STATUS" }));
+    const sans = applicableTasks(build({ usStatus: "US_DUAL_NATIONAL" }));
+    expect(avec.some((t) => t.phase === "VISA")).toBe(true);
+    expect(sans.some((t) => t.phase === "VISA")).toBe(false);
+    // Écartée, pas accomplie : le dénominateur s'ajuste, le numérateur non.
+    const brut = build({ usStatus: "US_DUAL_NATIONAL" });
+    expect(brut.find((t) => t.phase === "VISA")!.status).toBe("NOT_APPLICABLE");
+  });
+});

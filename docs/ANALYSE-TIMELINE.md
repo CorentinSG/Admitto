@@ -57,6 +57,15 @@ celles des candidatures. Soit ancrer sur la prochaine échéance officielle
 pertinente, soit assumer une liste ordonnée **sans dates** plutôt qu'un axe
 faux.
 
+> **Corrigée.** Le défaut était plus large que mesuré ici : la rentrée était
+> ancrée au 15 août de l'année COURANTE, donc dans le futur pour qui s'inscrit
+> entre janvier et mi-août — sept mois sur douze. Une inscription en février
+> datait « finaliser votre liste d'écoles » pour le mois d'avril suivant, à
+> quelqu'un déjà en cours de scolarité. La rentrée est désormais placée dans le
+> passé toute l'année, et les tâches d'avant-rentrée ne portent plus de date.
+> Celles d'après — évaluation, barreau, admission — gardent la leur. Les formes
+> « 100 % à rattraper » passent de 7 sur 30 à 1.
+
 ---
 
 ## Pathologie 2 — « Je ne sais pas encore » : aucun axe du tout
@@ -77,6 +86,13 @@ elles ont un **ordre** et des dépendances ; seules les dates manquent.
 les durées estimées et les enchaînements, plus une invitation à décider la
 rentrée — ce qui est précisément la première décision utile. Aucune date
 inventée, donc aucune entorse au principe.
+
+> **Corrigée en partie.** Les tâches étaient en réalité déjà listées par phase ;
+> ce qui manquait était l'explication. La page n'affichait **rien** à la place de
+> l'axe, alors que le commentaire du code annonçait « l'appelant affiche
+> pourquoi ». Elle dit maintenant pourquoi — avec deux messages distincts, car
+> confondre « je n'ai pas décidé ma rentrée » et « mon parcours a déjà
+> commencé » revient à contredire la moitié des personnes concernées.
 
 ---
 
@@ -161,6 +177,8 @@ Trois niveaux d'adaptation, du moins au plus ambitieux :
 1. **Écarter ce qui ne s'applique pas** (mécanique, aucune décision) : pas de
    dossier de visa pour un binational américain — le questionnaire le sait déjà
    (`needsVisaBranch`), le modèle sait l'exprimer (`NOT_APPLICABLE`).
+   **Livré** : la tâche est `NOT_APPLICABLE` et non `DONE`, donc le dénominateur
+   de la progression s'ajuste sans que le numérateur soit gonflé.
 2. **Honorer les réponses explicites** (un arbitrage, cf. `PLAN-UX.md`) : ne pas
    proposer « programmer le test d'anglais » à qui a répondu « test déjà passé ».
 3. **Pondérer selon l'objectif** (le vrai sujet) : `geoGoal: RETURN_FRANCE`
