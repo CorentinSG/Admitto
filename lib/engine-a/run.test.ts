@@ -61,4 +61,45 @@ describe("Moteur A", () => {
   it("aucune règle active ne peut être dépourvue de source ou de date de vérification", () => {
     expect(unverifiedActiveRules(RULES)).toEqual([]);
   });
+
+  describe("admission à un barreau étranger (vérification du 2026-08-02)", () => {
+    const avocat = (foreignBar: Answers["foreignBar"]) =>
+      runEngineA(
+        profileOf({ status: "LAWYER_EXPLORING", education: "CAPA", usStatus: "FR_NO_STATUS", foreignBar })
+      );
+
+    it("ne change PAS la voie : elle ajoute un paragraphe, pas une orientation", () => {
+      // Le BOLE ne publie aucune liste des juridictions de common law et évalue
+      // chaque dossier ; le § 520.6(b)(2) exige de surcroît un LL.M. Une
+      // admission étrangère ne peut donc pas produire de voie à elle seule.
+      const sans = avocat("NONE");
+      const avec = avocat("OTHER_COUNTRY");
+      expect(avec.path).toBe(sans.path);
+      expect(avec.path).toBe("NY_VIA_LLM_SUBJECT_TO_BOLE");
+      expect(avec.textBlocks.length).toBe(sans.textBlocks.length + 1);
+      expect(avec.textBlocks.join(" ")).toMatch(/ne publie aucune liste/);
+    });
+
+    it("vise la France comme les autres pays", () => {
+      // « La France est exclue de la Rule 520.6 » était trop large : le
+      // § 520.6(b)(1)(ii) permet de corriger une déficience substantielle par
+      // un LL.M. Ce que le produit doit dire à un avocat français est donc ce
+      // qu'il dit à tout avocat étranger.
+      expect(avocat("FRANCE").firedRules.map((r) => r.id)).toContain("R-NY-002");
+    });
+
+    it("ne se déclenche pas quand l'écran n'a pas été affiché", () => {
+      // `foreignBar` reste `undefined` lorsque la logique conditionnelle saute
+      // l'écran. Un `neq: "NONE"` aurait fait feu pour tout le monde.
+      const out = runEngineA(profileOf({ status: "APPLYING", education: "M2", usStatus: "FR_NO_STATUS" }));
+      expect(out.firedRules.map((r) => r.id)).not.toContain("R-NY-002");
+    });
+
+    it("aucune règle ne produit plus la voie directe", () => {
+      // Ni le § 520.6(b)(2) ni le § 520.10 ne décrivent une voie qui se passe
+      // d'un passage aux États-Unis. La catégorie reste dans la liste fermée du
+      // CDC, vide de contenu — l'y remettre demanderait une source.
+      expect(RULES.map((r) => r.factProduced)).not.toContain("DIRECT_PATH_TO_EXAMINE");
+    });
+  });
 });

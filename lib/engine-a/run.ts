@@ -22,6 +22,11 @@ import type { EngineAOutput, PreliminaryPath, Rule } from "./types";
  * étrangère — et qu'il est réservé aux systèmes de common law. La voie qui
  * suppose le plus de conditions ne peut pas primer celle qui en suppose moins :
  * elle en est un cas particulier, pas une dispense.
+ *
+ * Depuis le 2026-08-02, `DIRECT_PATH_TO_EXAMINE` n'est plus produite par aucune
+ * règle : ni le § 520.6(b)(2) ni le § 520.10 ne décrivent une voie qui se passe
+ * d'un passage aux États-Unis. Sa place ici n'est donc plus qu'une réponse à la
+ * question « et si une règle la produisait un jour ».
  */
 const PATH_PRIORITY: PreliminaryPath[] = [
   "INSUFFICIENT_INFORMATION",

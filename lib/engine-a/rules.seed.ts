@@ -22,9 +22,17 @@ import type { Rule } from "./types";
  *
  * ⚠️ Ce que l'activation change, MESURÉ sur 1 080 profils complets :
  * R-NY-001 seule fait passer la revue humaine de 83 % à 0 % — elle se déclenche
- * pour tout profil au-delà de la licence. R-NY-002 l'emporte sur elle quand les
- * deux se déclenchent. R-ALT-001 devient inopérante dès que R-NY-001 est active,
- * `ALTERNATIVE_TO_EXAMINE` étant la voie la moins prioritaire.
+ * pour tout profil au-delà de la licence. R-NY-002 produit la MÊME voie qu'elle
+ * et n'ajoute qu'un bloc de texte : elle ne change donc aucune orientation, ce
+ * qui est précisément ce que la vérification du 2026-08-02 a établi. R-ALT-001
+ * devient inopérante dès que R-NY-001 est active, `ALTERNATIVE_TO_EXAMINE`
+ * étant la voie la moins prioritaire.
+ *
+ * `DIRECT_PATH_TO_EXAMINE` n'est produite par AUCUNE règle, et le restera tant
+ * qu'une source ne décrira pas une voie qui se passe d'un passage aux
+ * États-Unis. La catégorie reste dans la liste fermée du CDC §14.1 — la vider
+ * de son contenu est un constat, la retirer serait modifier le cahier des
+ * charges.
  *
  * Le protocole de vérification, question par question, est dans
  * `docs/VERIFICATION-REGLES.md`.
@@ -106,33 +114,43 @@ export const RULES: Rule[] = [
   },
   {
     id: "R-NY-002",
-    // Admission à un barreau étranger : peut ouvrir un examen de voie directe.
+    // Admission à un barreau étranger — CONSTAT DE DOSSIER, non voie distincte.
     //
-    // VÉRIFIÉE le 2026-08-01, et TOUJOURS INACTIVE — la vérification a conclu
-    // contre elle, ce qui est un résultat et non un report :
+    // Deux vérifications successives ont conduit ici, et la seconde a défait
+    // une partie de la première :
     //
-    //   1. FRANCE est SORTIE de la condition. Le § 520.6(b)(2), seul texte
-    //      visant les avocats déjà admis, est réservé aux pays « whose
-    //      jurisprudence is based upon principles of English Common Law ». La
-    //      France en est exclue, et le § 520.10(a)(1)(ii) pose la même limite
-    //      pour l'admission sans examen.
-    //   2. « Voie directe » est INEXACT même pour les profils légitimes : le
-    //      § 520.6(b)(2) exige en outre un LL.M. Le bloc de texte a été corrigé
-    //      en conséquence (voir TB-DIRECT-PATH).
+    //   2026-08-01 — le § 520.6(b)(2), seul texte visant les avocats déjà
+    //   admis, est réservé aux pays « whose jurisprudence is based upon the
+    //   principles of English Common Law », et exige EN OUTRE un LL.M.
+    //   américain. « Voie directe » était donc inexact pour tout le monde.
     //
-    // CE QUI RESTE À TRANCHER AVANT TOUTE ACTIVATION : `OTHER_COUNTRY` ne dit
-    // pas de quel pays il s'agit. Un avocat allemand ou espagnol relève d'un
-    // système civiliste au même titre qu'un avocat français, et la condition de
-    // common law n'est donc pas davantage établie pour lui. Sortir la France
-    // était nécessaire, ce n'est pas suffisant : il faut soit recueillir le pays
-    // d'admission, soit faire de cette règle un renvoi en revue humaine.
-    condition: { field: "foreignBar", op: "eq", value: "OTHER_COUNTRY" },
-    factProduced: "DIRECT_PATH_TO_EXAMINE",
-    textBlockId: "TB-DIRECT-PATH",
-    sourceUrl: "https://www.nybarexam.org/Rules/Rules.htm",
-    verifiedAt: null,
-    version: 1,
-    active: false,
+    //   2026-08-02 — recherche sur les sources du BOLE. Trois constats :
+    //     1. Le BOLE ne publie AUCUNE liste des juridictions relevant de ce
+    //        critère, ni méthode publique de classement. Il impose une
+    //        évaluation individuelle du dossier (Request for Foreign
+    //        Evaluation). Une règle qui trierait par pays inventerait donc son
+    //        critère — c'est ce qui l'a maintenue dormante jusqu'ici.
+    //     2. Le § 520.6(b)(2) exige un LL.M. ; le § 520.10 exige, lui, un
+    //        premier diplôme américain agréé par l'ABA, qu'un LL.M. ne
+    //        remplace pas. Aucune des deux ne se passe d'un passage aux
+    //        États-Unis : `DIRECT_PATH_TO_EXAMINE` ne décrit rien de réel.
+    //     3. « La France est exclue de la Rule 520.6 » était trop large. Le
+    //        § 520.6(b)(1)(ii) permet de corriger par un LL.M. une déficience
+    //        substantielle — ce que la voie NY_VIA_LLM_SUBJECT_TO_BOLE dit
+    //        déjà. Le produit disait donc juste par ailleurs.
+    //
+    // D'où la forme retenue : la règle ne produit PAS de voie propre. Elle
+    // produit la MÊME voie que R-NY-001, et n'ajoute qu'un bloc de texte —
+    // l'assemblage rend tous les blocs des règles dont le fait vaut la voie
+    // retenue. L'admission étrangère cesse d'être une orientation et redevient
+    // ce qu'elle est : un élément du dossier, à documenter.
+    condition: { field: "foreignBar", op: "in", value: ["FRANCE", "OTHER_COUNTRY"] },
+    factProduced: "NY_VIA_LLM_SUBJECT_TO_BOLE",
+    textBlockId: "TB-FOREIGN-BAR",
+    sourceUrl: "https://www.nybarexam.org/foreign/foreignlegaleducation.htm",
+    verifiedAt: "2026-08-02",
+    version: 2,
+    active: true,
   },
   {
     id: "R-ALT-001",
@@ -167,11 +185,12 @@ export const TEXT_BLOCKS: Record<string, string> = {
     "Votre cursus juridique est encore en cours. À ce stade, l'enjeu n'est pas l'accès au barreau mais la préparation : choix du master, niveau d'anglais, budget et repérage des partenariats de votre université.",
   "TB-NY-VIA-LLM":
     "Votre formation correspond au profil des juristes qui empruntent la voie du LL.M. américain avant de demander l'accès à l'examen du barreau de New York. Cette voie suppose une évaluation individuelle par le New York Board of Law Examiners, seule autorité compétente pour se prononcer.",
-  // Ne promet plus d'« examen de voie directe » : le texte applicable aux
-  // avocats déjà admis exige en outre un LL.M., et il est réservé aux systèmes
-  // de common law. Une admission étrangère n'ouvre donc rien à elle seule.
-  "TB-DIRECT-PATH":
-    "Votre admission à un barreau étranger est un élément de votre dossier, mais elle ne dispense par elle-même d'aucune des conditions posées à l'accès à l'examen. Son effet dépend du système juridique du pays d'admission et s'apprécie avec le reste de votre parcours. Cette appréciation relève exclusivement du New York Board of Law Examiners.",
+  // S'AJOUTE à TB-NY-VIA-LLM, il ne le remplace pas : une admission étrangère
+  // ne change pas la voie, elle ajoute des pièces au dossier. Le texte dit
+  // aussi ce que le BOLE ne publie pas — l'absence de liste est justement ce
+  // qui interdit au produit de trancher par pays.
+  "TB-FOREIGN-BAR":
+    "Votre admission à un barreau étranger est un élément de votre dossier, et non une dispense : le texte réservé aux avocats déjà admis exige lui aussi un LL.M. américain, et l'admission sans examen suppose un premier diplôme obtenu aux États-Unis. Le New York Board of Law Examiners ne publie aucune liste des pays dont la jurisprudence est fondée sur les principes de la common law anglaise : il procède à une évaluation individuelle du dossier, et lui seul se prononce. Le pays d'admission et la façon dont vous l'avez obtenue — diplôme de droit, ou combinaison d'études et de formation en cabinet — sont donc à documenter.",
   "TB-ALTERNATIVE":
     "Votre objectif géographique et professionnel oriente vers d'autres options que l'admission à un barreau américain. Ces alternatives sont examinées dans votre rapport.",
   "TB-HUMAN-REVIEW":

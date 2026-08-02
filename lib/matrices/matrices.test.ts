@@ -239,27 +239,27 @@ describe("règles effectives", () => {
   });
 
   it("écarte une révision qui violerait « active ⇒ sourcée et vérifiée »", () => {
-    // Sur R-NY-002, INACTIVE en code : une révision sans source ne doit pas
-    // pouvoir l'activer. Le test portait auparavant sur R-NY-001, ce qui a
-    // cessé d'avoir un sens le jour où cette règle a été vérifiée et activée —
-    // il constatait alors l'état du code plutôt que le refus de la révision.
+    // Sur R-ALT-001, seule règle encore INACTIVE en code : une révision sans
+    // source ne doit pas pouvoir l'activer. Le test a suivi les activations
+    // successives — R-NY-001 d'abord, puis R-NY-002 le 2026-08-02 — parce que
+    // porté sur une règle déjà active, il constaterait l'état du code au lieu
+    // du refus de la révision.
     const rules = effectiveRules(
-      new Map([["R-NY-002", revision({ ruleId: "R-NY-002", sourceUrl: "", verifiedAt: null })]])
+      new Map([["R-ALT-001", revision({ ruleId: "R-ALT-001", sourceUrl: "", verifiedAt: null })]])
     );
-    expect(rules.find((r) => r.id === "R-NY-002")!.active).toBe(false);
+    expect(rules.find((r) => r.id === "R-ALT-001")!.active).toBe(false);
   });
 
   it("une règle activée par révision entre réellement dans l'évaluation", () => {
-    // Profil avocat admis à un barreau ÉTRANGER hors France : depuis la
-    // vérification du 2026-08-01, R-NY-002 ne vise plus la France (§ 520.6(b)(2)
-    // est réservé aux systèmes de common law).
+    // Sur R-ALT-001, dernière règle inactive en code. Son objet est le retour
+    // en France, d'où le double `RETURN_FRANCE` ci-dessous.
     const answers: Answers = {
       status: "LAWYER_EXPLORING",
       education: "CAPA",
       university: "assas",
       foreignBar: "OTHER_COUNTRY",
-      careerGoal: "ARBITRATION",
-      geoGoal: "KEEP_BOTH",
+      careerGoal: "RETURN_FRANCE",
+      geoGoal: "RETURN_FRANCE",
       budget: "60_100K",
       funding: "BOTH",
       intake: "Y1",
@@ -271,19 +271,18 @@ describe("règles effectives", () => {
     const profile = flattenForRules(answers, deriveProfile(answers, NOW));
 
     const dormant = runEngineA(profile, effectiveRules(new Map()));
-    expect(dormant.firedRules.map((r) => r.id)).not.toContain("R-NY-002");
+    expect(dormant.firedRules.map((r) => r.id)).not.toContain("R-ALT-001");
 
     const awake = runEngineA(
       profile,
-      effectiveRules(new Map([["R-NY-002", revision({ ruleId: "R-NY-002" })]]))
+      effectiveRules(new Map([["R-ALT-001", revision({ ruleId: "R-ALT-001" })]]))
     );
-    expect(awake.firedRules).toContainEqual({ id: "R-NY-002", version: 2 });
+    expect(awake.firedRules).toContainEqual({ id: "R-ALT-001", version: 2 });
 
-    // La VOIE reste celle du LL.M. : depuis la correction de `PATH_PRIORITY`,
-    // `NY_VIA_LLM_SUBJECT_TO_BOLE` prime `DIRECT_PATH_TO_EXAMINE`, parce que la
-    // voie de l'avocat étranger suppose un LL.M. EN PLUS de l'admission — elle
-    // en est un cas particulier, pas une dispense. L'assertion est ici pour
-    // qu'un retour à l'ancien ordre se voie immédiatement.
+    // La VOIE ne change pas pour autant : `ALTERNATIVE_TO_EXAMINE` est la moins
+    // prioritaire, et R-NY-001 est active. Une règle qui entre dans
+    // l'évaluation n'emporte pas l'orientation — c'est la priorité qui tranche,
+    // et l'assertion est ici pour qu'un retour à l'ancien ordre se voie.
     expect(awake.path).toBe("NY_VIA_LLM_SUBJECT_TO_BOLE");
   });
 });

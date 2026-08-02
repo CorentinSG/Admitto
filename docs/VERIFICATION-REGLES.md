@@ -5,8 +5,10 @@
 > des résumés. Ce document est le compte rendu de cette vérification et de ce
 > qu'elle a changé dans le code.
 >
-> **Résultat** : R-NY-001 activée · R-NY-002 corrigée et **maintenue inactive**
-> · R-ALT-001 laissée à l'arbitrage métier.
+> **Résultat** : R-NY-001 activée · R-NY-002 d'abord maintenue inactive, puis
+> **activée sous une autre forme** après la recherche du 2026-08-02 (elle ne
+> produit plus de voie, seulement un bloc de texte) · R-ALT-001 laissée à
+> l'arbitrage métier.
 
 ## Le point qui commande les trois réponses
 
@@ -45,7 +47,7 @@ le décompte.
 > Le filet humain n'a pas disparu, il a changé de place — du moteur vers la
 > relecture, là où le CDC §17 le prévoit.
 
-## R-NY-002 — avocat admis à un barreau étranger : **inactive**
+## R-NY-002, première vérification (2026-08-01) — **inactive**
 
 La vérification a conclu **contre** la règle, ce qui est un résultat et non un
 report. Trois corrections ont été apportées, et elle reste `active: false`.
@@ -64,12 +66,62 @@ report. Trois corrections ont été apportées, et elle reste `active: false`.
    disait le contraire du texte : un avocat français recevait la voie directe et
    jamais la voie LL.M.
 
-**Ce qui reste à trancher avant toute activation** : `OTHER_COUNTRY` ne dit pas
-de quel pays il s'agit. Un avocat allemand ou espagnol relève d'un système
-civiliste au même titre qu'un avocat français — la condition de common law n'est
-donc pas davantage établie pour lui. Sortir la France était nécessaire, ce n'est
-pas suffisant. Deux options : recueillir le pays d'admission, ou faire de cette
-règle un renvoi explicite en revue humaine.
+**Ce qui restait à trancher** : `OTHER_COUNTRY` ne dit pas de quel pays il
+s'agit. Un avocat allemand ou espagnol relève d'un système civiliste au même
+titre qu'un avocat français — la condition de common law n'est donc pas
+davantage établie pour lui. Sortir la France était nécessaire, ce n'était pas
+suffisant. Recherche conduite le 2026-08-02, voir ci-dessous.
+
+## R-NY-002, seconde vérification (2026-08-02) — **activée sous une autre forme**
+
+Source `https://www.nybarexam.org/foreign/foreignlegaleducation.htm`, croisée
+avec le texte de la partie 520. La recherche a défait une partie de la première
+vérification, ce qu'il faut dire tel quel.
+
+### Trois constats
+
+1. **Le BOLE ne publie aucune liste** des juridictions dont la jurisprudence est
+   fondée sur les principes de la common law anglaise, ni méthode publique de
+   classement. Il impose une évaluation individuelle du dossier (*Request for
+   Foreign Evaluation*). Une règle qui trierait par pays inventerait donc son
+   critère — ce qui explique après coup pourquoi elle n'a jamais pu être
+   activée en l'état.
+2. **Aucune des deux voies ne se passe d'un passage aux États-Unis.** Le
+   § 520.6(b)(2) exige un LL.M. américain ; le § 520.10(a)(3) exige un premier
+   diplôme obtenu dans une law school américaine agréée par l'ABA, qu'un LL.M.
+   ne remplace pas. `DIRECT_PATH_TO_EXAMINE` ne décrit donc rien de réel.
+3. **« La France est exclue de la Rule 520.6 » était trop large.** Le
+   § 520.6(b)(1)(ii) permet de corriger une déficience substantielle par un
+   LL.M. conforme, dès lors que la durée est satisfaite. C'est exactement ce que
+   dit `NY_VIA_LLM_SUBJECT_TO_BOLE` : le produit disait juste par ailleurs, et
+   seule la formulation du commentaire de code était excessive.
+
+### Ce que la règle est devenue
+
+Elle **ne produit plus de voie propre**. Elle produit la même voie que R-NY-001
+et n'ajoute qu'un bloc de texte, `TB-FOREIGN-BAR` — l'assemblage rend tous les
+blocs des règles dont le fait vaut la voie retenue. L'admission étrangère cesse
+d'être une orientation et redevient ce qu'elle est : un élément du dossier.
+
+La condition vise **la France comme les autres pays**
+(`in ["FRANCE", "OTHER_COUNTRY"]`), et non `neq "NONE"` : `foreignBar` reste
+`undefined` quand la logique conditionnelle saute l'écran, et un `neq` aurait
+fait feu pour tout le monde.
+
+### Ce que le produit n'a pas le droit de dire
+
+- « Vous êtes admis dans le pays X, donc vous pouvez passer l'examen sans
+  LL.M. » — le § 520.6(b)(2) exige le LL.M.
+- « Vous êtes admis dans un pays de common law, donc vous pouvez être admis sans
+  examen. » — omet le premier diplôme américain, la réciprocité, les cinq années
+  de pratique et le pouvoir discrétionnaire de l'Appellate Division.
+
+### Ce qui reste ouvert
+
+`DIRECT_PATH_TO_EXAMINE` reste dans la liste fermée du CDC §14.1, vide de
+contenu. La vider est un constat ; la retirer serait modifier le cahier des
+charges. Y remettre une règle demanderait une source décrivant une voie qui se
+passe d'un passage aux États-Unis — aucune n'a été trouvée.
 
 ## R-ALT-001 — alternatives : arbitrage métier
 
