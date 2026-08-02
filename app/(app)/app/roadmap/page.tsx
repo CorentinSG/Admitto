@@ -10,6 +10,8 @@ import { dashboard, PHASE_LABELS, STATUS_LABELS } from "@/content/dashboard";
 import { TaskStatusControl } from "../_components/TaskStatusControl";
 import { buildTimelineView } from "@/lib/roadmap/timeline-view";
 import { Timeline } from "./Timeline";
+import { intakeWindow } from "@/lib/roadmap/window";
+import { declaredDone } from "@/lib/roadmap/declared";
 
 export const metadata: Metadata = {
   title: "Feuille de route — Admitto",
@@ -41,6 +43,12 @@ export default async function RoadmapPage() {
   // Timeline (CDC §22) : mêmes tâches et mêmes échéances officielles,
   // projetées sur l'axe du temps. La projection est PARTAGÉE avec le tableau
   // de bord : deux projections divergeraient sans que rien ne le signale.
+  // Ce que la personne a déclaré fait au questionnaire : on le lui redit, on
+  // ne coche pas à sa place.
+  const declared = new Map(
+    declaredDone(tasks, loaded.assessment.answers).map((d) => [d.taskId, d.answerLabel])
+  );
+
   const timelineView = buildTimelineView(
     tasks,
     loaded.assessment.deadlines,
@@ -80,6 +88,57 @@ export default async function RoadmapPage() {
       >
         {dashboard.roadmapIntro}
       </p>
+
+      {(() => {
+        /*
+         * La fenêtre n'est affichée que lorsqu'elle apprend quelque chose : si
+         * le temps restant couvre le calendrier, la rappeler serait du bruit.
+         * Un encart qui se montre toujours cesse d'être lu.
+         */
+        const window = intakeWindow(tasks, loaded.assessment.answers, now);
+        if (!window || !window.tight) return null;
+        return (
+          <section
+            style={{
+              marginTop: 32,
+              padding: "24px 26px",
+              border: `1px solid ${alpha.goldBorderHover}`,
+              backgroundColor: alpha.goldBadgeBg,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: fonts.serif,
+                fontWeight: 400,
+                fontSize: "1.2rem",
+                margin: 0,
+                color: colors.navy900,
+              }}
+            >
+              {dashboard.timeline.windowTitle}
+            </h2>
+            <p
+              style={{
+                fontFamily: fonts.sans,
+                fontSize: "0.9rem",
+                lineHeight: 1.8,
+                margin: "12px 0 0",
+                maxWidth: 680,
+                color: colors.slate,
+              }}
+            >
+              {dashboard.timeline.windowTight(
+                window.monthsLeft,
+                window.monthsNeeded,
+                window.behindCount,
+                window.datedCount,
+                window.targetYear,
+                window.nextYear
+              )}
+            </p>
+          </section>
+        );
+      })()}
 
       {timelineView ? (
         <Timeline view={timelineView} />
@@ -249,6 +308,22 @@ export default async function RoadmapPage() {
                   </Link>
                 ) : null}
 
+                {declared.has(task.id) && (
+                  <p
+                    style={{
+                      fontFamily: fonts.sans,
+                      fontSize: "0.82rem",
+                      lineHeight: 1.7,
+                      margin: "0 0 12px",
+                      padding: "10px 14px",
+                      maxWidth: 640,
+                      backgroundColor: alpha.goldBadgeBg,
+                      color: colors.slate,
+                    }}
+                  >
+                    {dashboard.timeline.declaredHint(declared.get(task.id)!)}
+                  </p>
+                )}
                 <TaskStatusControl taskId={task.id} status={task.status} />
               </div>
             ))}

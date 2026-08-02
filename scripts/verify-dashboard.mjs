@@ -165,6 +165,21 @@ check(
 );
 check("Aucune éligibilité affirmée", !/vous êtes éligible/i.test(roadmap));
 
+// ── Fenêtre de la rentrée visée ────────────────────────────────────────────
+// Ce profil vise « l'an prochain » : douze mois pour un calendrier qui en
+// suppose quatorze. L'encart doit énoncer l'écart, nommer le cycle suivant,
+// et ne rien décider à la place de la personne.
+check("Fenêtre de la rentrée signalée", roadmap.includes("le temps qu'il vous reste"));
+check("L'écart est chiffré", /alors que ce calendrier en suppose \d+/.test(roadmap));
+check("Le retard n'est pas imputé à la personne", roadmap.includes("ce n'est pas un retard de votre fait"));
+check("Le cycle suivant est nommé sans être imposé", /viser la rentrée d'août \d{4} vous rendrait/.test(roadmap));
+
+// ── Réponse déjà donnée au questionnaire ───────────────────────────────────
+// Ce profil a répondu « Test déjà passé ». Le produit le lui redit sur la
+// tâche concernée — et ne coche pas à sa place (CDC §24).
+check("Réponse du questionnaire redite sur la tâche", roadmap.includes("au questionnaire, vous avez répondu"));
+check("Le clic reste à la personne", roadmap.includes("le produit ne le fera pas à votre place"));
+
 // ── Timeline interactive (CDC §22) ─────────────────────────────────────────
 // `roadmap` est déjà en minuscules : innerText rend le texte TEL QU'AFFICHÉ,
 // donc « AUJOURD'HUI » à cause du text-transform — comparer en casse pliée.

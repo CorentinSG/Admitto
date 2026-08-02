@@ -70,6 +70,22 @@ export const dashboard = {
      * quelque chose manquait. Les tâches restent listées par phase juste en
      * dessous : ce qui manque est la date, pas la séquence.
      */
+    /*
+     * Fenêtre de la rentrée visée : le produit rapproche deux chiffres qu'il
+     * connaissait séparément — le temps restant, et le temps que son calendrier
+     * suppose. Il ne conseille pas de décaler : il énonce l'écart et nomme le
+     * cycle suivant. La décision reste à la personne.
+     */
+    /* Le produit redit ce que la personne a répondu, et lui laisse le clic :
+       il cesse d'oublier sans cocher à sa place (CDC §24). */
+    declaredHint: (reponse: string) =>
+      `Au questionnaire, vous avez répondu « ${reponse} ». Si c'est toujours le cas, marquez cette tâche complétée — le produit ne le fera pas à votre place.`,
+    windowTitle: "Le temps qu'il vous reste",
+    /* Pas de variante « vous êtes dans les temps » : un encart qui se montre
+       toujours cesse d'être lu, et celui-ci n'a de valeur que le jour où il
+       annonce un écart. */
+    windowTight: (mois: number, suppose: number, retard: number, total: number, annee: number, suivante: number) =>
+      `Il vous reste ${mois} mois avant la rentrée d'août ${annee}, alors que ce calendrier en suppose ${suppose}. Sur vos ${total} tâches datées, ${retard} sont donc à rattraper d'emblée — ce n'est pas un retard de votre fait. Viser la rentrée d'août ${suivante} vous rendrait le calendrier entier ; poursuivre sur ${annee} reste possible, à condition de traiter ces ${retard} tâches en priorité.`,
     noAxisTitle: "Pas d'axe du temps",
     /* Deux causes distinctes, et les confondre serait dire une contrariété à
        la moitié des personnes concernées : celle qui n'a pas décidé sa rentrée
