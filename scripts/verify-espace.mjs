@@ -194,7 +194,7 @@ const library = await page.locator("body").innerText();
  * Ils doivent rester d'accord avec la liste `LISIBLES` de
  * `lib/modules/modules.test.ts`, qui porte la même vérité côté unitaire.
  */
-const LISIBLES = 5;
+const LISIBLES = 10;
 const TOTAL = 11;
 
 const moduleCount = (library.match(/MODULE \d+/gi) ?? []).length;
@@ -213,7 +213,9 @@ check(`Les ${LISIBLES} modules rédigés sont liés`, lies === LISIBLES, `${lies
 // vers un 404 journalise une erreur réseau attendue : on borne la fenêtre
 // plutôt que de relâcher l'assertion « aucune erreur console ».
 const errorsBefore404 = consoleErrors.length;
-const direct = await page.goto(`${BASE}/app/modules/module-5-bole`, { waitUntil: "domcontentloaded" });
+// Le module 4 est le dernier non publié : sa source migratoire n'a pas pu être
+// ouverte (voir docs/VERIFICATION-MODULES.md).
+const direct = await page.goto(`${BASE}/app/modules/module-4-immigration`, { waitUntil: "domcontentloaded" });
 check("Module non rédigé inaccessible par URL directe", direct?.status() === 404, String(direct?.status()));
 
 // Retrait par correspondance, jamais par position : retirer « les N suivantes »

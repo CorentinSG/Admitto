@@ -4,68 +4,77 @@
 > `OFFICIAL_RULE` énonce une règle, un délai ou une procédure d'autorité : elle
 > ne peut pas être moins sourcée qu'une règle du Moteur A.
 >
-> **Rédigées le 2026-08-03. Aucun module n'est passé `published: true` — la
-> décision éditoriale vous appartient, et la limite de vérification ci-dessous
-> explique pourquoi elle ne pouvait pas être prise à votre place.**
+> **Rédigées le 2026-08-03, puis confrontées aux textes officiels le même jour.
+> Six sources sur sept ont été ouvertes et lues intégralement ; cinq modules
+> sont publiés, le sixième ne l'est pas.**
 
-## ⚠️ Limite de vérification, à lire avant de publier
+## Deux vérifications successives, et pourquoi la seconde a tout changé
 
-L'environnement d'exécution de cette session **ne peut atteindre aucune des
-sources officielles** : la politique réseau rejette les connexions vers
-`nycourts.gov`, `nybarexam.org`, `ncbex.org`, `uscis.gov`,
-`studyinthestates.dhs.gov`, `travel.state.gov` et `law.cornell.edu`
-(refus de tunnel HTTPS, code 403, constaté sur chacun).
+La première rédaction s'est faite **sans accès aux sources** : la politique
+réseau de l'environnement rejetait `nycourts.gov`, `nybarexam.org`,
+`ncbex.org`, `uscis.gov`, `calbar.ca.gov` et `law.cornell.edu`. Les sections
+avaient donc été écrites d'après une recherche web sur ces pages, chaque
+chiffre demandé deux fois et écarté s'il ne concordait pas.
 
-Les sections ont donc été rédigées à partir d'une **recherche web sur ces mêmes
-pages**, conduite par un outil qui, lui, y accède et en restitue le contenu.
-Chaque chiffre retenu a été demandé au moins deux fois, par des requêtes
-distinctes, et n'a été écrit que lorsque les retours concordaient. Aucun chiffre
-non corroboré n'a été conservé : c'est ce qui explique certaines formulations
-volontairement qualitatives.
+Un accès direct est devenu disponible dans la même session. Les textes ont été
+ouverts et lus. **La méthode indirecte tenait sur les ordres de grandeur et
+s'est trompée sur des points qui comptent** — c'est la raison d'être de la
+règle du projet, et voici ce qu'elle a rattrapé :
 
-Ce n'est pas la même chose que d'avoir ouvert le texte. Le champ `verifiedAt`
-porte donc `2026-08-03` **au titre de cette vérification-là**, et la relecture
-du fondateur est le second contrôle — celui qui ouvre la publication.
-
-**Ce qu'il reste à faire, section par section : ouvrir l'URL de la source,
-confronter les chiffres ci-dessous, puis passer `published: true`.**
-
-## Les sept sections, et ce qu'il faut y contrôler
-
-| Section | Source | Chiffres à confronter |
+| Point | Ce qui avait été écrit | Ce que dit le texte |
 | --- | --- | --- |
-| `m2-acces-barreau` | Part 520, § 520.6(b)(3) | 24 crédits ; 2 semestres hors été de 13 semaines ; 24 mois ; 700 minutes par crédit ; 2 + 2 + 2 + 6 crédits imposés ; exclusion de l'enseignement à distance |
-| `m4-statuts` | USCIS — Students and Employment | Aucun chiffre écrit, délibérément : la matière a changé en juillet 2026 (durée d'admission fixée d'après le programme). Contrôler que les trois familles de statuts et les autorités sont justement décrites |
-| `m5-conditions` | Part 520, § 520.6(b)(1) et (b)(2) | 83 crédits juridiques dont 64 en cours magistraux ; une seule déficience régularisable |
-| `m5-pieces` | BOLE — Foreign Legal Education | Compte et formulaire AVANT tout envoi ; relevés transmis par l'établissement ; traduction certifiée ; jusqu'à 6 mois à compter de la dernière pièce ; dépôt recommandé 6 mois avant la période d'inscription |
-| `m6-epreuves` | BOLE — UBE / NYLC / NYLE / MPRE | Pondérations 50 / 30 / 20 ; 200 questions en 6 h ; 6 × 30 min ; 2 × 90 min ; score UBE 266 ; NYLC ≈ 17 h ; NYLE 50 questions, 2 h, à livre ouvert, seuil 30 ; MPRE seuil 85 ; 3 ans pour déposer |
-| `m7-procedure` | BOLE — Admission ; § 520.16 et § 520.18 | 50 heures de pro bono avant dépôt, attestées ; 3 ans depuis le second jour de l'examen ; condition de compétences pour les études commencées après le 1er août 2016 ; cinq voies |
-| `m8-transfert` | NCBE — Transferring Your UBE Scores | Score requis ET ancienneté maximale fixés par chaque juridiction ; moralité refaite à chaque fois ; la Californie n'accepte aucun score transféré |
+| **Californie** (module 8) | « n'accepte aucun score transféré », présentée comme une impasse | Exact sur le transfert, **trompeur sur le fond** : la Californie ouvre son propre examen à **tout juriste pleinement admis à un barreau, y compris étranger, sans formation complémentaire**. Pour un avocat français, ce n'est pas une porte fermée mais une porte qui s'ouvre autrement. |
+| **Compétences professionnelles** (module 7) | « études de droit commencées après le 1er août 2016 » | Vrai pour qui qualifie sur sa seule formation étrangère. Pour les juristes étrangers **devant accomplir un LL.M.** — la majorité du public visé — la date est celle du **LL.M. commencé après le 1er août 2018**. |
+| **Semestres d'été** (module 2) | « deux semestres hors été » | Le programme ne peut pas être accompli **exclusivement** en semestres d'été, et **quatre crédits au maximum** peuvent y être acquis. |
+| **Voie des avocats admis** (module 5) | « admission fondée sur études + cabinet, plus un LL.M. » | Il manquait **deux** conditions : le pays doit relever de la common law, et la combinaison études + stage doit atteindre la durée exigée. |
+| **Score transférable** (module 8) | absent | Les trois épreuves doivent avoir été passées **dans la même juridiction et la même session**. Y transférer une note d'épreuve à choix multiples obtenue ailleurs ne produit **aucun** score transférable ensuite. |
+
+Ont également été ajoutés, parce qu'ils ne s'inventent pas : les crédits
+rattrapables hors cursus diplômant, l'obligation de suivre les cours sur le
+campus américain, les dates fermes de dépôt au BOLE (1er mai / 1er octobre),
+la forme exigée des pièces (pli scellé de l'émetteur, numéro d'identification
+sur chaque document, traducteur certifié), la validité de trois ans du score
+à l'examen d'État, et les deux voies de l'article 520.18 qui concernent
+directement un avocat français — un an de pratique, ou un stage accompli
+**avant** le LL.M., donc depuis la France.
+
+## État de publication
+
+| Module | Source ouverte et lue | Publié |
+| --- | --- | --- |
+| 2 — Choisir le bon LL.M. | Part 520, § 520.6(b)(3) | **oui** |
+| 4 — Panorama migratoire | **non** — `uscis.gov` reste inaccessible | **non** |
+| 5 — Dossier d'évaluation | Part 520 § 520.6 ; BOLE, Foreign Legal Education (page entière) | **oui** |
+| 6 — Préparation de l'examen | BOLE, UBE ; NCBE, About the UBE ; § 520.9 et § 520.12(d) | **oui** |
+| 7 — Admission | BOLE, Admission et Skills ; § 520.12, § 520.16, § 520.18 | **oui** |
+| 8 — Autres barreaux | NCBE, Score Portability ; State Bar of California, Foreign Education | **oui** |
+
+**Le module 4 ne paraît pas.** Sa source — l'administration migratoire fédérale
+— est la seule des sept à n'avoir jamais pu être ouverte. Il ne porte aucun
+chiffre par construction, mais un module qui énonce une procédure d'autorité ne
+paraît pas sur une source non consultée. Pour l'ouvrir, il faut lire
+`https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/students-and-employment`,
+vérifier que les trois familles de statuts et les autorités sont justement
+décrites, puis passer `published: true`.
 
 ## Choix de rédaction, et pourquoi
 
 **Aucune section ne se substitue à son texte.** Chacune donne la forme de la
 règle, ce qu'elle commande dans le calendrier du lecteur, et renvoie à la
-source. C'est la ligne déjà posée par le module 4 : « un lien vers le texte
-officiel plutôt qu'un résumé qui vous dispenserait de le lire ».
+source — ligne déjà posée par le module 4 : « un lien vers le texte officiel
+plutôt qu'un résumé qui vous dispenserait de le lire ».
 
-**`m4-statuts` ne porte aucun chiffre.** C'est la matière la plus mouvante des
-sept, et une règle finale de juillet 2026 vient d'en modifier un paramètre
-central. Un délai ou un plafond recopié ici serait faux un jour, avec l'air
-d'être juste. La section décrit donc les trois familles de statuts, qui décide
-de quoi, et quelles étapes se conditionnent — ce qui ne périme pas.
+**Aucun score chiffré n'est écrit** (module 6). Le règlement confie au Board le
+soin de fixer les scores requis, et il les publie. Les inscrire ici en ferait
+des valeurs à maintenir, fausses le jour où elles changent, et justes d'
+apparence. Les pondérations des épreuves, elles, sont dans le texte et y
+figurent.
 
-**`m5-conditions` reprend la conclusion du 2026-08-01**, celle qui commande tout
-le reste : le LL.M. régularise **une** déficience, jamais deux, si bien que le
-seuil de crédits doit être atteint par le seul diplôme français. La section
-énonce aussi, comme R-NY-002 l'a établi le 2026-08-02, que le régime des avocats
-déjà admis suppose lui aussi un LL.M. — il n'ouvre aucune voie qui s'en
-passerait.
-
-**`m6-epreuves` insiste sur les pondérations** plutôt que sur les programmes :
-la moitié de la note se joue sur l'épreuve à choix multiples et quatre dixièmes
-sur de la rédaction et de la méthode. C'est le fait qui change un plan de
-révision, et c'est celui que les candidats découvrent le plus tard.
+**Le module 4 ne porte aucun chiffre non plus**, et pour une raison distincte :
+c'est la matière la plus mouvante des sept, une règle finale de juillet 2026
+venant d'en modifier un paramètre central. Il décrit les trois familles de
+statuts, qui décide de quoi, et quelles étapes se conditionnent — ce qui ne
+périme pas.
 
 **Aucune section n'affirme d'issue.** Le vocabulaire de garantie reste absent,
 l'autorité compétente est nommée dans chaque section, et `m5-conditions` se

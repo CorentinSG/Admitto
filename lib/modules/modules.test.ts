@@ -112,7 +112,16 @@ describe("publication effective", () => {
   const LISIBLES = [
     "module-0-decision",
     "module-1-career",
+    "module-2-choisir",
     "module-3-candidatures",
+    // Le module 4 reste absent : sa source — l'administration migratoire
+    // fédérale — est la seule des sept qui n'ait pas pu être ouverte et lue
+    // (voir `docs/VERIFICATION-MODULES.md`). Un module qui énonce une
+    // procédure d'autorité ne paraît pas sur une source non consultée.
+    "module-5-bole",
+    "module-6-bar",
+    "module-7-admission",
+    "module-8-autres-barreaux",
     "module-9-recherche",
     "module-10-suite",
   ];
