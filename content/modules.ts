@@ -293,8 +293,23 @@ export const MODULES: ModuleEntry[] = [
         kind: "OFFICIAL_RULE",
         id: "m2-acces-barreau",
         title: "Conditions posées au programme suivi",
-        body: [],
-        source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
+        body: [
+          "Les six critères précédents relèvent de votre jugement. Celui-ci n'en relève pas : pour un juriste formé hors des États-Unis, le règlement d'admission de l'État de New York pose des conditions sur le LL.M. lui-même. Un programme qui ne les remplit pas délivre un diplôme réel, apprécié, et qui n'ouvre pas l'examen. C'est le seul critère de cette liste dont l'erreur ne se rattrape pas après coup.",
+          "Le règlement demande un programme d'au moins vingt-quatre crédits semestriels, réparti sur au moins deux semestres hors été de treize semaines civiles chacun au minimum, et achevé dans les vingt-quatre mois suivant l'inscription. Les crédits doivent être acquis en cours magistral, à raison d'au moins sept cents minutes d'enseignement par crédit ; l'enseignement à distance, par correspondance ou en ligne n'y compte pas.",
+          "À l'intérieur de ces vingt-quatre crédits, quatre blocs sont imposés : au moins deux crédits de responsabilité professionnelle, au moins deux crédits de recherche, rédaction et analyse juridiques — un exercice de rédaction inclus dans un cours de fond ne satisfait pas cette condition —, au moins deux crédits d'introduction au système juridique américain, et au moins six crédits dans des matières qui portent principalement sur le programme de l'examen du barreau de New York.",
+          "Ce que cela change concrètement : la brochure d'un programme ne suffit pas. Demandez à l'école, par écrit, si son LL.M. satisfait ces conditions pour l'année où vous vous inscrivez, et lesquels de ses cours comptent dans chaque bloc. Une école qui accueille régulièrement des juristes étrangers répondra sans hésiter — c'est en soi un signal. Vérifiez ensuite vous-même sur le texte officiel : il est court, et il évolue.",
+        ],
+        keyPoints: [
+          "Vingt-quatre crédits minimum, sur deux semestres au moins, achevés en vingt-quatre mois.",
+          "Quatre blocs imposés, dont deux crédits de responsabilité professionnelle et deux de recherche et rédaction.",
+          "Aucun crédit à distance ou en ligne — à vérifier auprès de l'école pour l'année où vous candidatez.",
+        ],
+        source: {
+          label:
+            "Court of Appeals de l'État de New York — Part 520, § 520.6(b)(3) (conditions du LL.M.)",
+          url: "https://www.nycourts.gov/ctapps/520rules10.htm",
+          verifiedAt: "2026-08-03",
+        },
       },
       {
         kind: "METHOD",
@@ -399,8 +414,23 @@ export const MODULES: ModuleEntry[] = [
         kind: "OFFICIAL_RULE",
         id: "m4-statuts",
         title: "Panorama des statuts d'études et de travail",
-        body: [],
-        source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
+        body: [
+          "Trois familles de statuts jalonnent ce parcours, et elles ne se ressemblent pas. Le statut d'étudiant couvre la durée des études : il repose sur un document délivré par l'établissement, l'école devant être habilitée à le délivrer et l'inscription enregistrée dans le système fédéral de suivi des étudiants. L'école produit le document ; elle n'accorde pas le statut, et cette distinction est la première à comprendre.",
+          "Vient ensuite l'autorisation de travailler après les études, adossée au statut d'étudiant et liée au domaine de formation. Elle suppose une recommandation du responsable désigné de l'établissement, puis une autorisation de l'administration fédérale : deux étapes, deux délais, et un ordre qu'on ne peut pas inverser. Elle est limitée dans le temps et dans son objet — ce n'est pas un statut de travail, c'est un prolongement encadré du statut d'étudiant.",
+          "La troisième famille est celle des statuts de travail proprement dits. Ils ne se demandent pas soi-même : c'est l'employeur qui dépose la demande, et le statut le plus courant pour ce type de poste est contingenté — le nombre de places annuelles est plafonné et l'accès passe par un tirage au sort. Autrement dit, une offre d'emploi ne vaut pas statut, et le calendrier de l'employeur devient le vôtre.",
+          "Ces règles évoluent, parfois vite : une règle finale publiée en juillet 2026 a modifié la durée d'admission des étudiants, désormais fixée d'après la durée du programme figurant sur le document d'inscription. C'est exactement pourquoi ce module ne vous donne ni formulaire, ni délai, ni montant : il vous donne la carte des autorités et des dépendances, et vous renvoie au texte officiel pour tout chiffre. Un chiffre recopié ici serait faux un jour, sans que rien ne le signale.",
+        ],
+        keyPoints: [
+          "L'école délivre un document, elle n'accorde pas le statut — l'administration fédérale décide.",
+          "L'autorisation de travail post-études suppose deux étapes successives, chacune avec son délai.",
+          "Un statut de travail est demandé par l'employeur, et le principal est contingenté par tirage au sort.",
+        ],
+        source: {
+          label:
+            "U.S. Citizenship and Immigration Services — Students and Employment (statuts d'études, formation pratique, emploi)",
+          url: "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/students-and-employment",
+          verifiedAt: "2026-08-03",
+        },
       },
       {
         kind: "METHOD",
@@ -462,15 +492,45 @@ export const MODULES: ModuleEntry[] = [
         kind: "OFFICIAL_RULE",
         id: "m5-conditions",
         title: "Conditions posées à la formation d'origine",
-        body: [],
-        source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
+        body: [
+          "L'évaluation porte d'abord sur vos études d'origine, avant tout LL.M. Le règlement les mesure sur deux plans distincts, et c'est leur articulation qui décide de tout. Le premier est la durée : la formation doit être substantiellement équivalente, en volume, à celle d'une law school américaine agréée — au moins quatre-vingt-trois crédits de matières juridiques, dont soixante-quatre acquis en cours magistraux régulièrement programmés.",
+          "Le second est le fond : le pays de formation doit relever d'un système dont la jurisprudence est fondée sur les principes de la common law anglaise, et le programme suivi doit être substantiellement équivalent à celui d'une law school agréée. Une formation civiliste — c'est le cas de la formation française — ne remplit pas cette seconde condition.",
+          "Vient alors la règle qui commande la suite : une déficience peut être corrigée par un LL.M. conforme, mais une seule. Un candidat dont la formation satisfait la durée mais pas le fond peut régulariser par le LL.M. ; celui dont la formation manque aussi la durée ne le peut pas. Pour un diplôme français, le LL.M. étant consommé par la régularisation du fond, le seuil de crédits doit être atteint par le seul diplôme d'origine.",
+          "Un régime distinct existe pour les juristes déjà admis à un barreau étranger, lorsque leur admission repose sur une combinaison d'études et de formation pratique en cabinet. Il suppose lui aussi un LL.M. américain : il n'ouvre aucune voie qui s'en passerait. Dans tous les cas, l'appréciation appartient au seul New York State Board of Law Examiners, dossier par dossier — rien de ce qui précède ne préjuge de ce qu'il décidera du vôtre.",
+        ],
+        keyPoints: [
+          "Deux conditions distinctes : la durée (83 crédits, dont 64 en cours magistraux) et le fond.",
+          "Une seule déficience peut être corrigée par un LL.M. conforme, jamais les deux.",
+          "L'appréciation est individuelle et appartient au Board, quelles que soient les apparences du dossier.",
+        ],
+        source: {
+          label:
+            "Court of Appeals de l'État de New York — Part 520, § 520.6(b)(1) et (b)(2) (formation étrangère)",
+          url: "https://www.nycourts.gov/ctapps/520rules10.htm",
+          verifiedAt: "2026-08-03",
+        },
       },
       {
         kind: "OFFICIAL_RULE",
         id: "m5-pieces",
         title: "Pièces exigées et forme attendue",
-        body: [],
-        source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
+        body: [
+          "L'ordre des opérations est ici une règle, pas un conseil. Il faut d'abord ouvrir un compte auprès du Board et remplir en ligne le formulaire de demande d'évaluation ; les documents envoyés avant cette ouverture ne sont pas conservés, faute de dossier auquel les rattacher. Un envoi anticipé, fait de bonne foi, se traduit donc par des pièces perdues et un délai à recommencer.",
+          "La pièce centrale est le relevé de notes définitif et officiel, transmis directement par chaque établissement fréquenté. Il doit faire apparaître, pour chaque période d'études, les dates de scolarité, les matières suivies et validées, les notes et le nombre de crédits. Un relevé transmis par vous, ou incomplet sur l'un de ces points, ne remplit pas la condition. S'y ajoutent le diplôme lui-même et, pour la voie des avocats déjà admis, le certificat d'admission délivré par l'autorité étrangère compétente.",
+          "Tout document qui n'est pas en anglais doit être accompagné d'une traduction certifiée. Et si le relevé ne suffit pas à établir l'équivalence de la formation, le Board demandera des pièces complémentaires à l'établissement — décompte de crédits, volumes horaires, description des enseignements. Anticipez ce second tour : c'est celui qui prend le plus de temps, parce qu'il dépend d'un tiers que vous ne pilotez pas.",
+          "Les délais annoncés commandent votre calendrier. Pour la voie qui suppose un LL.M., la décision peut demander jusqu'à six mois à compter de la réception de l'ensemble des pièces — à compter de la dernière, donc, et non de la première. Pour la voie sans LL.M., le Board recommande de déposer au moins six mois avant l'ouverture de la période d'inscription à l'examen visé. Ces six mois se comptent à rebours, et la section suivante montre comment.",
+        ],
+        keyPoints: [
+          "Ouvrir le compte et le formulaire d'abord : les pièces envoyées avant ne sont pas conservées.",
+          "Relevés définitifs transmis directement par l'établissement, traduction certifiée si besoin.",
+          "Jusqu'à six mois à compter de la RÉCEPTION DE LA DERNIÈRE pièce, pas du premier envoi.",
+        ],
+        source: {
+          label:
+            "New York State Board of Law Examiners — Foreign Legal Education (pièces, forme et délais)",
+          url: "https://www.nybarexam.org/foreign/foreignlegaleducation.htm",
+          verifiedAt: "2026-08-03",
+        },
       },
       {
         kind: "METHOD",
@@ -516,8 +576,23 @@ export const MODULES: ModuleEntry[] = [
         kind: "OFFICIAL_RULE",
         id: "m6-epreuves",
         title: "Structure de l'examen et épreuves complémentaires",
-        body: [],
-        source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
+        body: [
+          "L'examen de New York est l'examen uniforme du barreau, composé de trois épreuves passées ensemble dans la même juridiction. L'épreuve à choix multiples compte pour la moitié de la note : deux cents questions, six heures. Les six questions rédigées de trente minutes comptent pour trois dixièmes. Les deux exercices pratiques de quatre-vingt-dix minutes comptent pour les deux dixièmes restants. Le score requis à New York est de 266.",
+          "Cette structure a une conséquence directe sur la préparation, et c'est la raison d'être de cette section : la moitié de la note se joue sur une épreuve à choix multiples, et les quatre dixièmes qui restent sur des exercices de rédaction et de méthode. Un plan de révision qui consacrerait tout son temps à apprendre des règles ignorerait la moitié de ce qui est mesuré.",
+          "Trois épreuves complémentaires s'ajoutent, et elles se passent séparément. Un cours en ligne consacré au droit propre à l'État, d'environ dix-sept heures d'enregistrements avec questions intégrées, doit être suivi. L'examen qui lui correspond compte cinquante questions à choix multiples, dure deux heures, se passe en ligne, à livre ouvert, et demande 30 bonnes réponses. S'y ajoute l'examen national de responsabilité professionnelle, dont le score requis à New York est de 85.",
+          "Ces trois-là ne suivent pas le calendrier de l'examen principal, et c'est précisément ce qui les fait oublier. Placez-les sur votre calendrier dès maintenant, à leurs propres dates. Enfin, une échéance commande tout le reste : la demande d'admission doit être déposée dans les trois ans suivant le second jour de l'examen uniforme — passé ce délai, un examen réussi ne mène plus à l'admission.",
+        ],
+        keyPoints: [
+          "Trois épreuves pondérées 50 / 30 / 20 : réviser les règles seules ignore la moitié de la note.",
+          "Trois épreuves complémentaires, à leurs propres dates : cours d'État, examen d'État, responsabilité professionnelle.",
+          "Trois ans depuis le second jour de l'examen pour déposer la demande d'admission.",
+        ],
+        source: {
+          label:
+            "New York State Board of Law Examiners — Uniform Bar Examination, NYLC, NYLE et MPRE",
+          url: "https://www.nybarexam.org/ube/ube.html",
+          verifiedAt: "2026-08-03",
+        },
       },
       {
         kind: "METHOD",
@@ -580,8 +655,23 @@ export const MODULES: ModuleEntry[] = [
         kind: "OFFICIAL_RULE",
         id: "m7-procedure",
         title: "Étapes de la procédure d'admission",
-        body: [],
-        source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
+        body: [
+          "Réussir l'examen n'admet pas au barreau : c'est une condition, et l'admission est une procédure distincte, devant une autre autorité. La demande se dépose auprès du département compétent de l'Appellate Division, et non auprès du Board qui a organisé l'examen. Le délai est de trois ans à compter du second jour de l'examen uniforme, que vous l'ayez passé à New York ou ailleurs.",
+          "Tout candidat fait l'objet d'une enquête de moralité et d'aptitude. Elle porte sur le parcours déclaré et sur les personnes qui répondent de vous, et son instruction prend du temps — c'est elle, bien plus que l'examen, qui détermine la date réelle de la prestation de serment.",
+          "Deux conditions se préparent des années à l'avance et se découvrent souvent trop tard. La première : cinquante heures de travail bénévole qualifiant doivent être accomplies AVANT le dépôt de la demande, après le début des études juridiques, et peuvent l'être dans n'importe quel État américain comme à l'étranger. Elles se justifient par une attestation décrivant la nature et les dates du service, certifiée par l'avocat ou le magistrat qui vous a encadré.",
+          "La seconde vise les candidats ayant commencé leurs études de droit après le 1er août 2016 : ils doivent établir qu'ils ont acquis les compétences pratiques et la connaissance des valeurs de la profession nécessaires pour exercer. Le règlement ouvre cinq voies distinctes pour l'établir. Choisissez la vôtre pendant vos études, pas après : plusieurs de ces voies supposent des enseignements ou une expérience qui ne se rattrapent pas une fois le diplôme obtenu.",
+        ],
+        keyPoints: [
+          "La demande se dépose devant l'Appellate Division, pas devant le Board — dans les trois ans.",
+          "Cinquante heures de bénévolat qualifiant AVANT le dépôt, attestées par un avocat ou un magistrat.",
+          "La condition de compétences pratiques se prépare pendant les études : cinq voies, à choisir tôt.",
+        ],
+        source: {
+          label:
+            "New York State Board of Law Examiners — Admission Information ; Part 520, § 520.16 (pro bono) et § 520.18 (compétences pratiques)",
+          url: "https://www.nybarexam.org/admission/admission.htm",
+          verifiedAt: "2026-08-03",
+        },
       },
       {
         kind: "METHOD",
@@ -628,8 +718,23 @@ export const MODULES: ModuleEntry[] = [
         kind: "OFFICIAL_RULE",
         id: "m8-transfert",
         title: "Portée d'un résultat d'examen entre juridictions",
-        body: [],
-        source: { label: "À vérifier auprès de l'autorité compétente", url: "", verifiedAt: "" },
+        body: [
+          "L'examen uniforme du barreau se passe une fois et produit un score transférable vers d'autres juridictions qui l'administrent. C'est réel, et c'est ce qui rend le sujet intéressant. Mais « transférable » ne veut pas dire « reconnu » : chaque juridiction fixe elle-même le score qu'elle exige, et fixe aussi l'ancienneté maximale d'un score qu'elle accepte de recevoir.",
+          "Deux conséquences en découlent, et ce sont elles qui décident. La première : un score qui suffit dans une juridiction peut ne pas suffire dans une autre, sans que rien n'ait changé au vôtre. La seconde : un score parfaitement suffisant devient inutilisable une fois passée la limite d'ancienneté de la juridiction visée. Un transfert se prépare donc avant de passer l'examen, en regardant les seuils de la juridiction d'arrivée.",
+          "L'enquête de moralité et d'aptitude, elle, ne se transfère pas : chaque juridiction conduit la sienne. Un transfert de score épargne l'examen, jamais la procédure d'admission.",
+          "Une limite pèse spécifiquement sur les juristes formés à l'étranger, et il faut la connaître avant de bâtir un plan : certaines juridictions n'admettent que les diplômés de law schools américaines agréées, si bien qu'un score obtenu ailleurs ne leur ouvre rien. La Californie, souvent citée comme seconde destination, n'accepte quant à elle aucun score transféré — ni de l'examen uniforme, ni de son épreuve à choix multiples. Y exercer suppose de passer son examen propre, selon ses règles propres.",
+        ],
+        keyPoints: [
+          "Chaque juridiction fixe son score requis ET l'ancienneté maximale d'un score transféré.",
+          "L'enquête de moralité se refait à chaque fois : le transfert épargne l'examen, pas l'admission.",
+          "La Californie n'accepte aucun score transféré ; d'autres n'admettent que les diplômés américains.",
+        ],
+        source: {
+          label:
+            "National Conference of Bar Examiners — Transferring Your UBE Scores (portabilité, seuils et ancienneté)",
+          url: "https://www.ncbex.org/exams/ube/ube-score-portability",
+          verifiedAt: "2026-08-03",
+        },
       },
       {
         kind: "METHOD",
@@ -808,6 +913,8 @@ export const modulesCopy = {
   outlineTitle: "Plan prévu",
   sourceLabel: "Source",
   verifiedLabel: "Vérifiée le",
+  /** Annonce du changement de contexte, lue par les lecteurs d'écran seuls. */
+  newTab: " (s'ouvre dans un nouvel onglet)",
   keyPointsTitle: "À retenir",
   back: "Tous les modules",
   disclaimer:

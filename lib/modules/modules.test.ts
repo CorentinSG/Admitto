@@ -122,12 +122,29 @@ describe("publication effective", () => {
     expect(readable).toEqual(LISIBLES);
   });
 
-  it("les modules en production ne sont jamais annoncés comme lisibles", () => {
-    // Leur plan comporte des sections vides et, le cas échéant, des sources à
-    // renseigner : `published` seul ne suffirait pas à les ouvrir.
+  it("les modules en attente de relecture ne sont jamais annoncés comme lisibles", () => {
+    /*
+     * Leurs sections officielles ont été rédigées et sourcées le 2026-08-03 ;
+     * ils n'ont donc plus de blocage technique. Ce qui les retient est la
+     * décision éditoriale — la relecture du fondateur, qui doit ouvrir chaque
+     * source avant publication (voir `docs/VERIFICATION-MODULES.md`).
+     *
+     * Le test dit désormais cela, et pas autre chose : il exigeait auparavant
+     * un blocage technique, ce qui revenait à s'appuyer sur des sections vides
+     * pour garantir qu'un texte non relu ne parte pas.
+     */
     for (const entry of MODULES.filter((m) => !LISIBLES.includes(m.slug))) {
       expect(isModulePublished(entry.slug), entry.slug).toBe(false);
-      expect(publicationBlockers(entry).length, entry.slug).toBeGreaterThan(0);
+      expect(entry.published, entry.slug).toBe(false);
+    }
+  });
+
+  it("un module publié n'a JAMAIS de blocage : le drapeau ne passe pas outre", () => {
+    // L'invariant qui protège le lecteur, et le seul qui doive tenir quel que
+    // soit l'état de rédaction : `published: true` sur un module incomplet ou
+    // non sourcé ne l'ouvre pas.
+    for (const entry of MODULES.filter((m) => m.published)) {
+      expect(publicationBlockers(entry), entry.slug).toEqual([]);
     }
   });
 

@@ -13,6 +13,20 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+/*
+ * Rendu SERVEUR, comme partout ailleurs dans le produit : un composant client
+ * formaterait dans le fuseau du lecteur et divergerait du rendu serveur à
+ * cheval sur minuit. La date d'une source ne se lit pas « 2026-08-03 » dans une
+ * phrase française — et ces sections sont les premières à en afficher une.
+ */
+const dateFr = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
 /**
  * Lecture d'un module (CDC §25).
  *
@@ -156,10 +170,23 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
                 }}
               >
                 {modulesCopy.sourceLabel} :{" "}
-                <a href={section.source.url} style={{ color: colors.goldText }}>
+                {/* Nouvel onglet : ces sections existent pour renvoyer au texte
+                    officiel, et perdre sa place au milieu d'un module découragerait
+                    précisément le geste qu'on demande. Le changement de contexte est
+                    annoncé — un lien qui ouvre ailleurs sans le dire désoriente à la
+                    navigation clavier comme au lecteur d'écran (WCAG 3.2.5). */}
+                <a
+                  href={section.source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: colors.goldText }}
+                >
                   {section.source.label}
+                  <span style={{ position: "absolute", left: -9999, top: "auto" }}>
+                    {modulesCopy.newTab}
+                  </span>
                 </a>{" "}
-                · {modulesCopy.verifiedLabel} {section.source.verifiedAt}
+                · {modulesCopy.verifiedLabel} {dateFr(section.source.verifiedAt)}
               </p>
             )}
           </section>
