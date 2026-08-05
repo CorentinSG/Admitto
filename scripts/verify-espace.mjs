@@ -194,7 +194,7 @@ const library = await page.locator("body").innerText();
  * Ils doivent rester d'accord avec la liste `LISIBLES` de
  * `lib/modules/modules.test.ts`, qui porte la même vérité côté unitaire.
  */
-const LISIBLES = 10;
+const LISIBLES = 11;
 const TOTAL = 11;
 
 const moduleCount = (library.match(/MODULE \d+/gi) ?? []).length;
@@ -213,10 +213,11 @@ check(`Les ${LISIBLES} modules rédigés sont liés`, lies === LISIBLES, `${lies
 // vers un 404 journalise une erreur réseau attendue : on borne la fenêtre
 // plutôt que de relâcher l'assertion « aucune erreur console ».
 const errorsBefore404 = consoleErrors.length;
-// Le module 4 est le dernier non publié : sa source migratoire n'a pas pu être
-// ouverte (voir docs/VERIFICATION-MODULES.md).
-const direct = await page.goto(`${BASE}/app/modules/module-4-immigration`, { waitUntil: "domcontentloaded" });
-check("Module non rédigé inaccessible par URL directe", direct?.status() === 404, String(direct?.status()));
+// Les onze modules sont désormais publiés : c'est un slug INEXISTANT qui doit
+// répondre 404, et le point garde son sens — une URL directe n'ouvre rien qui
+// ne soit publiable.
+const direct = await page.goto(`${BASE}/app/modules/module-inexistant`, { waitUntil: "domcontentloaded" });
+check("Module inexistant inaccessible par URL directe", direct?.status() === 404, String(direct?.status()));
 
 // Retrait par correspondance, jamais par position : retirer « les N suivantes »
 // écarterait une vraie erreur survenue dans la même fenêtre.

@@ -5,8 +5,8 @@
 > ne peut pas être moins sourcée qu'une règle du Moteur A.
 >
 > **Rédigées le 2026-08-03, puis confrontées aux textes officiels le même jour.
-> Six sources sur sept ont été ouvertes et lues intégralement ; cinq modules
-> sont publiés, le sixième ne l'est pas.**
+> Les sept sources ont été ouvertes et lues intégralement. Les onze modules du
+> catalogue sont publiés.**
 
 ## Deux vérifications successives, et pourquoi la seconde a tout changé
 
@@ -43,19 +43,23 @@ directement un avocat français — un an de pratique, ou un stage accompli
 | Module | Source ouverte et lue | Publié |
 | --- | --- | --- |
 | 2 — Choisir le bon LL.M. | Part 520, § 520.6(b)(3) | **oui** |
-| 4 — Panorama migratoire | **non** — `uscis.gov` reste inaccessible | **non** |
+| 4 — Panorama migratoire | USCIS, Students and Employment ; Optional Practical Training for F-1 Students | **oui** |
 | 5 — Dossier d'évaluation | Part 520 § 520.6 ; BOLE, Foreign Legal Education (page entière) | **oui** |
 | 6 — Préparation de l'examen | BOLE, UBE ; NCBE, About the UBE ; § 520.9 et § 520.12(d) | **oui** |
 | 7 — Admission | BOLE, Admission et Skills ; § 520.12, § 520.16, § 520.18 | **oui** |
 | 8 — Autres barreaux | NCBE, Score Portability ; State Bar of California, Foreign Education | **oui** |
 
-**Le module 4 ne paraît pas.** Sa source — l'administration migratoire fédérale
-— est la seule des sept à n'avoir jamais pu être ouverte. Il ne porte aucun
-chiffre par construction, mais un module qui énonce une procédure d'autorité ne
-paraît pas sur une source non consultée. Pour l'ouvrir, il faut lire
-`https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/students-and-employment`,
-vérifier que les trois familles de statuts et les autorités sont justement
-décrites, puis passer `published: true`.
+Le module 4 a été publié en dernier, sa source ayant pu être ouverte après les
+autres. La lecture a confirmé les trois familles de statuts et l'ordre des
+autorités, et a surtout apporté ce qui manquait : les fenêtres de dépôt de la
+formation pratique — quatre-vingt-dix jours avant le diplôme, soixante après,
+trente après la recommandation de l'établissement —, l'imputation de toute
+formation pratique prise avant le diplôme sur les douze mois disponibles après,
+la fin automatique de l'autorisation en cas de changement d'école ou de niveau,
+l'interdiction d'emploi hors campus pendant la première année universitaire, et
+les conséquences d'un travail non autorisé. Ce sont des dates et des règles
+stables, distinctes des paramètres qu'une règle de juillet 2026 vient de
+modifier.
 
 ## Choix de rédaction, et pourquoi
 
@@ -70,11 +74,11 @@ des valeurs à maintenir, fausses le jour où elles changent, et justes d'
 apparence. Les pondérations des épreuves, elles, sont dans le texte et y
 figurent.
 
-**Le module 4 ne porte aucun chiffre non plus**, et pour une raison distincte :
-c'est la matière la plus mouvante des sept, une règle finale de juillet 2026
-venant d'en modifier un paramètre central. Il décrit les trois familles de
-statuts, qui décide de quoi, et quelles étapes se conditionnent — ce qui ne
-périme pas.
+**Le module 4 ne porte que des chiffres stables** : les fenêtres de dépôt et la
+durée de la formation pratique, lues dans le texte. Il ne porte aucun délai ni
+plafond relevant des paramètres qu'une règle finale de juillet 2026 vient de
+modifier — c'est la matière la plus mouvante des sept, et un chiffre recopié y
+serait faux un jour avec l'air d'être juste.
 
 **Aucune section n'affirme d'issue.** Le vocabulaire de garantie reste absent,
 l'autorité compétente est nommée dans chaque section, et `m5-conditions` se

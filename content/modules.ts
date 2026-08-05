@@ -409,26 +409,28 @@ export const MODULES: ModuleEntry[] = [
     title: "Panorama migratoire",
     summary:
       "F-1, OPT, H-1B, O-1, L-1, sponsoring, limites et erreurs courantes. Information générale uniquement.",
-    published: false,
+    published: true,
     sections: [
       {
         kind: "OFFICIAL_RULE",
         id: "m4-statuts",
         title: "Panorama des statuts d'études et de travail",
         body: [
-          "Trois familles de statuts jalonnent ce parcours, et elles ne se ressemblent pas. Le statut d'étudiant couvre la durée des études : il repose sur un document délivré par l'établissement, l'école devant être habilitée à le délivrer et l'inscription enregistrée dans le système fédéral de suivi des étudiants. L'école produit le document ; elle n'accorde pas le statut, et cette distinction est la première à comprendre.",
-          "Vient ensuite l'autorisation de travailler après les études, adossée au statut d'étudiant et liée au domaine de formation. Elle suppose une recommandation du responsable désigné de l'établissement, puis une autorisation de l'administration fédérale : deux étapes, deux délais, et un ordre qu'on ne peut pas inverser. Elle est limitée dans le temps et dans son objet — ce n'est pas un statut de travail, c'est un prolongement encadré du statut d'étudiant.",
-          "La troisième famille est celle des statuts de travail proprement dits. Ils ne se demandent pas soi-même : c'est l'employeur qui dépose la demande, et le statut le plus courant pour ce type de poste est contingenté — le nombre de places annuelles est plafonné et l'accès passe par un tirage au sort. Autrement dit, une offre d'emploi ne vaut pas statut, et le calendrier de l'employeur devient le vôtre.",
-          "Ces règles évoluent, parfois vite : une règle finale publiée en juillet 2026 a modifié la durée d'admission des étudiants, désormais fixée d'après la durée du programme figurant sur le document d'inscription. C'est exactement pourquoi ce module ne vous donne ni formulaire, ni délai, ni montant : il vous donne la carte des autorités et des dépendances, et vous renvoie au texte officiel pour tout chiffre. Un chiffre recopié ici serait faux un jour, sans que rien ne le signale.",
+          "Trois familles de statuts jalonnent ce parcours, et elles ne se ressemblent pas. Le statut d'étudiant couvre la durée des études. Il suppose une inscription à temps plein dans un établissement habilité par le programme fédéral de suivi des étudiants, un document d'éligibilité délivré par cet établissement, l'enregistrement dans le système fédéral correspondant, des ressources suffisantes pour toute la durée prévue, et le maintien d'une résidence à l'étranger qu'on n'a pas l'intention d'abandonner. L'école produit le document ; elle n'accorde pas le statut, et cette distinction est la première à comprendre.",
+          "Le travail y est encadré dès le premier jour : pendant la première année universitaire, aucun emploi hors campus n'est permis, l'emploi sur le campus l'étant sous conditions. Passé cette première année s'ouvrent trois formes d'emploi hors campus, dont la formation pratique liée au domaine d'études — c'est la deuxième famille, et la plus utile ici.",
+          "Cette formation pratique se demande en deux étapes, dans un ordre qu'on ne peut pas inverser : le responsable désigné de l'établissement porte d'abord sa recommandation au dossier, puis vous déposez votre demande d'autorisation de travail auprès de l'administration fédérale. Vous ne pouvez commencer à travailler qu'une fois cette autorisation délivrée — ni à la recommandation, ni au dépôt. Elle est limitée à douze mois au total et doit être directement liée à votre domaine d'études.",
+          "Ses dates sont ce qui décide, et elles sont serrées. Pour la formation pratique d'après-diplôme, la demande peut être déposée jusqu'à quatre-vingt-dix jours avant l'obtention du diplôme, au plus tard soixante jours après, et dans les trente jours suivant la recommandation portée à votre dossier. Trois fenêtres qui se recoupent : les manquer se paie en mois d'inactivité. Deux pièges s'y ajoutent — toute formation pratique prise AVANT le diplôme s'impute sur les douze mois disponibles après, et changer d'école ou de niveau d'études met fin automatiquement à l'autorisation en cours. Une extension existe, mais elle vise des diplômes scientifiques et techniques figurant sur une liste fermée.",
+          "La troisième famille est celle des statuts de travail proprement dits. Ils ne se demandent pas soi-même : c'est l'employeur qui dépose la demande, et le principal est contingenté — le nombre annuel est plafonné, au point que l'administration a dû prévoir un dispositif pour combler l'intervalle entre la fin du statut étudiant et le début du statut de travail. Une offre d'emploi ne vaut donc pas statut, et le calendrier de l'employeur devient le vôtre.",
+          "Un dernier avertissement, parce qu'il n'a pas d'équivalent en droit français : travailler sans autorisation valable, y compris sur une autorisation devenue caduque, expose à l'éloignement et à des interdictions de retour, et le séjour irrégulier se décompte. Ces règles évoluent enfin, parfois vite — une règle finale de juillet 2026 a modifié la durée d'admission des étudiants. Vérifiez toujours à la source ; c'est pourquoi ce module donne la carte des autorités et des dépendances plutôt qu'un résumé qui vous dispenserait de la lire.",
         ],
         keyPoints: [
           "L'école délivre un document, elle n'accorde pas le statut — l'administration fédérale décide.",
-          "L'autorisation de travail post-études suppose deux étapes successives, chacune avec son délai.",
-          "Un statut de travail est demandé par l'employeur, et le principal est contingenté par tirage au sort.",
+          "Formation pratique : recommandation, puis autorisation, puis travail. Jamais dans un autre ordre.",
+          "Quatre-vingt-dix jours avant le diplôme, soixante après, trente après la recommandation.",
         ],
         source: {
           label:
-            "U.S. Citizenship and Immigration Services — Students and Employment (statuts d'études, formation pratique, emploi)",
+            "U.S. Citizenship and Immigration Services — Students and Employment ; Optional Practical Training for F-1 Students",
           url: "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/students-and-employment",
           verifiedAt: "2026-08-03",
         },

@@ -114,10 +114,7 @@ describe("publication effective", () => {
     "module-1-career",
     "module-2-choisir",
     "module-3-candidatures",
-    // Le module 4 reste absent : sa source — l'administration migratoire
-    // fédérale — est la seule des sept qui n'ait pas pu être ouverte et lue
-    // (voir `docs/VERIFICATION-MODULES.md`). Un module qui énonce une
-    // procédure d'autorité ne paraît pas sur une source non consultée.
+    "module-4-immigration",
     "module-5-bole",
     "module-6-bar",
     "module-7-admission",
@@ -131,20 +128,17 @@ describe("publication effective", () => {
     expect(readable).toEqual(LISIBLES);
   });
 
-  it("les modules en attente de relecture ne sont jamais annoncés comme lisibles", () => {
+  it("la liste couvre tout le catalogue, et rien d'autre n'est lisible", () => {
     /*
-     * Leurs sections officielles ont été rédigées et sourcées le 2026-08-03 ;
-     * ils n'ont donc plus de blocage technique. Ce qui les retient est la
-     * décision éditoriale — la relecture du fondateur, qui doit ouvrir chaque
-     * source avant publication (voir `docs/VERIFICATION-MODULES.md`).
-     *
-     * Le test dit désormais cela, et pas autre chose : il exigeait auparavant
-     * un blocage technique, ce qui revenait à s'appuyer sur des sections vides
-     * pour garantir qu'un texte non relu ne parte pas.
+     * Les onze modules sont publiés depuis le 2026-08-03, chaque section
+     * officielle ayant été confrontée à sa source (voir
+     * `docs/VERIFICATION-MODULES.md`). La liste garde tout son rôle : un
+     * module AJOUTÉ au catalogue n'entrera pas dans la bibliothèque du seul
+     * fait d'exister — il faudra l'inscrire ici, et c'est un geste.
      */
+    expect(LISIBLES).toHaveLength(MODULES.length);
     for (const entry of MODULES.filter((m) => !LISIBLES.includes(m.slug))) {
       expect(isModulePublished(entry.slug), entry.slug).toBe(false);
-      expect(entry.published, entry.slug).toBe(false);
     }
   });
 
