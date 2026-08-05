@@ -101,6 +101,34 @@ export function reviewChecklist(assessment: Assessment, report: Report): ReviewP
     });
   }
 
+  /*
+   * Admission à un barreau HORS de France : le pays n'est pas dans le profil,
+   * et c'est délibéré. Le BOLE ne publie aucune liste des juridictions dont la
+   * jurisprudence relève de la common law ; une liste posée au questionnaire
+   * inventerait le critère qu'il refuse de publier, et le produit se
+   * prononcerait à sa place.
+   *
+   * Le pays est donc CONSTATÉ à la relecture, à partir du commentaire libre ou
+   * d'un échange, et non classé. Le point est BLOQUANT pour la voie qui repose
+   * sur une formation en cabinet : le § 520.6(b)(2) est le seul texte qui la
+   * vise, il suppose une juridiction de common law, et le rapport en parlerait
+   * sans que rien n'ait vérifié que la personne en relève.
+   */
+  const abroad =
+    assessment.answers.foreignBar === "OTHER_COUNTRY_LAW_DEGREE" ||
+    assessment.answers.foreignBar === "OTHER_COUNTRY_TRAINING";
+  if (abroad) {
+    const viaTraining = assessment.answers.foreignBar === "OTHER_COUNTRY_TRAINING";
+    points.push({
+      id: "foreign-bar-jurisdiction",
+      severity: viaTraining ? "BLOCKING" : "ATTENTION",
+      label: "Relever la juridiction d'admission, et ne pas la classer",
+      why: viaTraining
+        ? "Le rapport mentionne le texte réservé aux admissions obtenues après une formation en cabinet. Ce texte suppose une juridiction dont la jurisprudence relève de la common law anglaise, et le BOLE ne publie aucune liste : demandez la juridiction exacte, dites qu'elle sera appréciée par le Board, et n'écrivez jamais qu'elle relève ou non de ce régime."
+        : "Le pays d'admission n'est pas recueilli par le questionnaire, faute de critère publié par le BOLE. Notez-le pour le dossier — le Board le demandera — sans en tirer de conclusion dans le rapport.",
+    });
+  }
+
   // ── Verdict du Moteur B ──────────────────────────────────────────────────
   const verdictReason = VERDICTS_REQUIRING_ARBITRATION[report.verdict];
   if (verdictReason) {

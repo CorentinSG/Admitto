@@ -73,7 +73,7 @@ describe("Moteur A", () => {
       // chaque dossier ; le § 520.6(b)(2) exige de surcroît un LL.M. Une
       // admission étrangère ne peut donc pas produire de voie à elle seule.
       const sans = avocat("NONE");
-      const avec = avocat("OTHER_COUNTRY");
+      const avec = avocat("OTHER_COUNTRY_LAW_DEGREE");
       expect(avec.path).toBe(sans.path);
       expect(avec.path).toBe("NY_VIA_LLM_SUBJECT_TO_BOLE");
       expect(avec.textBlocks.length).toBe(sans.textBlocks.length + 1);
@@ -93,6 +93,26 @@ describe("Moteur A", () => {
       // l'écran. Un `neq: "NONE"` aurait fait feu pour tout le monde.
       const out = runEngineA(profileOf({ status: "APPLYING", education: "M2", usStatus: "FR_NO_STATUS" }));
       expect(out.firedRules.map((r) => r.id)).not.toContain("R-NY-002");
+    });
+
+    it("distingue les deux bases d'admission, sans distinguer les pays", () => {
+      /*
+       * Le § 520.6(b)(2) vise NOMMÉMENT l'admission obtenue par des études
+       * suivies d'une formation en cabinet — les parcours de conversion, que le
+       * BOLE traite à part. Le questionnaire recueille donc la BASE, jamais le
+       * pays : aucune liste de juridictions n'étant publiée, une liste posée
+       * ici inventerait le critère.
+       */
+      const diplome = avocat("OTHER_COUNTRY_LAW_DEGREE");
+      const cabinet = avocat("OTHER_COUNTRY_TRAINING");
+
+      expect(diplome.firedRules.map((r) => r.id)).not.toContain("R-NY-003");
+      expect(cabinet.firedRules.map((r) => r.id)).toContain("R-NY-003");
+
+      // Même voie : la base d'admission ajoute un paragraphe, pas une orientation.
+      expect(cabinet.path).toBe(diplome.path);
+      expect(cabinet.textBlocks.length).toBe(diplome.textBlocks.length + 1);
+      expect(cabinet.textBlocks.join(" ")).toMatch(/parcours de conversion/);
     });
 
     it("aucune règle ne produit plus la voie directe", () => {

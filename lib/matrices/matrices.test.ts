@@ -257,7 +257,7 @@ describe("règles effectives", () => {
       status: "LAWYER_EXPLORING",
       education: "CAPA",
       university: "assas",
-      foreignBar: "OTHER_COUNTRY",
+      foreignBar: "OTHER_COUNTRY_LAW_DEGREE",
       careerGoal: "RETURN_FRANCE",
       geoGoal: "RETURN_FRANCE",
       budget: "60_100K",

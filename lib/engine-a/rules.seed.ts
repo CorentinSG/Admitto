@@ -144,12 +144,40 @@ export const RULES: Rule[] = [
     // l'assemblage rend tous les blocs des règles dont le fait vaut la voie
     // retenue. L'admission étrangère cesse d'être une orientation et redevient
     // ce qu'elle est : un élément du dossier, à documenter.
-    condition: { field: "foreignBar", op: "in", value: ["FRANCE", "OTHER_COUNTRY"] },
+    condition: {
+      field: "foreignBar",
+      op: "in",
+      value: ["FRANCE", "OTHER_COUNTRY_LAW_DEGREE", "OTHER_COUNTRY_TRAINING"],
+    },
     factProduced: "NY_VIA_LLM_SUBJECT_TO_BOLE",
     textBlockId: "TB-FOREIGN-BAR",
     sourceUrl: "https://www.nybarexam.org/foreign/foreignlegaleducation.htm",
     verifiedAt: "2026-08-02",
     version: 2,
+    active: true,
+  },
+  {
+    id: "R-NY-003",
+    // Admission obtenue par études + formation en cabinet, hors de France.
+    //
+    // C'est la configuration que le § 520.6(b)(2) vise NOMMÉMENT, et que le
+    // BOLE traite à part : les parcours de conversion britanniques (GDL puis
+    // LPC ou formation de barrister, suivis d'un training contract) ne
+    // satisfont NI la durée NI le fond du § 520.6(b)(1), et relèvent donc
+    // exclusivement du (b)(2). Le Board précise même qu'un établissement
+    // regroupant ces éléments sous le nom de LL.B. ne change rien à la
+    // qualification.
+    //
+    // La règle ne conclut toujours RIEN sur le pays : le (b)(2) suppose une
+    // juridiction de common law, et aucune liste n'est publiée. Elle ajoute un
+    // bloc de texte à la même voie, comme R-NY-002, et nomme les trois
+    // conditions que ce régime pose en plus de l'admission elle-même.
+    condition: { field: "foreignBar", op: "eq", value: "OTHER_COUNTRY_TRAINING" },
+    factProduced: "NY_VIA_LLM_SUBJECT_TO_BOLE",
+    textBlockId: "TB-FOREIGN-BAR-TRAINING",
+    sourceUrl: "https://www.nybarexam.org/foreign/foreignlegaleducation.htm",
+    verifiedAt: "2026-08-03",
+    version: 1,
     active: true,
   },
   {
@@ -191,6 +219,11 @@ export const TEXT_BLOCKS: Record<string, string> = {
   // qui interdit au produit de trancher par pays.
   "TB-FOREIGN-BAR":
     "Votre admission à un barreau étranger est un élément de votre dossier, et non une dispense : le texte réservé aux avocats déjà admis exige lui aussi un LL.M. américain, et l'admission sans examen suppose un premier diplôme obtenu aux États-Unis. Le New York Board of Law Examiners ne publie aucune liste des pays dont la jurisprudence est fondée sur les principes de la common law anglaise : il procède à une évaluation individuelle du dossier, et lui seul se prononce. Le pays d'admission et la façon dont vous l'avez obtenue — diplôme de droit, ou combinaison d'études et de formation en cabinet — sont donc à documenter.",
+  // Complète TB-FOREIGN-BAR pour la seule configuration que le § 520.6(b)(2)
+  // vise nommément. Nomme les conditions SANS trancher celle qui ne se tranche
+  // pas depuis un questionnaire : le rattachement du pays à la common law.
+  "TB-FOREIGN-BAR-TRAINING":
+    "Votre admission reposant sur des études suivies d'une formation en cabinet, c'est un texte particulier qui s'applique — celui que le New York Board of Law Examiners consacre aux parcours de conversion. Il pose trois conditions en plus de l'admission elle-même : que la jurisprudence du pays d'admission soit fondée sur les principes de la common law anglaise, que la durée cumulée de vos études et de votre formation atteigne celle d'un cursus américain agréé, et qu'un LL.M. américain conforme soit accompli. Réunissez dès maintenant l'attestation de votre formation en cabinet avec ses dates exactes : c'est la pièce que ce texte exige en propre, et celle qui dépend le plus d'un tiers.",
   "TB-ALTERNATIVE":
     "Votre objectif géographique et professionnel oriente vers d'autres options que l'admission à un barreau américain. Ces alternatives sont examinées dans votre rapport.",
   "TB-HUMAN-REVIEW":

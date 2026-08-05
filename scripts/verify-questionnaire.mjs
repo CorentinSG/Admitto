@@ -87,6 +87,22 @@ await warmUp(page, BASE);
     /Étape 4 sur 12/.test(await page.locator("body").innerText())
   );
 
+  /*
+   * L'écran est là : c'est le moment de contrôler ce qu'il demande. Il recueille
+   * la BASE de l'admission — c'est elle qui sépare deux textes du règlement — et
+   * jamais le pays. Le BOLE ne publie aucune liste des juridictions relevant de
+   * la common law : une liste posée ici inventerait le critère qu'il refuse de
+   * publier, et le produit se prononcerait à sa place.
+   */
+  const bases = await page.locator('button:has-text("Oui, à l\'étranger")').allInnerTexts();
+  check("Les deux bases d'admission sont proposées", bases.length === 2, `${bases.length}`);
+  check(
+    "Chacune porte de quoi la reconnaître",
+    bases.some((o) => /diplôme universitaire de droit/.test(o)) &&
+      bases.some((o) => /training contract/.test(o)),
+    bases.join(" | ").replace(/\n/g, " ")
+  );
+
   // Repartir de zéro efface : sinon le brouillon reviendrait au chargement
   // suivant, contre le geste qui vient d'être fait.
   await page.reload({ waitUntil: "networkidle" });
@@ -122,6 +138,7 @@ const ANSWERS = [
 const totals = await answerScreens(page, ANSWERS);
 
 check("Écran barreau ajouté pour un profil avocat", totals.at(-1) === 12, `${totals.at(-1)} écrans`);
+
 check("Jamais plus de douze écrans visibles (CDC §12.2)", Math.max(...totals) <= 12);
 
 // Le contact refuse une adresse invalide.

@@ -1,4 +1,4 @@
-import type { Answers } from "@/lib/questionnaire/types";
+import { isBarAdmitted, type Answers } from "@/lib/questionnaire/types";
 import { OTHER_UNIVERSITY_ID } from "@/content/universities";
 import type { DerivedProfile } from "@/lib/profile/derive";
 import type { CostEstimate } from "@/lib/costs/estimate";
@@ -82,10 +82,10 @@ export function professionalRealism(answers: Answers, derived: DerivedProfile): 
 
   let score = 3;
   // L'écran « barreau étranger » n'est pas montré à tous les profils : une
-  // réponse absente vaut « pas admis », jamais « admis ». Tester `!== "NONE"`
-  // ferait passer tout profil non interrogé pour un avocat inscrit.
-  const admittedSomewhere =
-    answers.foreignBar === "FRANCE" || answers.foreignBar === "OTHER_COUNTRY";
+  // réponse absente vaut « pas admis », jamais « admis ». Le prédicat porte
+  // cette règle, et la liste des valeurs « admis » ne se recopie plus ici —
+  // elle s'est déjà allongée une fois.
+  const admittedSomewhere = isBarAdmitted(answers.foreignBar);
   const qualified = derived.journeyType === "FOREIGN_QUALIFIED_LAWYER" || admittedSomewhere;
 
   // Les segments les plus sélectifs supposent un profil déjà avancé.

@@ -88,6 +88,22 @@ informations que le BOLE demandera de toute façon.
 
 _Coût : moyen. Types fermés, visibilité, tests, suites._
 
+> **Livré, autrement que prévu — le plan se heurtait au CDC §12.2.** Douze
+> écrans au maximum, et un profil d'avocat les voit déjà tous : deux écrans de
+> plus en auraient fait quatorze. La BASE de l'admission, seule des deux à
+> séparer deux textes du règlement, est donc recueillie dans l'écran « barreau »
+> existant — `OTHER_COUNTRY` scindé en « sur un diplôme de droit » et « après
+> une formation en cabinet », chacun portant de quoi le reconnaître. R-NY-003
+> ajoute alors le paragraphe du § 520.6(b)(2), qui vise nommément les parcours
+> de conversion.
+>
+> **La juridiction n'est pas demandée, et ce n'est plus un compromis mais un
+> choix** : le BOLE ne publiant aucune liste, une liste posée au questionnaire
+> inventerait le critère qu'il refuse de publier. Elle est relevée à la
+> relecture, par un point de revue BLOQUANT pour la voie qui suppose
+> explicitement une juridiction de common law — et dont le libellé dit au
+> relecteur de la constater sans la classer.
+
 ### 2.2 Feuille de route : les deux trous mesurés — **proposition à valider**
 
 Mesuré sur `content/roadmap-tasks.ts` :
@@ -146,6 +162,7 @@ Les instruments sont déjà posés ; il faudra les lire, pas les construire :
 ```
 Fait                 1.1 Sections des modules       11 modules publiés sur 11
                      2.2 Tâches manquantes          6 tâches ajoutées, sourcées
+                     2.1 Base d'admission           dans l'écran existant (CDC §12.2)
 
 Cette semaine        1.4 R-ALT-001                  votre arbitrage (5 min)
                      Relecture des échéances        votre calendrier vécu
@@ -153,8 +170,7 @@ Cette semaine        1.4 R-ALT-001                  votre arbitrage (5 min)
 Dès que possible     1.2 Mentions légales           vous
                      1.3 Clés de production         vous
 
-Ensuite              2.1 Écrans avocats étrangers   moi
-                     → LANCEMENT BÊTA
+Ensuite              → LANCEMENT BÊTA
 
 Après la bêta        2.3 Correction de réponse      selon les demandes reçues
                      Horizon 3                      lecture des données

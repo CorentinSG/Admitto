@@ -135,6 +135,28 @@ describe("verrou d'envoi", () => {
     expect(canSend(points, blockingPoints(points).map((p) => p.id)).ok).toBe(true);
   });
 
+  it("relève la juridiction d'admission sans jamais la classer", () => {
+    /*
+     * Le pays n'entre pas dans le profil : le BOLE ne publie aucune liste des
+     * juridictions de common law, et une liste posée au questionnaire
+     * inventerait le critère. Il est donc constaté à la relecture — et le
+     * point est BLOQUANT pour la voie qui repose sur une formation en cabinet,
+     * seule à supposer explicitement une juridiction de common law.
+     */
+    const cabinet = checklistFor({ ...COMPLETE, foreignBar: "OTHER_COUNTRY_TRAINING" }).points;
+    const point = cabinet.find((p) => p.id === "foreign-bar-jurisdiction")!;
+    expect(point.severity).toBe("BLOCKING");
+    expect(point.why).toMatch(/n'écrivez jamais/);
+
+    const diplome = checklistFor({ ...COMPLETE, foreignBar: "OTHER_COUNTRY_LAW_DEGREE" }).points;
+    expect(diplome.find((p) => p.id === "foreign-bar-jurisdiction")!.severity).toBe("ATTENTION");
+
+    // Ni pour une admission française, ni pour une absence d'admission : dans
+    // les deux cas il n'y a pas de juridiction étrangère à relever.
+    expect(ids({ ...COMPLETE, foreignBar: "FRANCE" })).not.toContain("foreign-bar-jurisdiction");
+    expect(ids(COMPLETE)).not.toContain("foreign-bar-jurisdiction");
+  });
+
   it("un point « attention » n'a jamais besoin d'être acquitté", () => {
     const points = [
       { id: "a", severity: "ATTENTION" as const, label: "x", why: "y" },

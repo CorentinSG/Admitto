@@ -92,11 +92,25 @@ export const SCREENS: Screen[] = [
   {
     id: "foreignBar",
     question: "Êtes-vous admis à un barreau ?",
-    helper: "Une admission existante peut ouvrir d'autres voies d'examen.",
+    /* La base de l'admission est demandée ici, faute d'un treizième écran : le
+       CDC §12.2 en plafonne douze, et un profil d'avocat les voit déjà tous.
+       C'est pourtant elle qui distingue deux régimes d'examen, quand le pays
+       ne le fait pas — le BOLE ne publie aucune liste de juridictions. */
+    helper:
+      "Si vous êtes admis hors de France, précisez sur quoi repose votre admission : deux textes distincts s'appliquent selon le cas.",
     options: [
       { value: "NONE", label: "Non, pas encore" },
       { value: "FRANCE", label: "Oui, en France" },
-      { value: "OTHER_COUNTRY", label: "Oui, dans un autre pays" },
+      {
+        value: "OTHER_COUNTRY_LAW_DEGREE",
+        label: "Oui, à l'étranger, sur un diplôme de droit",
+        hint: "Votre admission découle d'un diplôme universitaire de droit.",
+      },
+      {
+        value: "OTHER_COUNTRY_TRAINING",
+        label: "Oui, à l'étranger, après une formation en cabinet",
+        hint: "Études puis stage professionnel — training contract, articles, clerkship.",
+      },
     ],
   },
   {

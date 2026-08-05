@@ -1,17 +1,5 @@
-import {
-  BUDGET,
-  CAREER_GOAL,
-  EDUCATION,
-  ENGLISH,
-  FOREIGN_BAR,
-  FUNDING,
-  GEO_GOAL,
-  INTAKE,
-  JOURNEY_STATUS,
-  US_STATUS,
-  type Answers,
-} from "./types";
-import { UNIVERSITY_IDS } from "@/content/universities";
+import { SCREENS } from "@/content/diagnostic";
+import type { Answers, ScreenId } from "./types";
 
 /**
  * Brouillon du questionnaire, LOCAL au navigateur.
@@ -59,23 +47,38 @@ const VERSION = 1;
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
- * Champs enregistrables, et leurs valeurs admissibles.
- * La table EST le contrôle : un champ absent d'ici n'est jamais enregistré,
- * donc jamais relu. Ajouter un champ demande d'écrire sa liste fermée.
+ * Champs enregistrables. La liste EST le contrôle : un champ absent d'ici n'est
+ * jamais enregistré, donc jamais relu.
+ *
+ * Ce sont exactement les écrans à choix fermés — l'écran de contact n'y figure
+ * pas, et c'est ce qui écarte le prénom, l'adresse, le commentaire et le
+ * consentement.
  */
-const DRAFTABLE: ReadonlyArray<{ field: keyof Answers; allowed: readonly string[] }> = [
-  { field: "status", allowed: JOURNEY_STATUS },
-  { field: "education", allowed: EDUCATION },
-  { field: "university", allowed: UNIVERSITY_IDS },
-  { field: "foreignBar", allowed: FOREIGN_BAR },
-  { field: "careerGoal", allowed: CAREER_GOAL },
-  { field: "geoGoal", allowed: GEO_GOAL },
-  { field: "budget", allowed: BUDGET },
-  { field: "funding", allowed: FUNDING },
-  { field: "intake", allowed: INTAKE },
-  { field: "english", allowed: ENGLISH },
-  { field: "usStatus", allowed: US_STATUS },
-];
+const DRAFTABLE = [
+  "status",
+  "education",
+  "university",
+  "foreignBar",
+  "careerGoal",
+  "geoGoal",
+  "budget",
+  "funding",
+  "intake",
+  "english",
+  "usStatus",
+] as const satisfies readonly ScreenId[];
+
+/**
+ * Valeurs admissibles d'un champ : celles que l'écran a réellement PROPOSÉES.
+ *
+ * Lues sur le questionnaire lui-même plutôt que recopiées depuis les unions
+ * fermées. Deux listes se seraient séparées un jour — une option retirée de
+ * l'écran mais laissée dans le type reviendrait alors par le brouillon, sans
+ * qu'aucun écran ne l'ait jamais offerte. Accessoirement, le questionnaire
+ * embarquait ainsi deux fois les mêmes chaînes.
+ */
+const allowedValues = (field: (typeof DRAFTABLE)[number]): readonly string[] =>
+  SCREENS.find((screen) => screen.id === field)?.options.map((option) => option.value) ?? [];
 
 export interface Draft {
   answers: Answers;
@@ -86,11 +89,11 @@ export interface Draft {
 /** Ne garde que les champs enregistrables, et seulement leurs valeurs connues. */
 export function draftable(answers: Answers): Answers {
   const kept: Answers = {};
-  for (const { field, allowed } of DRAFTABLE) {
+  for (const field of DRAFTABLE) {
     const value = answers[field];
-    if (typeof value === "string" && allowed.includes(value)) {
-      // Le cast est borné par la table : la valeur vient d'être trouvée dans
-      // la liste fermée du champ.
+    if (typeof value === "string" && allowedValues(field).includes(value)) {
+      // Le cast est borné par ce qui précède : la valeur vient d'être trouvée
+      // parmi les options que l'écran a proposées.
       (kept as Record<string, string>)[field] = value;
     }
   }

@@ -383,6 +383,23 @@ export function Questionnaire() {
                   }}
                 >
                   {option.label}
+                  {/* `hint` existait dans le type sans être rendu nulle part.
+                      Deux réponses qui ne diffèrent que par un vocabulaire
+                      professionnel — « diplôme de droit » contre « formation en
+                      cabinet » — ne se distinguent pas sans cette ligne. */}
+                  {option.hint && (
+                    <span
+                      style={{
+                        display: "block",
+                        marginTop: 6,
+                        fontSize: "0.82rem",
+                        lineHeight: 1.5,
+                        color: alpha.whiteDesc,
+                      }}
+                    >
+                      {option.hint}
+                    </span>
+                  )}
                 </button>
               );
             })}

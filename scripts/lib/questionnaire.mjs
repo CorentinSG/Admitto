@@ -26,6 +26,23 @@ export async function startQuestionnaire(page) {
   await waitForTextChange(page, before);
 }
 
+/**
+ * Cible une réponse par son LIBELLÉ, même lorsque le bouton porte davantage.
+ *
+ * Une option peut afficher une précision sous son libellé — « Études puis stage
+ * professionnel… » sous « Oui, à l'étranger, après une formation en cabinet ».
+ * Cette précision entre dans le nom accessible du bouton, et c'est voulu : un
+ * lecteur d'écran doit l'entendre, c'est elle qui distingue deux réponses
+ * proches. Une correspondance EXACTE ne trouvait alors plus rien.
+ *
+ * L'ancrage au début reste strict : deux libellés dont l'un préfixe l'autre
+ * feraient échouer Playwright pour ambiguïté plutôt que de choisir au hasard.
+ */
+const startsWithLabel = (page, label) =>
+  page.getByRole("button", {
+    name: new RegExp("^" + label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
+  });
+
 /** Clique une réponse par écran, en attendant le changement d'écran à chaque fois. */
 export async function answerScreens(page, labels) {
   const totals = [];
@@ -36,7 +53,7 @@ export async function answerScreens(page, labels) {
     if (Number.isFinite(total)) totals.push(total);
 
     const before = await page.locator("body").innerText();
-    await page.getByRole("button", { name: label, exact: true }).click();
+    await startsWithLabel(page, label).click();
     // L'écran suivant remplace le précédent : le texte change nécessairement.
     await waitForTextChange(page, before);
   }
