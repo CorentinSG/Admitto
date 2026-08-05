@@ -289,3 +289,41 @@ describe("adaptation au profil réel", () => {
     expect(binational.find((t) => t.id === "T-VISA-01")!.status).toBe("NOT_APPLICABLE");
   });
 });
+
+describe("enchaînements que le calendrier ne doit pas inverser", () => {
+  /*
+   * Ces trois paires ne sont pas des préférences de rédaction : chacune décrit
+   * une dépendance réelle, lue dans les instructions de l'autorité le
+   * 2026-08-03 (voir `docs/VERIFICATION-MODULES.md`). Les dater dans le mauvais
+   * ordre demande un travail avant ce qu'il suppose — le défaut le plus coûteux
+   * qu'une feuille de route puisse avoir, parce qu'il ne se voit qu'à l'arrivée.
+   *
+   * Le modèle compte les mois AVANT la rentrée : plus grand vaut plus tôt.
+   */
+  const date = (id: string) => TASK_TEMPLATES.find((t) => t.id === id)!.monthsBeforeIntake;
+
+  it("le dossier d'évaluation se réunit avant de se déposer", () => {
+    // T-BOLE-01 était daté du mois même de l'échéance qu'il sert à préparer.
+    expect(date("T-BOLE-01")).toBeGreaterThan(date("T-BOLE-02"));
+  });
+
+  it("le financement est bouclé avant le dossier de statut étudiant", () => {
+    // Celui-ci suppose la preuve de ressources pour toute la durée du programme.
+    expect(date("T-FUND-03")).toBeGreaterThan(date("T-VISA-01"));
+  });
+
+  it("le bénévolat s'engage bien avant le dossier d'admission", () => {
+    // Cinquante heures ne se rattrapent pas dans le mois qui précède le dépôt.
+    expect(date("T-ADM-02")).toBeGreaterThan(date("T-ADM-01"));
+  });
+
+  it("le parcours « vise le barreau » n'est plus réduit à quatre tâches", () => {
+    // Il en comptait quatre — dossier d'évaluation, préparation, inscription,
+    // admission — et ignorait tout ce qui les conditionne.
+    const barreau = TASK_TEMPLATES.filter((t) => t.journeyTypes.includes("BAR_CANDIDATE"));
+    expect(barreau.length).toBeGreaterThanOrEqual(9);
+    for (const id of ["T-BOLE-02", "T-BAR-03", "T-BAR-04", "T-ADM-02", "T-ADM-03"]) {
+      expect(barreau.map((t) => t.id), id).toContain(id);
+    }
+  });
+});

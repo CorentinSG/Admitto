@@ -185,6 +185,28 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     toolLabel: "Ouvrir le simulateur de coût",
     delayRisk: "Sans limite fixée à froid, une admission prestigieuse fait accepter n'importe quel coût.",
   },
+  {
+    id: "T-FUND-03",
+    phase: "FUNDING",
+    title: "Boucler le financement une fois l'admission obtenue",
+    explanation:
+      "Le financement ne s'arrête pas à l'admission : il faut arrêter l'échéancier de l'école, débloquer le prêt ou la bourse, et réunir les justificatifs de ressources. Ces derniers conditionnent le document que l'école délivre pour votre dossier de statut étudiant — c'est le maillon dont on découvre le plus tard qu'il précède tout le reste.",
+    importance: "CRITICAL",
+    estimatedMinutes: 240,
+    /*
+     * Un mois avant le dossier de statut étudiant (T-VISA-01, à quatre mois),
+     * parce que celui-ci suppose la preuve de ressources suffisantes pour toute
+     * la durée du programme. Les deux tâches s'enchaînent : les dater
+     * ensemble laisserait croire qu'elles peuvent se mener en parallèle.
+     */
+    monthsBeforeIntake: 5,
+    journeyTypes: ["LLM_APPLICANT", "CURRENT_LLM_STUDENT"],
+    moduleSlug: "module-3-candidatures",
+    toolHref: "/app/simulateur",
+    toolLabel: "Ouvrir le simulateur de coût",
+    delayRisk:
+      "Sans justificatifs de ressources, l'école ne délivre pas le document sur lequel repose toute la suite du calendrier.",
+  },
 
   // ── Visa ─────────────────────────────────────────────────────────────────
   {
@@ -215,16 +237,42 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     phase: "BOLE",
     title: "Réunir les pièces du dossier d'évaluation",
     explanation:
-      "Rassembler les documents demandés par l'autorité compétente et vérifier leur forme. L'évaluation elle-même relève exclusivement du New York Board of Law Examiners.",
+      "Rassembler les documents demandés par l'autorité compétente et vérifier leur forme. Chaque pièce doit venir directement de l'établissement qui l'a émise, et les traductions être faites par un traducteur certifié — deux exigences qui prennent des semaines. L'évaluation elle-même relève exclusivement du New York Board of Law Examiners.",
     importance: "CRITICAL",
     estimatedMinutes: 300,
-    monthsBeforeIntake: -2,
+    /*
+     * AVANT la rentrée, et non deux mois après comme jusqu'ici.
+     *
+     * Les pièces sont françaises — relevés de la faculté, attestation
+     * d'accréditation, traductions — et s'obtiennent bien plus facilement
+     * depuis la France. Surtout, la date de dépôt lue dans les instructions du
+     * Board tombe au 1er octobre pour un examen de juillet : la tâche était
+     * datée du jour même de l'échéance qu'elle sert à préparer.
+     */
+    monthsBeforeIntake: 2,
     journeyTypes: ["CURRENT_LLM_STUDENT", "BAR_CANDIDATE"],
     moduleSlug: "module-5-bole",
     milestone: "BOLE_FILE_PREPARED",
     toolHref: "/app/documents",
     toolLabel: "Ouvrir votre coffre de documents",
     delayRisk: "Un dossier déposé tard décale l'examen d'une session entière.",
+  },
+  {
+    id: "T-BOLE-02",
+    phase: "BOLE",
+    title: "Déposer la demande d'évaluation préalable",
+    explanation:
+      "Ouvrir le compte auprès du Board, remplir le formulaire en ligne, puis seulement ensuite faire envoyer les pièces : les documents reçus avant l'ouverture du compte ne sont pas conservés. Le Board n'ouvre pas le dossier tant qu'il manque une pièce, et la décision peut demander six mois à partir de la dernière reçue.",
+    importance: "CRITICAL",
+    estimatedMinutes: 120,
+    // Deux mois après la rentrée d'août : c'est l'ordre de grandeur de la date
+    // que le Board fixe pour un examen de juillet suivant. La date exacte
+    // dépend de la session visée et se vérifie à la source.
+    monthsBeforeIntake: -2,
+    journeyTypes: ["CURRENT_LLM_STUDENT", "BAR_CANDIDATE"],
+    moduleSlug: "module-5-bole",
+    delayRisk:
+      "Une date de dépôt manquée reporte l'examen d'une session entière — six mois, parfois un an.",
   },
   {
     id: "T-NET-01",
@@ -267,6 +315,34 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     milestone: "BAR_REGISTRATION_COMPLETED",
     delayRisk: "Une fenêtre d'inscription manquée reporte l'examen à la session suivante.",
   },
+  {
+    id: "T-BAR-03",
+    phase: "BAR_PREPARATION",
+    title: "Passer l'examen de responsabilité professionnelle",
+    explanation:
+      "C'est une épreuve distincte de l'examen principal, avec son propre calendrier et son propre organisateur. Elle peut être passée avant comme après, et un échec se repasse sans limite de tentatives — raison de plus pour s'en débarrasser tôt plutôt que de l'ajouter au mois le plus chargé.",
+    importance: "CRITICAL",
+    estimatedMinutes: 900,
+    monthsBeforeIntake: -5,
+    journeyTypes: ["CURRENT_LLM_STUDENT", "BAR_CANDIDATE"],
+    moduleSlug: "module-6-bar",
+    delayRisk:
+      "Repoussée après l'examen principal, elle retarde d'autant la demande d'admission.",
+  },
+  {
+    id: "T-BAR-04",
+    phase: "BAR_PREPARATION",
+    title: "Suivre le cours de droit new-yorkais et passer son examen",
+    explanation:
+      "Un cours en ligne puis l'examen qui lui correspond, tous deux exigés pour l'admission. Ils peuvent être accomplis jusqu'à un an AVANT votre première session d'examen principal, et le score obtenu vaut trois ans : c'est la seule échéance de cette phase qu'on peut avancer à sa convenance.",
+    importance: "CRITICAL",
+    estimatedMinutes: 1200,
+    monthsBeforeIntake: -4,
+    journeyTypes: ["CURRENT_LLM_STUDENT", "BAR_CANDIDATE"],
+    moduleSlug: "module-6-bar",
+    delayRisk:
+      "Laissés pour après l'examen principal, ils s'ajoutent à la période où le dossier d'admission se prépare déjà.",
+  },
 
   // ── Admission ────────────────────────────────────────────────────────────
   {
@@ -282,6 +358,47 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     moduleSlug: "module-7-admission",
     milestone: "ADMISSION_PACKAGE_PREPARED",
     delayRisk: "La procédure de moralité est longue : la démarrer tard retarde la prestation de serment.",
+  },
+  {
+    id: "T-ADM-02",
+    phase: "ADMISSION",
+    title: "Engager vos cinquante heures de bénévolat qualifiant",
+    explanation:
+      "Cinquante heures de travail juridique bénévole encadré sont exigées avant le dépôt de la demande d'admission. Elles peuvent être accomplies dans n'importe quel pays, y compris la France, dès lors que vos études de droit ont commencé — et sous la supervision d'un enseignant, d'un avocat ou d'un magistrat, qui certifiera chaque expérience.",
+    importance: "CRITICAL",
+    estimatedMinutes: 3000,
+    /*
+     * Six mois AVANT la rentrée : c'est tout l'intérêt de la tâche.
+     *
+     * Elle est régulièrement découverte au moment du dépôt du dossier
+     * d'admission, quand il ne reste plus de temps pour cinquante heures. Rien
+     * n'oblige à attendre les États-Unis : ces heures se font depuis la France,
+     * et la seule condition de date est qu'elles suivent le début des études.
+     */
+    monthsBeforeIntake: 6,
+    journeyTypes: ["LLM_APPLICANT", "CURRENT_LLM_STUDENT", "BAR_CANDIDATE"],
+    moduleSlug: "module-7-admission",
+    delayRisk:
+      "Cinquante heures ne se rattrapent pas dans le mois qui précède le dépôt : c'est le motif de report le plus évitable du parcours.",
+  },
+  {
+    id: "T-ADM-03",
+    phase: "ADMISSION",
+    title: "Choisir votre voie pour la condition de compétences",
+    explanation:
+      "L'admission exige d'établir vos compétences et votre connaissance des valeurs de la profession, et cinq voies distinctes le permettent. Deux méritent l'attention d'un juriste formé en France : la pratique déjà exercée comme avocat, et le stage de six mois — qui peut être accompli AVANT de commencer le LL.M., donc depuis la France. Choisir la sienne tôt évite de découvrir après le diplôme qu'aucune ne s'offre plus.",
+    importance: "HIGH",
+    estimatedMinutes: 90,
+    monthsBeforeIntake: 3,
+    journeyTypes: [
+      "LLM_APPLICANT",
+      "CURRENT_LLM_STUDENT",
+      "BAR_CANDIDATE",
+      "FOREIGN_QUALIFIED_LAWYER",
+    ],
+    moduleSlug: "module-7-admission",
+    delayRisk:
+      "Plusieurs de ces voies supposent des enseignements ou une expérience qui ne se rattrapent plus une fois le diplôme obtenu.",
   },
 
   // ── Avocat déjà qualifié ─────────────────────────────────────────────────

@@ -106,6 +106,20 @@ intègre avec leurs tests.
 
 _Coût : faible une fois la liste arrêtée._
 
+> **Livré, et sans arbitrage nécessaire.** La lecture des textes du 2026-08-03 a
+> montré que l'existence de ces tâches n'était pas affaire de goût mais de
+> règlement. Six ajoutées : déposer la demande d'évaluation (les dates de dépôt
+> sont fermes), passer l'examen de responsabilité professionnelle, suivre le
+> cours et l'examen de droit new-yorkais, engager les cinquante heures de
+> bénévolat — faisables depuis la France, et découvertes trop tard —, choisir sa
+> voie pour la condition de compétences, et boucler le financement après
+> l'admission. Une correction au passage : « réunir les pièces du dossier
+> d'évaluation » était datée du mois même de l'échéance qu'elle sert à préparer.
+> Le parcours « vise le barreau » passe de 4 à 9 tâches, celui de l'étudiant en
+> LL.M. de 5 à 11. Trois tests verrouillent les enchaînements que le calendrier
+> ne doit pas inverser. **Ce qui reste de votre ressort : relire ces échéances
+> au regard de votre calendrier vécu.**
+
 ### 2.3 Corriger une réponse après soumission (PLAN-UX n° 4)
 
 Toujours différé, et toujours pour la même raison : la bêta dira quels champs
@@ -130,9 +144,11 @@ Les instruments sont déjà posés ; il faudra les lire, pas les construire :
 ## Ordre recommandé
 
 ```
-Cette semaine        1.1 Sections des modules       je rédige → vous validez
-                     1.4 R-ALT-001                  votre arbitrage (5 min)
-                     2.2 Tâches manquantes          je propose → vous validez
+Fait                 1.1 Sections des modules       11 modules publiés sur 11
+                     2.2 Tâches manquantes          6 tâches ajoutées, sourcées
+
+Cette semaine        1.4 R-ALT-001                  votre arbitrage (5 min)
+                     Relecture des échéances        votre calendrier vécu
 
 Dès que possible     1.2 Mentions légales           vous
                      1.3 Clés de production         vous
