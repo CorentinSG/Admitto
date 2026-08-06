@@ -49,6 +49,10 @@ export const matrices = {
     saved: "Révision enregistrée.",
     revised: (n: number, at: string) => `révision ${n} du ${at}`,
     fromCode: "état du code, jamais révisé",
+    /* Même piège que sur les règles : une révision FIGE le bloc. Un texte
+       corrigé en code après coup ne parvient jamais au lecteur, et rien ne le
+       dit — le libellé annonçait « révision 36 » sans plus. */
+    diverges: "⚠ le texte du code a changé depuis — c'est cette révision qui s'affiche",
   },
 
   errors: {

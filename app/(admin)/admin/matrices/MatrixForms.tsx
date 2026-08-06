@@ -205,6 +205,12 @@ export interface BlockView {
   label: string;
   payload: BlockPayload;
   revisionLabel: string;
+  /**
+   * Avertissement lorsque la révision affichée DIFFÈRE du texte que porte
+   * aujourd'hui le code, `null` sinon. Une révision fige le bloc : une
+   * correction faite en code ensuite ne parvient jamais au lecteur.
+   */
+  divergence: string | null;
 }
 
 export function BlockForm({ block }: { block: BlockView }) {
@@ -241,6 +247,11 @@ export function BlockForm({ block }: { block: BlockView }) {
           {block.label}
         </h3>
         <span style={meta}>{block.revisionLabel}</span>
+        {block.divergence && (
+          <span style={{ ...meta, color: colors.goldText, display: "block", marginTop: 4 }}>
+            {block.divergence}
+          </span>
+        )}
       </div>
 
       {payload.kind === "TEXT" ? (

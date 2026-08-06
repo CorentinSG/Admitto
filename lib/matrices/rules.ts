@@ -112,3 +112,17 @@ export function effectiveRules(
     };
   });
 }
+
+/**
+ * La règle effective contredit-elle l'état ACTIF que porte le code ?
+ *
+ * C'est arrivé le 2026-08-06 : R-ALT-001 venait d'être activée en code, et
+ * vingt-six révisions résiduelles d'une suite de vérification la laissaient
+ * éteinte. La révision gouverne — c'est voulu, on doit pouvoir fermer une règle
+ * sans déploiement — mais rien ne le disait, et l'activation n'a produit aucune
+ * erreur : seulement une absence.
+ */
+export function ruleDivergesFromCode(effective: Rule, baseRules: Rule[] = RULES): boolean {
+  const fromCode = baseRules.find((rule) => rule.id === effective.id);
+  return fromCode !== undefined && fromCode.active !== effective.active;
+}

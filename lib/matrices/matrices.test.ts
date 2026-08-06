@@ -11,6 +11,7 @@ import type { Answers } from "@/lib/questionnaire/types";
 import type { Rule } from "@/lib/engine-a/types";
 import {
   BLOCK_REGISTRY,
+  blockDivergesFromCode,
   decideBlockRevision,
   resolveBlocksAsOf,
   riskBlocksFrom,
@@ -18,7 +19,12 @@ import {
   voieBlocksFrom,
   type BlockRevisionRow,
 } from "./blocks";
-import { decideRuleRevision, effectiveRules, type RuleRevisionRow } from "./rules";
+import {
+  decideRuleRevision,
+  effectiveRules,
+  ruleDivergesFromCode,
+  type RuleRevisionRow,
+} from "./rules";
 import { FORBIDDEN_PATTERNS, vocabularyViolation } from "./vocabulary";
 
 const NOW = new Date("2026-07-30T12:00:00.000Z");
@@ -300,6 +306,39 @@ describe("règles effectives", () => {
     // version du code (1) + révision (1) : `rulesSnapshot` reste traçable.
     expect(awake.firedRules).toContainEqual({ id: DORMANTE.id, version: 2 });
     expect(awake.path).toBe("NY_VIA_LLM_SUBJECT_TO_BOLE");
+  });
+});
+
+// ── Divergence code / révision : la panne silencieuse ──────────────────────
+
+describe("une révision qui contredit le code se voit", () => {
+  /*
+   * C'est arrivé le 2026-08-06 : R-ALT-001 venait d'être activée en code, et
+   * vingt-six révisions résiduelles d'une suite de vérification la laissaient
+   * éteinte. La révision gouverne — c'est voulu, on doit pouvoir fermer une
+   * règle ou corriger un texte sans déploiement — mais l'écart ne produisait
+   * aucune erreur : seulement une absence, ce qui est le plus difficile à voir.
+   */
+  it("règle : signale l'écart, et lui seul", () => {
+    const codeActive: Rule = { ...RULES[0], active: true };
+    expect(ruleDivergesFromCode({ ...codeActive, active: false }, [codeActive])).toBe(true);
+    expect(ruleDivergesFromCode({ ...codeActive, active: true }, [codeActive])).toBe(false);
+    // Une version ou une source révisée ne sont pas des divergences d'état :
+    // les signaler noierait celle qui compte.
+    expect(ruleDivergesFromCode({ ...codeActive, version: 9 }, [codeActive])).toBe(false);
+  });
+
+  it("bloc : compare au texte que porte AUJOURD'HUI le code", () => {
+    const key = "VOIE:TB-HUMAN-REVIEW";
+    const duCode = BLOCK_REGISTRY.get(key)!.defaultPayload;
+    expect(blockDivergesFromCode(key, duCode)).toBe(false);
+    expect(blockDivergesFromCode(key, { kind: "TEXT", text: "Autre chose." })).toBe(true);
+  });
+
+  it("une clé inconnue ne déclenche aucune alerte", () => {
+    // Un bloc retiré du registre n'est plus servi : l'annoncer divergent
+    // signalerait un écart sans objet.
+    expect(blockDivergesFromCode("VOIE:INEXISTANT", { kind: "TEXT", text: "x" })).toBe(false);
   });
 });
 

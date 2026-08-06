@@ -152,10 +152,15 @@ export const RULES: Rule[] = [
     // l'assemblage rend tous les blocs des règles dont le fait vaut la voie
     // retenue. L'admission étrangère cesse d'être une orientation et redevient
     // ce qu'elle est : un élément du dossier, à documenter.
+    // N'inclut PAS `OTHER_COUNTRY_TRAINING` : R-NY-003 dit à ce profil la même
+    // chose en plus précis, et les deux blocs se suivaient en se répétant —
+    // deux fois « le texte des avocats admis exige lui aussi un LL.M. », dans
+    // une section qui atteignait 2 067 caractères. Une règle plus spécifique
+    // REMPLACE la générique, elle ne s'y ajoute pas.
     condition: {
       field: "foreignBar",
       op: "in",
-      value: ["FRANCE", "OTHER_COUNTRY_LAW_DEGREE", "OTHER_COUNTRY_TRAINING"],
+      value: ["FRANCE", "OTHER_COUNTRY_LAW_DEGREE"],
     },
     factProduced: "NY_VIA_LLM_SUBJECT_TO_BOLE",
     textBlockId: "TB-FOREIGN-BAR",
@@ -242,12 +247,12 @@ export const TEXT_BLOCKS: Record<string, string> = {
   // aussi ce que le BOLE ne publie pas — l'absence de liste est justement ce
   // qui interdit au produit de trancher par pays.
   "TB-FOREIGN-BAR":
-    "Votre admission à un barreau étranger est un élément de votre dossier, et non une dispense : le texte réservé aux avocats déjà admis exige lui aussi un LL.M. américain, et l'admission sans examen suppose un premier diplôme obtenu aux États-Unis. Le New York Board of Law Examiners ne publie aucune liste des pays dont la jurisprudence est fondée sur les principes de la common law anglaise : il procède à une évaluation individuelle du dossier, et lui seul se prononce. Le pays d'admission et la façon dont vous l'avez obtenue — diplôme de droit, ou combinaison d'études et de formation en cabinet — sont donc à documenter.",
+    "Votre admission à un barreau étranger est un élément de votre dossier, et non une dispense : le texte réservé aux avocats déjà admis exige lui aussi un LL.M. américain, et l'admission sans examen suppose un premier diplôme obtenu aux États-Unis. Le New York Board of Law Examiners ne publie aucune liste des pays dont la jurisprudence est fondée sur les principes de la common law anglaise : il procède à une évaluation individuelle du dossier, et lui seul se prononce. Tenez donc prêts votre certificat d'admission et la preuve que votre faculté était accréditée pendant vos études.",
   // Complète TB-FOREIGN-BAR pour la seule configuration que le § 520.6(b)(2)
   // vise nommément. Nomme les conditions SANS trancher celle qui ne se tranche
   // pas depuis un questionnaire : le rattachement du pays à la common law.
   "TB-FOREIGN-BAR-TRAINING":
-    "Votre admission reposant sur des études suivies d'une formation en cabinet, c'est un texte particulier qui s'applique — celui que le New York Board of Law Examiners consacre aux parcours de conversion. Il pose trois conditions en plus de l'admission elle-même : que la jurisprudence du pays d'admission soit fondée sur les principes de la common law anglaise, que la durée cumulée de vos études et de votre formation atteigne celle d'un cursus américain agréé, et qu'un LL.M. américain conforme soit accompli. Réunissez dès maintenant l'attestation de votre formation en cabinet avec ses dates exactes : c'est la pièce que ce texte exige en propre, et celle qui dépend le plus d'un tiers.",
+    "Votre admission reposant sur des études suivies d'une formation en cabinet, c'est un texte particulier qui s'applique — celui que le New York Board of Law Examiners consacre aux parcours de conversion. Il n'allège rien : il pose trois conditions EN PLUS de l'admission elle-même. Que la jurisprudence du pays d'admission soit fondée sur les principes de la common law anglaise — le Board n'en publie aucune liste et apprécie chaque dossier, lui seul se prononçant. Que la durée cumulée de vos études et de votre formation atteigne celle d'un cursus américain agréé. Et qu'un LL.M. américain conforme soit accompli. Réunissez dès maintenant l'attestation de votre formation en cabinet avec ses dates exactes : c'est la pièce que ce texte exige en propre, et celle qui dépend le plus d'un tiers.",
   // S'AJOUTE à TB-NY-VIA-LLM. Ne retire pas la voie : beaucoup de juristes
   // passent le barreau de New York puis rentrent, et écrire à quelqu'un que
   // cette voie n'est pas la sienne parce qu'il compte revenir serait faux.

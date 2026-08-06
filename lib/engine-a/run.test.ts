@@ -109,10 +109,18 @@ describe("Moteur A", () => {
       expect(diplome.firedRules.map((r) => r.id)).not.toContain("R-NY-003");
       expect(cabinet.firedRules.map((r) => r.id)).toContain("R-NY-003");
 
-      // Même voie : la base d'admission ajoute un paragraphe, pas une orientation.
+      // La règle spécifique REMPLACE la générique, elle ne s'y ajoute pas :
+      // les deux blocs se suivaient en se répétant, et la section atteignait
+      // 2 067 caractères. Autant de paragraphes, un contenu différent.
+      expect(cabinet.firedRules.map((r) => r.id)).not.toContain("R-NY-002");
+      expect(cabinet.textBlocks.length).toBe(diplome.textBlocks.length);
+      expect(cabinet.textBlocks).not.toEqual(diplome.textBlocks);
+
+      // Même voie : la base d'admission précise, elle ne réoriente pas.
       expect(cabinet.path).toBe(diplome.path);
-      expect(cabinet.textBlocks.length).toBe(diplome.textBlocks.length + 1);
       expect(cabinet.textBlocks.join(" ")).toMatch(/parcours de conversion/);
+      // Le bloc spécifique se suffit : il porte lui aussi l'absence de liste.
+      expect(cabinet.textBlocks.join(" ")).toMatch(/n'en publie aucune liste/);
     });
 
     it("un projet de retour en France ajoute un paragraphe, sans retirer la voie", () => {

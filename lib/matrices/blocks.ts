@@ -268,3 +268,22 @@ export function riskBlocksFrom(
 
 /** Libellé humain d'une voie, pour l'affichage des blocs VOIE au back-office. */
 export { PATH_LABELS };
+
+/**
+ * Le bloc effectif s'écarte-t-il de ce que porte AUJOURD'HUI le code ?
+ *
+ * Une révision fige le bloc : c'est elle qui s'affiche, et c'est voulu — on
+ * doit pouvoir corriger un texte sans déploiement. Mais la conséquence était
+ * silencieuse. Un texte corrigé en code après coup ne parvenait jamais au
+ * lecteur, et le back-office n'annonçait qu'un numéro de révision.
+ *
+ * Le même piège s'est refermé sur une RÈGLE le 2026-08-06 : R-ALT-001, activée
+ * en code, restait éteinte par le résidu d'une suite de vérification. Le
+ * prédicat vit ici plutôt que dans la page pour être testable — un garde-fou
+ * contre une panne silencieuse ne doit pas dépendre d'un rendu.
+ */
+export function blockDivergesFromCode(key: string, effective: BlockPayload): boolean {
+  const definition = BLOCK_REGISTRY.get(key);
+  if (!definition) return false;
+  return JSON.stringify(effective) !== JSON.stringify(definition.defaultPayload);
+}

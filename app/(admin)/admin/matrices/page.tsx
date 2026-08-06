@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { colors, fonts } from "@/design/tokens";
 import type { RuleCondition } from "@/lib/engine-a/types";
-import { effectiveRules } from "@/lib/matrices/rules";
-import { RULES } from "@/lib/engine-a/rules.seed";
-import { BLOCK_DEFINITIONS, resolveBlocksAsOf } from "@/lib/matrices/blocks";
+import { effectiveRules, ruleDivergesFromCode } from "@/lib/matrices/rules";
+import { BLOCK_DEFINITIONS, blockDivergesFromCode, resolveBlocksAsOf } from "@/lib/matrices/blocks";
 import { blockRevisionStore, ruleRevisionStore } from "@/lib/store/matrices";
 import { matrices } from "@/content/matrices";
 import { BlockForm, RuleForm, type BlockView, type RuleView } from "./MatrixForms";
@@ -54,8 +53,7 @@ export default async function MatricesPage() {
      * activation faite en code pouvait n'avoir aucun effet sans que rien ne le
      * signale, et c'est arrivé.
      */
-    const fromCode = RULES.find((r) => r.id === rule.id);
-    const diverges = revision !== undefined && fromCode !== undefined && fromCode.active !== rule.active;
+    const diverges = revision !== undefined && ruleDivergesFromCode(rule);
     return {
       id: rule.id,
       produces: rule.factProduced,
@@ -67,7 +65,7 @@ export default async function MatricesPage() {
       revisionLabel: revision
         ? matrices.rules.revised(revision.revision, dateFr(revision.createdAt))
         : matrices.rules.fromCode,
-      divergence: diverges ? matrices.rules.diverges(fromCode!.active) : null,
+      divergence: diverges ? matrices.rules.diverges(!rule.active) : null,
     };
   });
 
@@ -82,13 +80,22 @@ export default async function MatricesPage() {
 
   const blockViews: BlockView[] = BLOCK_DEFINITIONS.map((definition) => {
     const latest = latestByKey.get(definition.key);
+    const payload = resolved.get(definition.key) ?? definition.defaultPayload;
+    /*
+     * Une révision FIGE le bloc, comme elle gouverne une règle. Corriger le
+     * texte en code après coup ne parvient alors jamais au lecteur, et le
+     * libellé n'annonçait qu'un numéro de révision. La comparaison au texte du
+     * code coûte une égalité et supprime une panne silencieuse.
+     */
+    const diverges = latest !== undefined && blockDivergesFromCode(definition.key, payload);
     return {
       key: definition.key,
       label: definition.label,
-      payload: resolved.get(definition.key) ?? definition.defaultPayload,
+      payload,
       revisionLabel: latest
         ? matrices.blocks.revised(latest.revision, dateFr(latest.createdAt))
         : matrices.blocks.fromCode,
+      divergence: diverges ? matrices.blocks.diverges : null,
     };
   });
 
