@@ -175,6 +175,19 @@ export const REPORT_STATIC = {
     "Repères de planification calculés depuis la rentrée que vous visez. Chaque université, autorité et prestataire publie son propre calendrier, qui prime sur ces repères.",
   sourcesLead:
     "Chaque élément réglementaire retenu porte sa source et sa date de vérification. Une règle non vérifiée n'est pas appliquée : la situation est alors soumise à une revue humaine.",
+  /*
+   * Les trois phrases suivantes vivaient EN DUR dans le composant de rendu.
+   * Elles y étaient bien rédigées, et pourtant à part : toute autre phrase du
+   * rapport vit ici, où la copie se relit d'un seul endroit. Deux d'entre elles
+   * paraissent devant 14 % des profils — un rapport sans axe fragile n'est pas
+   * un cas limite.
+   */
+  noRisks:
+    "Aucun axe ne ressort comme fragile à partir des informations transmises. Les risques résiduels tiennent à l'exécution : respect des échéances et qualité du dossier.",
+  noSources:
+    "Aucune règle réglementaire n'a été appliquée automatiquement à votre situation : elle fait l'objet d'une revue humaine.",
+  shiftIntake:
+    "Le calendrier actuel est très contraint : viser la rentrée suivante permettrait de déposer un dossier complet plutôt qu'un dossier précipité.",
   signature: [
     "Prepared by Corentin Saint-Girons",
     "Founder",

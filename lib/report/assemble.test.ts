@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { assembleReport } from "./assemble";
 import { fill, UnauthorizedVariableError } from "./fill";
@@ -102,5 +103,40 @@ describe("assemblage du rapport", () => {
 
   it("reste déterministe : deux assemblages du même profil sont identiques", () => {
     expect(JSON.stringify(report(PROFIL_TENDU))).toBe(JSON.stringify(report(PROFIL_TENDU)));
+  });
+});
+
+describe("la copie du rapport vit dans content/, et nulle part ailleurs", () => {
+  /*
+   * Trois paragraphes vivaient EN DUR dans le composant de rendu : l'état sans
+   * axe fragile, l'état sans règle appliquée, et l'invitation à viser la
+   * rentrée suivante. Bien rédigés, et pourtant à part — deux d'entre eux
+   * paraissent devant 14 % des profils, mesuré sur 18 900 rapports assemblés.
+   *
+   * Le problème n'est pas esthétique : une phrase du rapport qui n'est pas dans
+   * `content/` échappe à la relecture d'ensemble de la copie, et le fondateur
+   * la cherche là où elle n'est pas.
+   *
+   * Le test lit le fichier plutôt que d'inspecter un rendu : c'est la seule
+   * façon d'attraper une phrase réintroduite demain.
+   */
+  it("le composant de rendu ne porte aucun texte visible", () => {
+    const source = readFileSync("app/_components/ReportDocument.tsx", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "");
+
+    // Un nœud de texte JSX : entre deux balises, sans accolade — donc écrit
+    // là, et non interpolé depuis `content/`.
+    const durs = [...source.matchAll(/>([^<>{}]{40,})</g)].map((m) =>
+      m[1].replace(/\s+/g, " ").trim()
+    );
+    expect(durs, durs.join(" | ")).toEqual([]);
+  });
+
+  it("les trois états vides sont assemblés depuis la copie", () => {
+    const r = report(PROFIL_TENDU);
+    expect(r.noRisks).toBe(REPORT_STATIC.noRisks);
+    expect(r.noSources).toBe(REPORT_STATIC.noSources);
+    expect(r.shiftIntakeText).toBe(REPORT_STATIC.shiftIntake);
   });
 });

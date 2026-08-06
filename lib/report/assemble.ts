@@ -76,6 +76,10 @@ export interface Report {
   offerBody: string;
   sources: ReportSource[];
   sourcesLead: string;
+  /** Phrases d'état vide, source unique avec le reste de la copie. */
+  noRisks: string;
+  noSources: string;
+  shiftIntakeText: string;
   signature: string[];
   disclaimer: string;
 }
@@ -185,6 +189,9 @@ export function assembleReport(
     offerBody: OFFER_BLOCKS[offer].body,
     sources: sourcesUsed(assessment),
     sourcesLead: REPORT_STATIC.sourcesLead,
+    noRisks: REPORT_STATIC.noRisks,
+    noSources: REPORT_STATIC.noSources,
+    shiftIntakeText: REPORT_STATIC.shiftIntake,
     signature: REPORT_STATIC.signature,
     disclaimer: REPORT_STATIC.disclaimer,
   };

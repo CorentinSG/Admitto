@@ -83,10 +83,7 @@ export function ReportDocument({
         <Callout>{r.verdictTitle}</Callout>
         <P>{r.verdictBody}</P>
         {r.shiftIntake && (
-          <P>
-            Le calendrier actuel est très contraint : viser la rentrée suivante permettrait de
-            déposer un dossier complet plutôt qu&apos;un dossier précipité.
-          </P>
+          <P>{r.shiftIntakeText}</P>
         )}
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 18 }}>
           <tbody>
@@ -134,10 +131,7 @@ export function ReportDocument({
 
       <Section title="Risques principaux et actions correctrices">
         {r.risks.length === 0 ? (
-          <P>
-            Aucun axe ne ressort comme fragile à partir des informations transmises. Les risques
-            résiduels tiennent à l&apos;exécution : respect des échéances et qualité du dossier.
-          </P>
+          <P>{r.noRisks}</P>
         ) : (
           r.risks.map((risk) => (
             <div key={risk.axis} style={{ marginTop: 22 }}>
@@ -252,10 +246,7 @@ export function ReportDocument({
       <Section title="Sources et dates de vérification">
         <P>{r.sourcesLead}</P>
         {r.sources.length === 0 ? (
-          <P>
-            Aucune règle réglementaire n&apos;a été appliquée automatiquement à votre situation :
-            elle fait l&apos;objet d&apos;une revue humaine.
-          </P>
+          <P>{r.noSources}</P>
         ) : (
           <ul style={{ margin: "10px 0 0" }}>
             {r.sources.map((s) => (
