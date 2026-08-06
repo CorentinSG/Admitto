@@ -162,6 +162,33 @@ export const NEXT_STEPS: Record<JourneyType, string[]> = {
   ],
 };
 
+/**
+ * Titres du document.
+ *
+ * Ils vivaient en dur dans le composant de rendu, comme les trois phrases plus
+ * bas. Un titre est de la copie visible au même titre qu'un paragraphe : le
+ * rapport est relu avant envoi (CDC §17), et une relecture qui se fait à deux
+ * endroits — la copie ici, les intitulés là-bas — en oublie forcément un.
+ *
+ * Type fermé : le composant indexe ce dictionnaire, si bien qu'une section
+ * ajoutée sans titre ne compile pas.
+ */
+export const REPORT_SECTIONS = {
+  /* La marque en tête de page : elle aussi paraît dans le document. */
+  brand: "ADMITTO",
+  documentTitle: "Rapport éducatif et stratégique",
+  summary: "Synthèse",
+  path: "Voie préliminaire",
+  partnerships: "Partenariats",
+  viability: "Viabilité du projet — cinq axes",
+  risks: "Risques principaux et actions correctrices",
+  nextSteps: "Prochaines étapes",
+  timeline: "Timeline",
+  costs: "Scénarios de coût",
+  offer: "Offre recommandée",
+  sources: "Sources et dates de vérification",
+} as const;
+
 export const REPORT_STATIC = {
   summaryLead:
     "Ce rapport reprend les informations que vous avez communiquées et les met en regard des étapes généralement applicables à des profils comparables. Il vise à vous permettre de décider en connaissance de cause, pas à se substituer aux autorités compétentes.",

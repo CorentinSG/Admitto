@@ -1,4 +1,5 @@
 import type { PreliminaryPath } from "@/lib/engine-a/types";
+import { COSTS_NOT_INCLUDED_LEAD } from "./costs";
 
 /**
  * Copie de la page de résultat préliminaire (CDC §15).
@@ -60,7 +61,8 @@ export const result = {
   },
   costsIntro:
     "Ordre de grandeur pour une année de LL.M., à confirmer école par école. Ce n'est pas encore le simulateur détaillé, qui compare des scénarios complets.",
-  costsNotIncluded: "Non compris à ce stade :",
+  /* Partagé avec le rapport : voir `content/costs.ts`. */
+  costsNotIncluded: COSTS_NOT_INCLUDED_LEAD,
   limits: [
     "Ce résultat est préliminaire et repose uniquement sur les réponses que vous venez de donner.",
     "Il ne constitue ni un conseil juridique, ni une détermination d'éligibilité, ni une décision d'une autorité.",

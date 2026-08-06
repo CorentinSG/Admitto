@@ -7,6 +7,7 @@ import { recommendOffer } from "@/lib/offers/recommend";
 import {
   AXIS_COMMENTS,
   NEXT_STEPS,
+  REPORT_SECTIONS,
   REPORT_STATIC,
   RISK_BLOCKS,
   VERDICT_BLOCKS,
@@ -127,10 +128,45 @@ describe("la copie du rapport vit dans content/, et nulle part ailleurs", () => 
 
     // Un nœud de texte JSX : entre deux balises, sans accolade — donc écrit
     // là, et non interpolé depuis `content/`.
-    const durs = [...source.matchAll(/>([^<>{}]{40,})</g)].map((m) =>
-      m[1].replace(/\s+/g, " ").trim()
-    );
+    const durs = [...source.matchAll(/>([^<>{}]{4,})</g)]
+      .map((m) => m[1].replace(/\s+/g, " ").trim())
+      .filter((text) => /[A-Za-zÀ-ÿ]/.test(text));
     expect(durs, durs.join(" | ")).toEqual([]);
+  });
+
+  it("le composant de rendu ne porte aucun titre ni libellé écrit sur place", () => {
+    /*
+     * Le seuil précédent était de quarante caractères : il visait les trois
+     * paragraphes trouvés ce jour-là, et laissait donc passer TOUT ce qui est
+     * court. Les onze titres de section et les quatre libellés de la table des
+     * coûts sont ainsi restés en dur, invisibles au garde-fou censé les voir.
+     *
+     * Un titre est de la copie au même titre qu'un paragraphe. Et les quatre
+     * libellés de coût étaient de surcroît écrits DEUX fois, à l'identique, ici
+     * et sur la page de résultat — deux rendus d'une même donnée qui
+     * divergeraient sans signal, ce que ce composant existe précisément pour
+     * empêcher.
+     */
+    const source = readFileSync("app/_components/ReportDocument.tsx", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "");
+
+    // Attributs porteurs de texte visible. `style` et les clés React n'en sont
+    // pas ; les recenser tous serait plus fragile que de nommer ceux-ci.
+    const attributs = [...source.matchAll(/\b(title|label|alt|placeholder)="([^"]+)"/g)].map(
+      (m) => `${m[1]}="${m[2]}"`
+    );
+    expect(attributs, attributs.join(" | ")).toEqual([]);
+  });
+
+  it("les titres du rapport couvrent exactement les sections rendues", () => {
+    // Un titre orphelin dans `content/` se relit et se corrige sans jamais
+    // paraître : le compilateur voit l'indexation manquante, pas l'entrée morte.
+    const source = readFileSync("app/_components/ReportDocument.tsx", "utf8");
+    const utilises = new Set(
+      [...source.matchAll(/\bS\.([a-zA-Z]+)/g)].map((m) => m[1])
+    );
+    expect([...Object.keys(REPORT_SECTIONS)].sort()).toEqual([...utilises].sort());
   });
 
   it("les trois états vides sont assemblés depuis la copie", () => {

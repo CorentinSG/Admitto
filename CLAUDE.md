@@ -35,6 +35,9 @@ que pour des changements durables (stabilité = cache prompt efficace).
   fermeture volontaire au lieu des pages.
 - `npm run verify:all <url>` — enchaîne le budget de bundle et les treize suites, puis résume. Une seule reprise par
   suite, et seulement sur plantage : un échec d'assertion reste rouge.
+  **Vider `RateLimitHit` AVANT le passage** (`psql "$DATABASE_URL" -c 'DELETE FROM "RateLimitHit";'`) :
+  un passage complet dépasse le plafond par IP, et les dernières suites échouent
+  sur la connexion — un faux rouge qui ressemble à une régression.
 - `npm run report:pdf <url-impression> <sortie.pdf>` — rendu PDF d'un rapport
 - `npm run db:migrate` / `db:deploy` / `db:studio` — migrations Prisma (dev / prod / inspection)
 - `npm run graph:update` — met à jour le graphe Graphify (voir ci-dessous)

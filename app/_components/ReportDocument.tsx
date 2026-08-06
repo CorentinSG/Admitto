@@ -2,6 +2,8 @@ import { colors, fonts } from "@/design/tokens";
 import { formatUsd } from "@/lib/costs/estimate";
 import type { Assessment } from "@/lib/assessment/compute";
 import type { Report } from "@/lib/report/assemble";
+import { REPORT_SECTIONS as S } from "@/content/report-blocks";
+import { COST_LABELS, COST_LINES, COSTS_NOT_INCLUDED_LEAD } from "@/content/costs";
 
 /**
  * Rendu du rapport (CDC §17), partagé par la version imprimable du back-office
@@ -44,7 +46,7 @@ export function ReportDocument({
       <header style={{ borderBottom: `2px solid ${colors.gold}`, paddingBottom: 18 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
           <span style={{ fontFamily: fonts.serif, fontSize: "1.3rem", letterSpacing: "0.18em" }}>
-            ADMITTO
+            {S.brand}
           </span>
           <span style={{ fontSize: "0.72rem", letterSpacing: "0.12em", color: colors.slate }}>
             {dateFr(r.generatedAt)}
@@ -59,27 +61,27 @@ export function ReportDocument({
             margin: "22px 0 0",
           }}
         >
-          Rapport éducatif et stratégique
+          {S.documentTitle}
           {r.firstName ? ` — ${r.firstName}` : ""}
         </h1>
       </header>
 
-      <Section title="Synthèse">
+      <Section title={S.summary}>
         <P>{r.summary}</P>
       </Section>
 
-      <Section title="Voie préliminaire">
+      <Section title={S.path}>
         <Callout>{r.pathLabel}</Callout>
         {r.pathText.map((t) => (
           <P key={t}>{t}</P>
         ))}
       </Section>
 
-      <Section title="Partenariats">
+      <Section title={S.partnerships}>
         <P>{r.partnerships}</P>
       </Section>
 
-      <Section title="Viabilité du projet — cinq axes">
+      <Section title={S.viability}>
         <Callout>{r.verdictTitle}</Callout>
         <P>{r.verdictBody}</P>
         {r.shiftIntake && (
@@ -129,7 +131,7 @@ export function ReportDocument({
 
       <div className="page-break" />
 
-      <Section title="Risques principaux et actions correctrices">
+      <Section title={S.risks}>
         {r.risks.length === 0 ? (
           <P>{r.noRisks}</P>
         ) : (
@@ -162,7 +164,7 @@ export function ReportDocument({
         )}
       </Section>
 
-      <Section title="Prochaines étapes">
+      <Section title={S.nextSteps}>
         <ol style={{ margin: "12px 0 0", paddingLeft: 0, counterReset: "step" }}>
           {r.nextSteps.map((step, i) => (
             <li
@@ -182,7 +184,7 @@ export function ReportDocument({
         </ol>
       </Section>
 
-      <Section title="Timeline">
+      <Section title={S.timeline}>
         <P>{r.timelineLead}</P>
         {r.timeline.map((d) => (
           <div
@@ -206,20 +208,15 @@ export function ReportDocument({
         ))}
       </Section>
 
-      <Section title="Scénarios de coût">
+      <Section title={S.costs}>
         <P>{r.costsLead}</P>
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 14 }}>
           <tbody>
-            {[
-              ["Coût académique", assessment.costs.academic],
-              ["Coût de la vie", assessment.costs.living],
-              ["Barreau et admission", assessment.costs.barAndAdmission],
-              ["Total indicatif", assessment.costs.total],
-            ].map(([label, range]) => {
-              const v = range as { lowUsd: number; highUsd: number };
+            {COST_LINES.map((line) => {
+              const v = assessment.costs[line];
               return (
-                <tr key={label as string} style={{ borderTop: `1px solid rgba(10, 22, 40, 0.12)` }}>
-                  <td style={{ padding: "9px 0", fontSize: "0.86rem" }}>{label as string}</td>
+                <tr key={line} style={{ borderTop: `1px solid rgba(10, 22, 40, 0.12)` }}>
+                  <td style={{ padding: "9px 0", fontSize: "0.86rem" }}>{COST_LABELS[line]}</td>
                   <td
                     style={{
                       padding: "9px 0",
@@ -235,15 +232,17 @@ export function ReportDocument({
             })}
           </tbody>
         </table>
-        <P>Non compris à ce stade : {assessment.costs.notIncluded.join(", ")}.</P>
+        <P>
+          {COSTS_NOT_INCLUDED_LEAD} {assessment.costs.notIncluded.join(", ")}.
+        </P>
       </Section>
 
-      <Section title="Offre recommandée">
+      <Section title={S.offer}>
         <Callout>{r.offerName}</Callout>
         <P>{r.offerBody}</P>
       </Section>
 
-      <Section title="Sources et dates de vérification">
+      <Section title={S.sources}>
         <P>{r.sourcesLead}</P>
         {r.sources.length === 0 ? (
           <P>{r.noSources}</P>

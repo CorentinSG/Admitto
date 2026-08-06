@@ -8,6 +8,7 @@ import { announcedDelay } from "@/lib/capacity/delay";
 import { reportStore } from "@/lib/store/reports";
 import { formatUsd } from "@/lib/costs/estimate";
 import { PATH_LABELS, result } from "@/content/result";
+import { COST_LABELS, COST_LINES } from "@/content/costs";
 import { rapport } from "@/content/rapport";
 import { deductionView } from "@/lib/payments/deduction-state";
 import { recommendOffer } from "@/lib/offers/recommend";
@@ -213,16 +214,12 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
               marginTop: 22,
             }}
           >
-            {[
-              ["Coût académique", costs.academic],
-              ["Coût de la vie", costs.living],
-              ["Barreau et admission", costs.barAndAdmission],
-              ["Total indicatif", costs.total],
-            ].map(([label, range]) => {
-              const r = range as { lowUsd: number; highUsd: number };
+            {COST_LINES.map((line) => {
+              const label = COST_LABELS[line];
+              const r = costs[line];
               return (
                 <div
-                  key={label as string}
+                  key={line}
                   style={{
                     padding: "20px 18px",
                     backgroundColor: alpha.whiteFaint,
@@ -239,7 +236,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
                       color: colors.gold,
                     }}
                   >
-                    {label as string}
+                    {label}
                   </span>
                   <span
                     style={{
