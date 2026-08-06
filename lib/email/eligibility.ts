@@ -4,6 +4,7 @@ import { assembleReportLive } from "@/lib/matrices/load";
 import { formatEuros } from "@/lib/payments/offers";
 import { isDeductionValid } from "@/lib/payments/deduction";
 import { isModulePublished } from "@/content/modules";
+import { J2_FRAGMENTS } from "@/content/emails";
 import type { EmailVariables } from "./render";
 import type { SequenceKind } from "./types";
 
@@ -22,7 +23,10 @@ import type { SequenceKind } from "./types";
  * — **J+2 et J+5** exigent un rapport effectivement envoyé. Le rapport est
  *   rédigé à la main puis marqué envoyé depuis le back-office ; à J+2 il peut
  *   très bien ne pas l'être. L'email attend alors, au lieu d'annoncer un
- *   document qui n'existe pas.
+ *   document qui n'existe pas. Le J+2 n'exige EN REVANCHE aucune déduction :
+ *   il annonce le rapport, pas une remise. L'exiger le rendait impossible en
+ *   Phase 1A — le diagnostic y est gratuit, donc rien n'est déductible — et le
+ *   J+5 partait quand même demander si le rapport avait été lu.
  * — **J+12** exige un module publié traitant le risque principal. Sans lui,
  *   `resourceUrl` pointerait vers une page vide — le CDC §25 interdit déjà de
  *   présenter un module non sourcé.
@@ -58,19 +62,36 @@ async function mainRisk(context: SequenceContext): Promise<string | null> {
   return assembled.risks[0]?.title ?? null;
 }
 
-async function reportVariables(context: SequenceContext): Promise<EmailVariables> {
+interface ReportVariables {
+  verdictTitle: string;
+  mainRisk: string;
+  riskLine: string;
+  offerName: string;
+}
+
+interface DeductionVariables {
+  deductionAmount: string;
+  deductionExpiry: string;
+}
+
+async function reportVariables(context: SequenceContext): Promise<ReportVariables> {
   // Blocs résolus à la date de l'évaluation, comme le rapport lui-même : un
   // email qui citerait un titre de verdict révisé après coup ne décrirait plus
   // le document que son destinataire va ouvrir.
   const assembled = await assembleReportLive(context.assessment);
+  const risk = assembled.risks[0]?.title;
   return {
     verdictTitle: assembled.verdictTitle,
-    mainRisk: assembled.risks[0]?.title ?? "",
+    // `mainRisk` reste la valeur brute (le J+12 l'insère dans une phrase qui
+    // la suppose non vide, et son éligibilité l'exige) ; `riskLine` est la
+    // ligne entière, qui a une variante quand il n'y a pas de risque.
+    mainRisk: risk ?? "",
+    riskLine: risk ? J2_FRAGMENTS.riskLine(risk) : J2_FRAGMENTS.riskLineNone,
     offerName: assembled.offerName,
   };
 }
 
-function deductionVariables(context: SequenceContext): EmailVariables | null {
+function deductionVariables(context: SequenceContext): DeductionVariables | null {
   const deduction = context.report?.deduction ?? null;
   if (!deduction) return null;
   if (!isDeductionValid(deduction, context.now)) return null;
@@ -101,12 +122,19 @@ export async function eligibility(
 
     case "J2_REPORT": {
       if (!reportSent) return { ok: false, reason: "REPORT_NOT_SENT" };
+      const report = await reportVariables(context);
       const deduction = deductionVariables(context);
-      // Le corps du J+2 cite la déduction : sans elle, il ne peut pas être
-      // rendu. Un texte alternatif sans déduction reste à rédiger — d'ici là,
-      // l'email attend plutôt que de partir à trou.
-      if (!deduction) return { ok: false, reason: "NO_ACTIVE_DEDUCTION" };
-      return { ok: true, variables: { ...(await reportVariables(context)), ...deduction } };
+      // Le paragraphe de l'offre est choisi ici, mais RÉDIGÉ dans
+      // `content/emails.ts` : la logique décide laquelle des deux situations
+      // est vraie, elle n'écrit pas la phrase (CDC §19).
+      const offerParagraph = deduction
+        ? J2_FRAGMENTS.offerWithDeduction(
+            report.offerName,
+            deduction.deductionAmount,
+            deduction.deductionExpiry
+          )
+        : J2_FRAGMENTS.offerWithoutDeduction(report.offerName);
+      return { ok: true, variables: { ...report, ...(deduction ?? {}), offerParagraph } };
     }
 
     case "J5_FOLLOWUP":
@@ -138,11 +166,19 @@ export async function eligibility(
  *
  * Le module recommandé par la feuille de route serait plus fin ; il exige de
  * charger la feuille de route pour un email dont c'est le seul besoin. Le
- * module d'orientation convient à tous les risques, et c'est le seul rédigé à
- * ce jour — `isModulePublished` le confirme au lieu de le supposer.
+ * module de décision convient à tous les risques — `isModulePublished` le
+ * confirme au lieu de le supposer.
+ *
+ * L'identifiant est exporté et vérifié par un test : il désignait
+ * « module-0-orientation », qui n'existe pas, si bien que `isModulePublished`
+ * répondait non et que le J+12 n'a JAMAIS pu partir. Le garde-fou était en
+ * place, il a fonctionné — mais il ne pouvait pas distinguer « module non
+ * publié » de « slug faux », et un email qui ne part jamais ne se signale
+ * nulle part : il compte comme « en attente », indéfiniment.
  */
+export const J12_MODULE_SLUG = "module-0-decision";
+
 function resourceFor(context: SequenceContext): string | null {
   void context;
-  const slug = "module-0-orientation";
-  return isModulePublished(slug) ? slug : null;
+  return isModulePublished(J12_MODULE_SLUG) ? J12_MODULE_SLUG : null;
 }

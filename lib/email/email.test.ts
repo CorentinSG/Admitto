@@ -3,6 +3,9 @@ import { scheduleSequence, dueEmails } from "./schedule";
 import { renderEmail } from "./render";
 import { sendGuarded, type EmailTransport } from "./transport";
 import { EMAIL_LEGAL_BASIS } from "./types";
+import { J12_MODULE_SLUG } from "./eligibility";
+import { J2_FRAGMENTS } from "@/content/emails";
+import { findModule, isModulePublished } from "@/content/modules";
 
 const SUBMITTED = new Date(Date.UTC(2026, 6, 28));
 
@@ -16,6 +19,8 @@ const VARIABLES = {
   pathLabel: "Situation nécessitant une revue humaine",
   verdictTitle: "Projet viable avec une planification importante",
   mainRisk: "Financement non sécurisé",
+  riskLine: "— risque principal identifié : Financement non sécurisé",
+  offerParagraph: "L'offre qui correspond à votre situation est Roadmap & Platform.",
   offerName: "Roadmap & Platform",
   deductionAmount: "79 €",
   deductionExpiry: "27 août 2026",
@@ -96,6 +101,46 @@ describe("rendu des emails", () => {
   it("ne présente jamais le rapport comme un conseil juridique", () => {
     const body = renderEmail("J2_REPORT", VARIABLES).body;
     expect(body).toMatch(/ne constitue pas un conseil juridique/);
+  });
+
+  it("la ressource du J+12 désigne un module qui existe ET qui est publié", () => {
+    /*
+     * Le J+12 citait « module-0-orientation », un slug qui n'existe pas :
+     * `isModulePublished` répondait non, l'email restait éternellement « en
+     * attente », et rien ne le signalait — la garde ne pouvait pas distinguer
+     * « module non publié » de « nom faux ». Même verrou que la feuille de
+     * route, où chaque tâche qui cite un module cite un module qui existe.
+     */
+    expect(findModule(J12_MODULE_SLUG), `slug inconnu : ${J12_MODULE_SLUG}`).not.toBeNull();
+    expect(isModulePublished(J12_MODULE_SLUG)).toBe(true);
+  });
+});
+
+describe("fragments du J+2 (CDC §19 : aucun texte produit librement)", () => {
+  /*
+   * Deux situations que le gabarit unique ne pouvait pas écrire. Elles sont
+   * testées ici, sur la copie, et leur SÉLECTION est testée sur le passage
+   * d'envoi (`run.test.ts`).
+   */
+  it("dit autre chose plutôt que rien quand aucun axe n'est fragile", () => {
+    // 14 % des profils, mesuré sur 18 900 rapports assemblés. Le gabarit
+    // écrivait « risque principal identifié : » suivi de rien.
+    expect(J2_FRAGMENTS.riskLineNone).not.toMatch(/risque principal identifié\s*:\s*$/);
+    expect(J2_FRAGMENTS.riskLineNone.length).toBeGreaterThan(20);
+    expect(J2_FRAGMENTS.riskLine("Financement non sécurisé")).toContain(
+      "Financement non sécurisé"
+    );
+  });
+
+  it("n'annonce aucune déduction quand le diagnostic a été offert", () => {
+    const sans = J2_FRAGMENTS.offerWithoutDeduction("Roadmap & Platform");
+    expect(sans).toContain("Roadmap & Platform");
+    // Ni montant, ni date : il n'y a rien à déduire et rien à faire expirer.
+    expect(sans).not.toMatch(/\d/);
+
+    const avec = J2_FRAGMENTS.offerWithDeduction("Roadmap & Platform", "79 €", "27 août 2026");
+    expect(avec).toContain("79 €");
+    expect(avec).toContain("27 août 2026");
   });
 });
 

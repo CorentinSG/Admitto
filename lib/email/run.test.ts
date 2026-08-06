@@ -6,6 +6,7 @@ import { noticeStore } from "@/lib/store/notifications";
 import { createDeduction } from "@/lib/payments/deduction";
 import type { Answers } from "@/lib/questionnaire/types";
 import { MAX_LATE_DAYS, journalId, runEmailSequence } from "./run";
+import { J12_MODULE_SLUG } from "./eligibility";
 
 /**
  * Passage d'envoi de la séquence.
@@ -18,15 +19,15 @@ import { MAX_LATE_DAYS, journalId, runEmailSequence } from "./run";
  * l'adresse mesurerait aussi ceux des tests précédents.
  */
 
-const sent: Array<{ to: string; subject: string }> = [];
+const sent: Array<{ to: string; subject: string; body: string }> = [];
 
 vi.mock("./transport", async () => {
   const actual = await vi.importActual<typeof import("./transport")>("./transport");
   return {
     ...actual,
     getTransport: () => ({
-      async send(email: { to: string; subject: string }) {
-        sent.push({ to: email.to, subject: email.subject });
+      async send(email: { to: string; subject: string; body: string }) {
+        sent.push({ to: email.to, subject: email.subject, body: email.body });
         return { ok: true };
       },
     }),
@@ -71,11 +72,13 @@ async function seed(options: {
   reportSent?: boolean;
   /** Diagnostic payé : ouvre la déduction de trente jours. */
   paid?: boolean;
+  /** Profil différent du profil de référence (axes fragiles, notamment). */
+  answers?: Partial<Answers>;
 } = {}) {
   const id = `seq-${RUN}-${++counter}`;
   const email = `${id}@example.com`;
   const assessment = computeAssessment(
-    { ...ANSWERS, email, consentMarketing: options.consent ?? true },
+    { ...ANSWERS, ...options.answers, email, consentMarketing: options.consent ?? true },
     SUBMITTED,
     id
   );
@@ -139,6 +142,71 @@ describe("séquence J+0 → J+25", () => {
     await runEmailSequence(later(4));
     // Marquer l'email envoyé au premier passage l'aurait perdu définitivement.
     expect(to(email)).toHaveLength(1);
+  });
+
+  it("annonce le rapport même sans déduction — le régime gratuit est le régime normal", async () => {
+    /*
+     * Le J+2 exigeait une déduction active pour se rendre. Or une déduction
+     * naît d'un paiement, et en Phase 1A le diagnostic est offert : l'email qui
+     * porte le rapport ne pouvait donc partir pour PERSONNE, tandis que le J+5
+     * partait bel et bien demander si ce rapport avait été lu. Le J+2 annonce
+     * un rapport, pas une remise.
+     */
+    const { email } = await seed({ reportSent: true });
+    await runEmailSequence(later(2));
+
+    const j2 = to(email).filter((m) => m.subject.includes("rapport personnalisé"));
+    expect(j2).toHaveLength(1);
+    expect(j2[0].body).toContain("Le diagnostic vous a été offert");
+    // Ni montant ni date d'expiration : il n'y a rien à déduire.
+    expect(j2[0].body).not.toMatch(/en est déduit/);
+  });
+
+  it("cite la déduction dès qu'il y en a une", async () => {
+    const { email } = await seed({ reportSent: true, paid: true });
+    await runEmailSequence(later(2));
+
+    const j2 = to(email).filter((m) => m.subject.includes("rapport personnalisé"));
+    expect(j2[0].body).toMatch(/en est déduit jusqu'au/);
+  });
+
+  it("dit autre chose plutôt que rien quand aucun axe n'est fragile", async () => {
+    /*
+     * 14 % des profils n'ont aucun risque (mesuré sur 18 900 rapports). La
+     * ligne « — risque principal identifié : » se rendait alors suivie de rien,
+     * et le vide se lisait comme une donnée manquante plutôt que comme une
+     * bonne nouvelle.
+     */
+    const { email } = await seed({
+      reportSent: true,
+      answers: {
+        careerGoal: "IN_HOUSE_COMPLIANCE",
+        geoGoal: "KEEP_BOTH",
+        budget: "OVER_100K",
+        funding: "BOTH",
+        usStatus: "US_DUAL_NATIONAL",
+      },
+    });
+    await runEmailSequence(later(2));
+
+    const body = to(email).find((m) => m.subject.includes("rapport personnalisé"))!.body;
+    expect(body).not.toMatch(/risque principal identifié\s*:\s*$/m);
+    expect(body).toContain("aucun axe ne ressort comme fragile");
+  });
+
+  it("envoie le J+12 : la ressource citée existe et est publiée", async () => {
+    /*
+     * Le slug codé en dur ne désignait aucun module. `isModulePublished`
+     * répondait non — correctement —, l'email n'est jamais parti, et rien ne
+     * l'a signalé : un email non éligible n'est pas journalisé, il s'accumule
+     * en « en attente ». Le passage complet est le seul endroit qui le montre.
+     */
+    const { email } = await seed({ reportSent: true });
+    for (const day of [2, 5, 12]) await runEmailSequence(later(day));
+
+    const j12 = to(email).filter((m) => m.subject.includes("point de vigilance"));
+    expect(j12).toHaveLength(1);
+    expect(j12[0].body).toContain(`/app/modules/${J12_MODULE_SLUG}`);
   });
 
   it("n'annonce aucune expiration de déduction en l'absence de paiement", async () => {

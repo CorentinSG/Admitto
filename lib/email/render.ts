@@ -17,6 +17,8 @@ export const ALLOWED_EMAIL_VARIABLES = [
   "pathLabel",
   "verdictTitle",
   "mainRisk",
+  "riskLine",
+  "offerParagraph",
   "offerName",
   "deductionAmount",
   "deductionExpiry",
