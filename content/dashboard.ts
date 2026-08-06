@@ -80,6 +80,12 @@ export const dashboard = {
        il cesse d'oublier sans cocher à sa place (CDC §24). */
     declaredHint: (reponse: string) =>
       `Au questionnaire, vous avez répondu « ${reponse} ». Si c'est toujours le cas, marquez cette tâche complétée — le produit ne le fera pas à votre place.`,
+    /* Cycle entièrement derrière : ne pas laisser croire qu'une fenêtre
+       d'inscription se rattrape, et ne pas inventer la date de la suivante —
+       elle est publiée par l'autorité. */
+    closedCycleTitle: "Ce cycle est derrière vous",
+    closedCycleBody: (total: number) =>
+      `Vos ${total} échéances datées sont toutes passées. Elles ont été calculées à partir de la rentrée que vous avez indiquée, et ce cycle est clos : l'ordre des tâches reste valable, les dates ne le sont plus. Une fenêtre d'inscription ne se rattrape pas — on s'inscrit à la session suivante. Les sessions et leurs dates d'inscription sont publiées par l'autorité compétente : c'est sur la prochaine qu'il faut recaler ce calendrier.`,
     windowTitle: "Le temps qu'il vous reste",
     /* Pas de variante « vous êtes dans les temps » : un encart qui se montre
        toujours cesse d'être lu, et celui-ci n'a de valeur que le jour où il

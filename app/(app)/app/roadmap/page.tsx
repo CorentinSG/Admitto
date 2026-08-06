@@ -10,7 +10,7 @@ import { dashboard, PHASE_LABELS, STATUS_LABELS } from "@/content/dashboard";
 import { TaskStatusControl } from "../_components/TaskStatusControl";
 import { buildTimelineView } from "@/lib/roadmap/timeline-view";
 import { Timeline } from "./Timeline";
-import { intakeWindow } from "@/lib/roadmap/window";
+import { closedCycle, intakeWindow } from "@/lib/roadmap/window";
 import { declaredDone } from "@/lib/roadmap/declared";
 
 export const metadata: Metadata = {
@@ -91,10 +91,51 @@ export default async function RoadmapPage() {
 
       {(() => {
         /*
-         * La fenêtre n'est affichée que lorsqu'elle apprend quelque chose : si
-         * le temps restant couvre le calendrier, la rappeler serait du bruit.
-         * Un encart qui se montre toujours cesse d'être lu.
+         * Deux encarts pour un même emplacement, et l'ordre compte : quand
+         * TOUTES les échéances sont derrière, il n'y a plus de fenêtre à
+         * mesurer, seulement un cycle à refermer. Parler du temps restant
+         * serait alors absurde.
+         *
+         * Comme la fenêtre, celui-ci ne paraît que lorsqu'il apprend quelque
+         * chose — un encart qui se montre toujours cesse d'être lu.
          */
+        const closed = closedCycle(tasks, now);
+        if (closed) {
+          return (
+            <section
+              style={{
+                marginTop: 32,
+                padding: "24px 26px",
+                border: `1px solid ${alpha.goldBorderHover}`,
+                backgroundColor: alpha.goldBadgeBg,
+              }}
+            >
+              <h2
+                style={{
+                  fontFamily: fonts.serif,
+                  fontWeight: 400,
+                  fontSize: "1.2rem",
+                  margin: 0,
+                  color: colors.navy900,
+                }}
+              >
+                {dashboard.timeline.closedCycleTitle}
+              </h2>
+              <p
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: "0.9rem",
+                  lineHeight: 1.8,
+                  margin: "12px 0 0",
+                  maxWidth: 680,
+                  color: colors.slate,
+                }}
+              >
+                {dashboard.timeline.closedCycleBody(closed.datedCount)}
+              </p>
+            </section>
+          );
+        }
         const window = intakeWindow(tasks, loaded.assessment.answers, now);
         if (!window || !window.tight) return null;
         return (

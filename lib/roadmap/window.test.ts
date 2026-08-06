@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { intakeWindow } from "./window";
+import { closedCycle, intakeWindow } from "./window";
 import { generateRoadmap } from "./generate";
 import { deriveProfile } from "@/lib/profile/derive";
 import type { Answers } from "@/lib/questionnaire/types";
@@ -62,5 +62,43 @@ describe("fenêtre de la rentrée visée", () => {
     // à mesurer, et l'écran dit déjà autre chose à ces personnes.
     expect(windowAt("2026-11-01", { intake: "UNDECIDED" })).toBeNull();
     expect(windowAt("2026-11-01", { intake: "ALREADY_STARTED" })).toBeNull();
+  });
+});
+
+describe("cycle entièrement derrière", () => {
+  const tasksAt = (jour: string, over: Partial<Answers> = {}) => {
+    const answers = { ...BASE, intake: "Y1", ...over } as Answers;
+    const now = new Date(`${jour}T12:00:00Z`);
+    return { tasks: generateRoadmap(answers, deriveProfile(answers, now).journeyType, now), now };
+  };
+
+  it("signale le cas mesuré : le LL.M. commencé l'an dernier", () => {
+    /*
+     * Cent douze profils sur trois mille trois cent soixante, et pas un profil
+     * rare : c'est celui qui vient de finir son LL.M. et découvre le barreau.
+     * Toutes ses échéances — dépôt du dossier, inscription à l'examen — sont
+     * derrière lui, et le produit lui proposait de les « rattraper ».
+     */
+    const { tasks, now } = tasksAt("2026-08-06", {
+      status: "ADMITTED_OR_ENROLLED",
+      intake: "ALREADY_STARTED",
+    });
+    expect(closedCycle(tasks, now)).toEqual({ datedCount: expect.any(Number) });
+    expect(closedCycle(tasks, now)!.datedCount).toBeGreaterThan(0);
+  });
+
+  it("se tait dès qu'une seule échéance reste devant", () => {
+    // Il y a alors encore un calendrier à tenir, et c'est `intakeWindow` qui
+    // dit ce qu'il faut en dire. Deux encarts sur le même sujet se
+    // contrediraient.
+    const { tasks, now } = tasksAt("2026-08-06");
+    expect(closedCycle(tasks, now)).toBeNull();
+  });
+
+  it("se tait quand rien n'est daté", () => {
+    // Sans échéance, il n'y a pas de cycle à déclarer clos — l'écran dit déjà
+    // autre chose à ces personnes.
+    const { tasks, now } = tasksAt("2026-08-06", { intake: "UNDECIDED" });
+    expect(closedCycle(tasks, now)).toBeNull();
   });
 });

@@ -79,3 +79,30 @@ export function intakeWindow(
     nextYear: intake.getUTCFullYear() + 1,
   };
 }
+
+/**
+ * Le cycle visé est-il entièrement DERRIÈRE la personne ?
+ *
+ * Cas mesuré sur l'espace des profils : celui qui indique « mon LL.M. a déjà
+ * commencé » et arrive un an plus tard. La rentrée est alors ancrée au mois
+ * d'août précédent, et chacune de ses échéances — dépôt du dossier
+ * d'évaluation, inscription à l'examen — tombe dans le passé. Cent douze
+ * profils sur trois mille trois cent soixante, et ce n'est pas un profil rare :
+ * c'est exactement celui qui vient de finir son LL.M. et découvre le barreau.
+ *
+ * Le produit n'avait pas tort — ces dates SONT passées — mais il laissait
+ * croire qu'on peut les rattraper. Une fenêtre d'inscription ne se rattrape
+ * pas : on s'inscrit à la session suivante. Le constat est ici, la date de
+ * cette session n'y est pas : elle est publiée par l'autorité, et l'inventer
+ * serait le contraire de ce que ce module existe pour faire.
+ *
+ * Rend `null` dès qu'une seule échéance reste devant : il y a alors encore un
+ * calendrier à tenir, et `intakeWindow` dit ce qu'il faut en dire.
+ */
+export function closedCycle(tasks: Task[], reference: Date): { datedCount: number } | null {
+  const dated = applicableTasks(tasks).filter((task) => task.dueDate !== null);
+  if (dated.length === 0) return null;
+
+  const today = reference.toISOString().slice(0, 10);
+  return dated.every((task) => task.dueDate! < today) ? { datedCount: dated.length } : null;
+}

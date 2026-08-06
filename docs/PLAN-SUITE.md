@@ -145,6 +145,30 @@ _Coût : faible une fois la liste arrêtée._
 > ne doit pas inverser. **Ce qui reste de votre ressort : relire ces échéances
 > au regard de votre calendrier vécu.**
 
+### 2.4 Défauts trouvés en vérifiant — non planifiés
+
+Balayage de l'espace des profils après les livraisons ci-dessus, à la recherche
+de ce que j'avais pu casser. Trois trouvailles, toutes corrigées :
+
+- **Un mur de texte** dans la « voie préliminaire » : quatre paragraphes et
+  2 067 caractères au pire, deux d'entre eux se répétant. Le défaut du §5 du
+  plan d'expérience, recréé ailleurs. R-NY-002 ne vise plus la voie « formation
+  en cabinet », traitée par R-NY-003 — une règle spécifique remplace la
+  générique. Ramené à trois paragraphes et 1 548 caractères.
+- **Le piège des révisions vaut aussi pour les blocs de texte** : une révision
+  fige un bloc, si bien qu'une correction faite en code ensuite ne parvient
+  jamais au lecteur. Le signal ajouté aux règles est étendu aux blocs.
+- **Un cycle entièrement passé** : 112 profils sur 3 360 — celui qui vient de
+  finir son LL.M. — voyaient toutes leurs échéances derrière eux, avec une
+  invitation à « rattraper » une fenêtre d'inscription qui ne se rattrape pas.
+  Un encart le dit désormais, sans inventer la date de la session suivante :
+  elle est publiée par l'autorité.
+
+Vérifié au passage, sans défaut : le régime minimal (aucune variable
+d'environnement), l'audit SEO des sept pages publiques (100/100 partout), et la
+tenue du questionnaire à 390 px — l'écran « barreau » enrichi de ses deux
+précisions tient toujours dans la vue, à 783 px sur 844.
+
 ### 2.3 Corriger une réponse après soumission (PLAN-UX n° 4)
 
 Toujours différé, et toujours pour la même raison : la bêta dira quels champs
