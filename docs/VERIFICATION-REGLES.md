@@ -7,8 +7,9 @@
 >
 > **Résultat** : R-NY-001 activée · R-NY-002 d'abord maintenue inactive, puis
 > **activée sous une autre forme** après la recherche du 2026-08-02 (elle ne
-> produit plus de voie, seulement un bloc de texte) · R-ALT-001 laissée à
-> l'arbitrage métier.
+> produit plus de voie, seulement un bloc de texte) · R-ALT-001 **activée le
+> 2026-08-06** sur décision du fondateur, elle aussi sous forme de bloc.
+> Les six règles sont actives.
 
 ## Le point qui commande les trois réponses
 
@@ -123,16 +124,80 @@ contenu. La vider est un constat ; la retirer serait modifier le cahier des
 charges. Y remettre une règle demanderait une source décrivant une voie qui se
 passe d'un passage aux États-Unis — aucune n'a été trouvée.
 
-## R-ALT-001 — alternatives : arbitrage métier
+## R-ALT-001 — alternatives : **activée le 2026-08-06**
 
 Rien à vérifier : sa source reste `interne:profil`, elle n'énonce aucun droit
 américain. Ce qu'elle affirme est un jugement stratégique — qu'un projet de
-retour oriente ailleurs qu'un barreau américain — alors que beaucoup de juristes
-passent le barreau de New York puis rentrent.
+retour en France déplace l'ordre des priorités. C'était une décision métier, et
+le fondateur l'a prise.
 
-Elle est de toute façon **masquée par R-NY-001** : `ALTERNATIVE_TO_EXAMINE` est
-la voie la moins prioritaire et R-NY-001 vise les mêmes profils. L'activer
-aujourd'hui n'afficherait jamais son texte.
+### Ce que l'activation a exigé de changer
+
+Activée telle qu'elle était écrite, **elle n'aurait rien produit**. Elle rendait
+`ALTERNATIVE_TO_EXAMINE`, la voie la moins prioritaire, quand R-NY-001 est
+active et se déclenche pour tout profil au-delà de la licence : la voie LL.M.
+l'aurait emporté à chaque fois, et l'assemblage — qui ne rend que les blocs de
+la voie retenue — aurait écarté son texte. Activer sans plus aurait été un geste
+sans effet, ce qui est la pire forme d'activation : elle a l'air d'avoir eu
+lieu.
+
+**Faire primer `ALTERNATIVE_TO_EXAMINE` n'était pas la réponse.** Cela
+reviendrait à dire à quelqu'un que la voie du LL.M. n'est pas la sienne parce
+qu'il compte revenir — alors que beaucoup de juristes passent le barreau de New
+York PUIS rentrent, ce que le commentaire d'origine de la règle disait déjà.
+
+La règle rend donc la **même voie** et ajoute un paragraphe, comme R-NY-002 et
+R-NY-003. Le texte a été réécrit en conséquence : il ne dit plus que l'objectif
+« oriente vers d'autres options que l'admission à un barreau américain », mais
+que cet objectif ne ferme pas la voie et en déplace l'ordre des priorités — le
+retour se préparant pendant le séjour et non après.
+
+### Le motif est devenu dominant, et il est nommé
+
+Trois règles sur six rendent maintenant la voie de R-NY-001 en y ajoutant leur
+bloc. C'est délibéré et écrit en tête de `rules.seed.ts` : **une voie est une
+orientation, un bloc est une précision.** Une règle qui a quelque chose à dire
+sans avoir à réorienter rend la voie déjà retenue et son propre texte. Inventer
+une voie pour faire paraître un paragraphe dirait à quelqu'un que son chemin est
+ailleurs alors qu'on voulait seulement le compléter.
+
+Conséquence assumée : `ALTERNATIVE_TO_EXAMINE` rejoint `DIRECT_PATH_TO_EXAMINE`
+parmi les catégories que plus aucune règle ne produit. Toutes deux restent dans
+la liste fermée du CDC §14.1 — les vider est un constat, les retirer serait
+modifier le cahier des charges. Un test le verrouille.
+
+### Effets de bord traités
+
+Deux tests de matrices s'appuyaient sur « la dernière règle encore inactive » et
+se déplaçaient à chaque activation. Il n'y en a plus. Ils portent désormais sur
+une règle **synthétique**, ce qui était de toute façon leur sujet — ils
+vérifient qu'une révision est correctement appliquée, pas le contenu du jeu de
+règles. Le CDC le demandait déjà pour les tests qui touchent la base : jamais de
+clé réelle.
+
+### ⚠️ L'activation était restée SANS EFFET sur le serveur de développement
+
+Constaté au navigateur juste après : le paragraphe n'apparaissait pas. La base
+portait **vingt-six révisions de R-ALT-001**, résidu d'une version antérieure de
+la suite du back-office qui la basculait pour démontrer le mécanisme — la
+dernière la laissant éteinte. Or la révision GOUVERNE le code : la règle
+activée en code restait éteinte, et rien ne le disait.
+
+C'est le danger que le CDC nommait déjà, dans l'autre sens : « une révision sur
+`R-NY-001` activerait une règle de droit pour tous les diagnostics suivants du
+serveur de développement — c'est arrivé ». Le miroir est plus sournois, parce
+qu'il ne produit rien de faux : il produit une absence.
+
+Deux suites en découlent :
+
+1. **Le résidu a été purgé** de la base de développement (R-ALT-001 et les clés
+   `R-TEST-*`). La suite actuelle ne touche plus qu'à `R-NY-001` et la remet en
+   état ; une production part d'une base vierge, où le code fait foi.
+2. **La divergence est désormais VISIBLE au back-office.** L'écran des matrices
+   affichait « révision 26 » sans dire que le code veut l'inverse. Il affiche
+   maintenant, à côté, « ⚠ le code l'active, cette révision l'éteint » — ou
+   l'inverse. Le mécanisme reste inchangé, la révision gouverne toujours ; il
+   cesse simplement d'être silencieux.
 
 ## État mesuré après corrections
 

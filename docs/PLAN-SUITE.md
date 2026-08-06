@@ -59,6 +59,15 @@ projet « retour en France » (objectif métier ET géographique) oriente vers
 d'autres options qu'un barreau américain. Sans effet tant que R-NY-001 prime.
 À activer, reformuler ou laisser dormir — décision métier, pas vérification.
 
+> **Activée le 2026-08-06.** Sous forme de bloc, comme R-NY-002 et R-NY-003 :
+> rendue telle qu'elle était écrite, elle n'aurait rien produit, et la faire
+> primer aurait dit à quelqu'un que la voie du LL.M. n'est pas la sienne parce
+> qu'il compte revenir. Le texte a été réécrit en conséquence. **Les six règles
+> sont actives.** Détail dans `docs/VERIFICATION-REGLES.md`, y compris l'effet
+> de bord trouvé au passage : la base de développement portait vingt-six
+> révisions résiduelles qui laissaient la règle éteinte malgré le code, et la
+> divergence est désormais signalée au back-office.
+
 ---
 
 ## Horizon 2 — enrichir l'expérience, livrable sans la bêta
@@ -164,8 +173,9 @@ Fait                 1.1 Sections des modules       11 modules publiés sur 11
                      2.2 Tâches manquantes          6 tâches ajoutées, sourcées
                      2.1 Base d'admission           dans l'écran existant (CDC §12.2)
 
-Cette semaine        1.4 R-ALT-001                  votre arbitrage (5 min)
-                     Relecture des échéances        votre calendrier vécu
+                     1.4 R-ALT-001                  activée, 6 règles sur 6
+
+Cette semaine        Relecture des échéances        votre calendrier vécu
 
 Dès que possible     1.2 Mentions légales           vous
                      1.3 Clés de production         vous

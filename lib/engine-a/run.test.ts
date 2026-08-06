@@ -115,11 +115,56 @@ describe("Moteur A", () => {
       expect(cabinet.textBlocks.join(" ")).toMatch(/parcours de conversion/);
     });
 
-    it("aucune règle ne produit plus la voie directe", () => {
-      // Ni le § 520.6(b)(2) ni le § 520.10 ne décrivent une voie qui se passe
-      // d'un passage aux États-Unis. La catégorie reste dans la liste fermée du
-      // CDC, vide de contenu — l'y remettre demanderait une source.
-      expect(RULES.map((r) => r.factProduced)).not.toContain("DIRECT_PATH_TO_EXAMINE");
+    it("un projet de retour en France ajoute un paragraphe, sans retirer la voie", () => {
+      /*
+       * R-ALT-001, activée le 2026-08-06. Rendue telle qu'elle était écrite,
+       * elle n'aurait rien produit : `ALTERNATIVE_TO_EXAMINE` est la voie la
+       * moins prioritaire, R-NY-001 l'emportait toujours, et l'assemblage ne
+       * rend que les blocs de la voie retenue.
+       *
+       * La faire primer aurait été pire : cela reviendrait à dire à quelqu'un
+       * que la voie du LL.M. n'est pas la sienne, alors que beaucoup de
+       * juristes passent le barreau de New York PUIS rentrent.
+       */
+      const retour = runEngineA(
+        profileOf({
+          status: "APPLYING",
+          education: "M2",
+          usStatus: "FR_NO_STATUS",
+          careerGoal: "RETURN_FRANCE",
+          geoGoal: "RETURN_FRANCE",
+        })
+      );
+      const reste = runEngineA(
+        profileOf({
+          status: "APPLYING",
+          education: "M2",
+          usStatus: "FR_NO_STATUS",
+          careerGoal: "BIG_LAW",
+          geoGoal: "STAY_US",
+        })
+      );
+
+      expect(retour.firedRules.map((r) => r.id)).toContain("R-ALT-001");
+      expect(retour.path).toBe(reste.path);
+      expect(retour.textBlocks.length).toBe(reste.textBlocks.length + 1);
+      expect(retour.textBlocks.join(" ")).toMatch(/cela ne ferme pas cette voie/);
+    });
+
+    it("deux catégories de voie restent volontairement sans règle", () => {
+      /*
+       * `DIRECT_PATH_TO_EXAMINE` : ni le § 520.6(b)(2) ni le § 520.10 ne
+       * décrivent une voie qui se passe d'un passage aux États-Unis.
+       * `ALTERNATIVE_TO_EXAMINE` : écartée à l'activation de R-ALT-001, un
+       * projet de retour en France ne retirant pas la voie du barreau.
+       *
+       * Les deux restent dans la liste fermée du CDC §14.1 : les vider est un
+       * constat, les retirer serait modifier le cahier des charges. Les y
+       * remettre demanderait, pour la première, une source.
+       */
+      const produites = RULES.map((r) => r.factProduced);
+      expect(produites).not.toContain("DIRECT_PATH_TO_EXAMINE");
+      expect(produites).not.toContain("ALTERNATIVE_TO_EXAMINE");
     });
   });
 });

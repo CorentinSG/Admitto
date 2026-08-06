@@ -18,6 +18,14 @@ export const matrices = {
     version: (v: number) => `version ${v}`,
     revised: (n: number, at: string) => `révision ${n} du ${at}`,
     fromCode: "état du code, jamais révisée",
+    /* Une révision qui CONTREDIT le code passait inaperçue : le libellé disait
+       « révision 26 » sans dire que le code, lui, veut l'inverse. Une règle
+       activée en code et éteinte par une vieille révision reste éteinte — et
+       personne ne le voit. */
+    diverges: (etatDuCode: boolean) =>
+      etatDuCode
+        ? "⚠ le code l'active, cette révision l'éteint"
+        : "⚠ le code l'éteint, cette révision l'active",
     produces: "Produit",
     condition: "Condition (code)",
     save: "Enregistrer la règle",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { colors, fonts } from "@/design/tokens";
 import type { RuleCondition } from "@/lib/engine-a/types";
 import { effectiveRules } from "@/lib/matrices/rules";
+import { RULES } from "@/lib/engine-a/rules.seed";
 import { BLOCK_DEFINITIONS, resolveBlocksAsOf } from "@/lib/matrices/blocks";
 import { blockRevisionStore, ruleRevisionStore } from "@/lib/store/matrices";
 import { matrices } from "@/content/matrices";
@@ -46,6 +47,15 @@ export default async function MatricesPage() {
   const rules = effectiveRules(ruleRevisions);
   const ruleViews: RuleView[] = rules.map((rule) => {
     const revision = ruleRevisions.get(rule.id);
+    /*
+     * La révision GOUVERNE : une règle activée en code mais éteinte par une
+     * révision reste éteinte. C'est le comportement voulu — le back-office doit
+     * pouvoir fermer une règle sans déploiement — mais il était SILENCIEUX. Une
+     * activation faite en code pouvait n'avoir aucun effet sans que rien ne le
+     * signale, et c'est arrivé.
+     */
+    const fromCode = RULES.find((r) => r.id === rule.id);
+    const diverges = revision !== undefined && fromCode !== undefined && fromCode.active !== rule.active;
     return {
       id: rule.id,
       produces: rule.factProduced,
@@ -57,6 +67,7 @@ export default async function MatricesPage() {
       revisionLabel: revision
         ? matrices.rules.revised(revision.revision, dateFr(revision.createdAt))
         : matrices.rules.fromCode,
+      divergence: diverges ? matrices.rules.diverges(fromCode!.active) : null,
     };
   });
 

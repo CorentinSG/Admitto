@@ -22,17 +22,25 @@ import type { Rule } from "./types";
  *
  * ⚠️ Ce que l'activation change, MESURÉ sur 1 080 profils complets :
  * R-NY-001 seule fait passer la revue humaine de 83 % à 0 % — elle se déclenche
- * pour tout profil au-delà de la licence. R-NY-002 produit la MÊME voie qu'elle
- * et n'ajoute qu'un bloc de texte : elle ne change donc aucune orientation, ce
- * qui est précisément ce que la vérification du 2026-08-02 a établi. R-ALT-001
- * devient inopérante dès que R-NY-001 est active, `ALTERNATIVE_TO_EXAMINE`
- * étant la voie la moins prioritaire.
+ * pour tout profil au-delà de la licence. R-NY-002, R-NY-003 et R-ALT-001
+ * produisent la MÊME voie qu'elle et n'ajoutent qu'un bloc de texte : aucune ne
+ * change d'orientation, elles précisent celle qui est retenue.
  *
- * `DIRECT_PATH_TO_EXAMINE` n'est produite par AUCUNE règle, et le restera tant
- * qu'une source ne décrira pas une voie qui se passe d'un passage aux
- * États-Unis. La catégorie reste dans la liste fermée du CDC §14.1 — la vider
- * de son contenu est un constat, la retirer serait modifier le cahier des
- * charges.
+ * C'est devenu le motif dominant du moteur, et il mérite d'être nommé : une
+ * voie est une ORIENTATION, un bloc est une PRÉCISION. Une règle qui a quelque
+ * chose à dire sans avoir à réorienter rend la voie déjà retenue et son propre
+ * bloc — l'assemblage rend tous les blocs des règles dont le fait vaut la voie.
+ * Le contraire — inventer une voie pour faire paraître un paragraphe — dirait
+ * à quelqu'un que son chemin est ailleurs alors qu'on voulait seulement le
+ * compléter.
+ *
+ * Conséquence assumée : `DIRECT_PATH_TO_EXAMINE` et `ALTERNATIVE_TO_EXAMINE` ne
+ * sont produites par AUCUNE règle. La première le restera tant qu'une source ne
+ * décrira pas une voie qui se passe d'un passage aux États-Unis ; la seconde a
+ * été écartée à l'activation de R-ALT-001, parce qu'un projet de retour en
+ * France ne retire pas la voie du barreau à qui l'emprunte. Les deux catégories
+ * restent dans la liste fermée du CDC §14.1 — les vider de leur contenu est un
+ * constat, les retirer serait modifier le cahier des charges.
  *
  * Le protocole de vérification, question par question, est dans
  * `docs/VERIFICATION-REGLES.md`.
@@ -182,26 +190,42 @@ export const RULES: Rule[] = [
   },
   {
     id: "R-ALT-001",
-    // Objectif de retour en France : d'autres voies que le barreau de New York
-    // méritent d'être examinées.
+    // Objectif de retour en France : d'autres voies méritent d'être examinées.
     //
-    // N'énonce AUCUN droit américain — sa source est le profil déclaré. Ce
-    // qu'elle affirme est un jugement stratégique : qu'un projet de retour
-    // oriente ailleurs qu'un barreau américain. Beaucoup de juristes passent le
-    // barreau de New York puis rentrent. Décision métier, pas vérification de
-    // source. Sans effet une fois R-NY-001 active (voir l'en-tête).
+    // ACTIVÉE le 2026-08-06, sur décision du fondateur. Elle n'énonce aucun
+    // droit américain — sa source est le profil déclaré, et ce qu'elle affirme
+    // est un jugement stratégique. Il n'y avait donc rien à confronter à un
+    // texte : c'était une décision métier, et elle est prise.
+    //
+    // ⚠️ Ce que l'activation a exigé de changer, et pourquoi.
+    //
+    // Activée telle quelle, la règle n'aurait RIEN produit. Elle rendait le
+    // fait `ALTERNATIVE_TO_EXAMINE`, la voie la moins prioritaire, tandis que
+    // R-NY-001 est active et se déclenche pour tout profil au-delà de la
+    // licence : la voie LL.M. l'aurait emporté à chaque fois, et le bloc de
+    // texte — que l'assemblage ne rend que pour la voie retenue — aurait été
+    // écarté. Activer sans plus aurait été un geste sans effet.
+    //
+    // Faire primer `ALTERNATIVE_TO_EXAMINE` n'était pas la réponse : cela
+    // reviendrait à dire à quelqu'un que la voie du LL.M. n'est pas la sienne,
+    // alors que beaucoup de juristes passent le barreau de New York PUIS
+    // rentrent — c'est écrit dans le commentaire d'origine de cette règle.
+    //
+    // La règle rend donc la MÊME voie et ajoute un paragraphe, comme R-NY-002
+    // et R-NY-003. L'objectif de retour cesse d'être ignoré sans que la voie
+    // soit retirée à qui la suit légitimement.
     condition: {
       all: [
         { field: "geoGoal", op: "eq", value: "RETURN_FRANCE" },
         { field: "careerGoal", op: "eq", value: "RETURN_FRANCE" },
       ],
     },
-    factProduced: "ALTERNATIVE_TO_EXAMINE",
+    factProduced: "NY_VIA_LLM_SUBJECT_TO_BOLE",
     textBlockId: "TB-ALTERNATIVE",
     sourceUrl: "interne:profil",
-    verifiedAt: null,
-    version: 1,
-    active: false,
+    verifiedAt: "2026-08-06",
+    version: 2,
+    active: true,
   },
 ];
 
@@ -224,8 +248,11 @@ export const TEXT_BLOCKS: Record<string, string> = {
   // pas depuis un questionnaire : le rattachement du pays à la common law.
   "TB-FOREIGN-BAR-TRAINING":
     "Votre admission reposant sur des études suivies d'une formation en cabinet, c'est un texte particulier qui s'applique — celui que le New York Board of Law Examiners consacre aux parcours de conversion. Il pose trois conditions en plus de l'admission elle-même : que la jurisprudence du pays d'admission soit fondée sur les principes de la common law anglaise, que la durée cumulée de vos études et de votre formation atteigne celle d'un cursus américain agréé, et qu'un LL.M. américain conforme soit accompli. Réunissez dès maintenant l'attestation de votre formation en cabinet avec ses dates exactes : c'est la pièce que ce texte exige en propre, et celle qui dépend le plus d'un tiers.",
+  // S'AJOUTE à TB-NY-VIA-LLM. Ne retire pas la voie : beaucoup de juristes
+  // passent le barreau de New York puis rentrent, et écrire à quelqu'un que
+  // cette voie n'est pas la sienne parce qu'il compte revenir serait faux.
   "TB-ALTERNATIVE":
-    "Votre objectif géographique et professionnel oriente vers d'autres options que l'admission à un barreau américain. Ces alternatives sont examinées dans votre rapport.",
+    "Vous visez un exercice en France, et cela ne ferme pas cette voie : nombre de juristes passent le barreau de New York puis rentrent, l'admission restant un marqueur solide auprès des cabinets internationaux. Cela déplace en revanche l'ordre des priorités — le retour se prépare pendant le séjour et non après, et d'autres options peuvent servir le même objectif à moindre coût. Votre rapport les met en regard de la voie du barreau plutôt que de trancher à votre place.",
   "TB-HUMAN-REVIEW":
     "Votre situation demande une lecture humaine avant toute orientation : elle sera examinée par le fondateur lors de la préparation de votre rapport.",
 };

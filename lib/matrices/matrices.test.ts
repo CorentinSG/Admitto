@@ -8,6 +8,7 @@ import { VERDICT_BLOCKS } from "@/content/report-blocks";
 import { computeAssessment } from "@/lib/assessment/compute";
 import { assembleReport } from "@/lib/report/assemble";
 import type { Answers } from "@/lib/questionnaire/types";
+import type { Rule } from "@/lib/engine-a/types";
 import {
   BLOCK_REGISTRY,
   decideBlockRevision,
@@ -238,21 +239,39 @@ describe("règles effectives", () => {
     expect(rule.condition).toEqual(RULES.find((r) => r.id === "R-NY-001")!.condition);
   });
 
+  /*
+   * Les deux points suivants portent sur une règle SYNTHÉTIQUE, et non plus sur
+   * une clé du jeu réel.
+   *
+   * Ils ont suivi les activations successives — R-NY-001, puis R-NY-002 le
+   * 2026-08-02, puis R-ALT-001 le 2026-08-06 — parce qu'ils avaient besoin
+   * d'une règle inactive et se déplaçaient vers la dernière qui l'était. Il n'y
+   * en a plus. Surtout, ce n'était pas leur sujet : ils vérifient qu'une
+   * RÉVISION est correctement appliquée, ce qui ne demande aucune règle
+   * particulière. Le CDC le dit d'ailleurs des tests qui touchent la base :
+   * jamais de clé réelle, une révision posée sur `R-NY-001` activerait une
+   * règle de droit pour tous les diagnostics suivants.
+   */
+  const DORMANTE: Rule = {
+    id: "R-TEST-DORMANTE",
+    condition: { field: "geoGoal", op: "eq", value: "RETURN_FRANCE" },
+    factProduced: "NY_VIA_LLM_SUBJECT_TO_BOLE",
+    textBlockId: "TB-HUMAN-REVIEW",
+    sourceUrl: "interne:test",
+    verifiedAt: null,
+    version: 1,
+    active: false,
+  };
+
   it("écarte une révision qui violerait « active ⇒ sourcée et vérifiée »", () => {
-    // Sur R-ALT-001, seule règle encore INACTIVE en code : une révision sans
-    // source ne doit pas pouvoir l'activer. Le test a suivi les activations
-    // successives — R-NY-001 d'abord, puis R-NY-002 le 2026-08-02 — parce que
-    // porté sur une règle déjà active, il constaterait l'état du code au lieu
-    // du refus de la révision.
     const rules = effectiveRules(
-      new Map([["R-ALT-001", revision({ ruleId: "R-ALT-001", sourceUrl: "", verifiedAt: null })]])
+      new Map([[DORMANTE.id, revision({ ruleId: DORMANTE.id, sourceUrl: "", verifiedAt: null })]]),
+      [DORMANTE]
     );
-    expect(rules.find((r) => r.id === "R-ALT-001")!.active).toBe(false);
+    expect(rules[0].active).toBe(false);
   });
 
   it("une règle activée par révision entre réellement dans l'évaluation", () => {
-    // Sur R-ALT-001, dernière règle inactive en code. Son objet est le retour
-    // en France, d'où le double `RETURN_FRANCE` ci-dessous.
     const answers: Answers = {
       status: "LAWYER_EXPLORING",
       education: "CAPA",
@@ -269,20 +288,17 @@ describe("règles effectives", () => {
       email: "alex@example.com",
     };
     const profile = flattenForRules(answers, deriveProfile(answers, NOW));
+    const base = [...RULES, DORMANTE];
 
-    const dormant = runEngineA(profile, effectiveRules(new Map()));
-    expect(dormant.firedRules.map((r) => r.id)).not.toContain("R-ALT-001");
+    const dormant = runEngineA(profile, effectiveRules(new Map(), base));
+    expect(dormant.firedRules.map((r) => r.id)).not.toContain(DORMANTE.id);
 
     const awake = runEngineA(
       profile,
-      effectiveRules(new Map([["R-ALT-001", revision({ ruleId: "R-ALT-001" })]]))
+      effectiveRules(new Map([[DORMANTE.id, revision({ ruleId: DORMANTE.id })]]), base)
     );
-    expect(awake.firedRules).toContainEqual({ id: "R-ALT-001", version: 2 });
-
-    // La VOIE ne change pas pour autant : `ALTERNATIVE_TO_EXAMINE` est la moins
-    // prioritaire, et R-NY-001 est active. Une règle qui entre dans
-    // l'évaluation n'emporte pas l'orientation — c'est la priorité qui tranche,
-    // et l'assertion est ici pour qu'un retour à l'ancien ordre se voie.
+    // version du code (1) + révision (1) : `rulesSnapshot` reste traçable.
+    expect(awake.firedRules).toContainEqual({ id: DORMANTE.id, version: 2 });
     expect(awake.path).toBe("NY_VIA_LLM_SUBJECT_TO_BOLE");
   });
 });

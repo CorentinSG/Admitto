@@ -93,6 +93,16 @@ export interface RuleView {
   version: number;
   /** Libellé de provenance, déjà formaté côté serveur. */
   revisionLabel: string;
+  /**
+   * Avertissement lorsque la révision CONTREDIT le code, `null` sinon.
+   *
+   * Une règle activée en code et éteinte par une vieille révision reste
+   * éteinte : c'est la révision qui gouverne. Le libellé de provenance disait
+   * « révision 26 » sans le dire, et l'activation faite en code passait
+   * inaperçue — c'est arrivé sur R-ALT-001, éteinte par le résidu d'une suite
+   * de vérification.
+   */
+  divergence: string | null;
 }
 
 export function RuleForm({ rule }: { rule: RuleView }) {
@@ -131,6 +141,11 @@ export function RuleForm({ rule }: { rule: RuleView }) {
           {matrices.rules.produces} {rule.produces} · {matrices.rules.version(rule.version)} ·{" "}
           {rule.revisionLabel}
         </span>
+        {rule.divergence && (
+          <span style={{ ...meta, color: colors.goldText, display: "block", marginTop: 4 }}>
+            {rule.divergence}
+          </span>
+        )}
       </div>
 
       <p style={{ ...meta, margin: "8px 0 0" }}>
