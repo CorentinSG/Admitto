@@ -68,9 +68,36 @@ describe("catalogue et paiement fractionné (CDC §30)", () => {
 
   it("désactive le paiement tant que Stripe n'est pas configuré", () => {
     vi.stubEnv("STRIPE_SECRET_KEY", "");
+    vi.stubEnv("STRIPE_WEBHOOK_SECRET", "");
     expect(paymentsEnabled()).toBe(false);
     vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_x");
+    vi.stubEnv("STRIPE_WEBHOOK_SECRET", "whsec_x");
     expect(paymentsEnabled()).toBe(true);
+    vi.unstubAllEnvs();
+  });
+
+  it("n'encaisse jamais ce qu'il ne saurait pas enregistrer", () => {
+    /*
+     * La clé secrète seule suffisait à ouvrir le paiement, et c'était le régime
+     * le plus coûteux du produit : Stripe encaissait, le webhook répondait 503
+     * faute de secret de signature, le rapport n'était jamais marqué payé —
+     * donc jamais prioritaire dans la file — et la déduction de trente jours ne
+     * s'ouvrait pas. La personne avait payé, le produit se comportait comme si
+     * elle ne l'avait pas fait, et rien ne le lui disait.
+     *
+     * Le cas n'a rien de théorique : la clé secrète existe dès la création du
+     * compte Stripe, le secret de signature seulement une fois le point
+     * d'entrée déclaré. N'avoir que la première est l'état normal d'une
+     * configuration en cours.
+     */
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_x");
+    vi.stubEnv("STRIPE_WEBHOOK_SECRET", "");
+    expect(paymentsEnabled()).toBe(false);
+
+    // Et l'inverse, qui n'encaisse rien mais n'a pas de sens non plus.
+    vi.stubEnv("STRIPE_SECRET_KEY", "");
+    vi.stubEnv("STRIPE_WEBHOOK_SECRET", "whsec_x");
+    expect(paymentsEnabled()).toBe(false);
     vi.unstubAllEnvs();
   });
 });

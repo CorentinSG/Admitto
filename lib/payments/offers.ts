@@ -60,9 +60,28 @@ export const OFFERS: Record<OfferCode, Offer> = {
   },
 };
 
-/** Le paiement n'est actif que si Stripe est configuré (bascule Phase 1A → 1B). */
+/**
+ * Le paiement n'est actif que si Stripe est configuré — les DEUX moitiés.
+ *
+ * La clé secrète seule suffisait, et c'était le régime le plus coûteux du
+ * produit : Stripe encaissait, le webhook répondait 503 faute de secret de
+ * signature, le rapport n'était jamais marqué payé — donc jamais prioritaire
+ * dans la file (CDC §18) — et la déduction de trente jours ne s'ouvrait pas.
+ * La personne avait payé ; le produit se comportait comme si elle ne l'avait
+ * pas fait, et rien ne le lui disait.
+ *
+ * Ce n'est pas un régime théorique : les deux valeurs viennent d'endroits
+ * différents du tableau de bord Stripe. La clé secrète est là dès la création
+ * du compte, le secret de signature n'existe qu'une fois le point d'entrée
+ * déclaré — avoir la première sans la seconde est l'état NORMAL d'une
+ * configuration en cours.
+ *
+ * La règle du produit — « ce qui n'est pas configuré est fermé, pas ouvert » —
+ * s'applique donc à la PAIRE, pas à chaque moitié : encaisser sans pouvoir
+ * enregistrer est pire que ne pas encaisser.
+ */
 export function paymentsEnabled(): boolean {
-  return Boolean(process.env.STRIPE_SECRET_KEY);
+  return Boolean(process.env.STRIPE_SECRET_KEY) && Boolean(process.env.STRIPE_WEBHOOK_SECRET);
 }
 
 export function formatEuros(cents: number): string {
