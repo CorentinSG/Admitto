@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { scheduleSequence, dueEmails } from "./schedule";
 import { renderEmail } from "./render";
@@ -5,6 +6,8 @@ import { sendGuarded, type EmailTransport } from "./transport";
 import { EMAIL_LEGAL_BASIS } from "./types";
 import { J12_MODULE_SLUG } from "./eligibility";
 import { J2_FRAGMENTS } from "@/content/emails";
+import { DELIVERY_PROMISE, deliveryPromise } from "@/content/diagnostic-delivery";
+import { rapport } from "@/content/rapport";
 import { findModule, isModulePublished } from "@/content/modules";
 
 const SUBMITTED = new Date(Date.UTC(2026, 6, 28));
@@ -177,5 +180,52 @@ describe("verrou d'envoi", () => {
     const { getTransport } = await import("./transport");
     expect(getTransport().name).toBe("console");
     vi.unstubAllEnvs();
+  });
+});
+
+describe("aucun écran n'annonce un email que le régime n'expédie pas", () => {
+  /*
+   * Le défaut est une AFFIRMATION FAUSSE, pas un défaut d'affichage : en
+   * Phase 1A le transport journalise sans expédier, et quatre écrans
+   * promettaient un message. Deux ont été corrigés le 2026-08-05 (résultat,
+   * connexion) ; les deux derniers l'ont été le 2026-08-07 — le questionnaire,
+   * qui annonce ce qu'on va recevoir AVANT même de laisser son adresse, et la
+   * page du rapport, où l'on attend précisément ce message.
+   *
+   * Le test lit les fichiers de copie : c'est le seul moyen d'attraper une
+   * cinquième promesse ajoutée demain.
+   */
+  const PROMESSE = /vous recevrez|par email|vient d'être envoyée/i;
+
+  it("le questionnaire ne promet un email que dans la variante qui l'expédie", () => {
+    expect(DELIVERY_PROMISE.withEmail).toMatch(PROMESSE);
+    expect(DELIVERY_PROMISE.withoutEmail).not.toMatch(PROMESSE);
+    // Elle ne se contente pas de retirer la promesse : elle dit par où le
+    // rapport arrivera vraiment. Retirer sans remplacer laisserait la question.
+    expect(DELIVERY_PROMISE.withoutEmail).toMatch(/lien/i);
+    expect(deliveryPromise(true)).toBe(DELIVERY_PROMISE.withEmail);
+    expect(deliveryPromise(false)).toBe(DELIVERY_PROMISE.withoutEmail);
+  });
+
+  it("la page du rapport ne promet un email que dans la variante qui l'expédie", () => {
+    expect(rapport.pendingBody("sous 48 heures")).toMatch(PROMESSE);
+    expect(rapport.pendingBodyWithoutEmail("sous 48 heures")).not.toMatch(PROMESSE);
+    expect(rapport.pendingBodyWithoutEmail("sous 48 heures")).toMatch(/ce lien|cette page|ici/i);
+    // Le délai reste dit dans les deux : c'est lui qui évite la relance.
+    expect(rapport.pendingBodyWithoutEmail("sous 48 heures")).toContain("sous 48 heures");
+  });
+
+  it("la copie du questionnaire n'emporte aucune variante jusqu'au navigateur", () => {
+    /*
+     * `content/diagnostic.ts` est importé par un composant client : une
+     * variante qui n'y sert jamais voyagerait quand même, et le budget de la
+     * route l'a dit avant que quiconque ne le remarque. Le serveur choisit la
+     * phrase ; le client reçoit celle qui s'affiche.
+     */
+    const source = readFileSync("content/diagnostic.ts", "utf8");
+    expect(source).not.toMatch(/deliverable/);
+    expect(readFileSync("app/(marketing)/diagnostic/Questionnaire.tsx", "utf8")).not.toMatch(
+      /diagnostic-delivery|RESEND/
+    );
   });
 });

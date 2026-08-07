@@ -17,7 +17,15 @@ import { track } from "@/lib/analytics/track";
  * (opacity + translateY, 0,8 s ease). Aucun nouveau motif d'animation n'est
  * introduit — contrat design PLAN.md §3.
  */
-export function Questionnaire() {
+/**
+ * `deliveryPromise` arrive DÉJÀ RÉDIGÉE du serveur.
+ *
+ * Ni la clé d'envoi ni la variante non retenue ne franchissent la frontière :
+ * la première n'a rien à faire dans un navigateur, la seconde y voyagerait
+ * pour n'être jamais rendue — et le budget de la route disait exactement cela.
+ * Même principe que les dates, formatées côté serveur (cf. `DocumentView`).
+ */
+export function Questionnaire({ deliveryPromise }: { deliveryPromise: string }) {
   const [started, setStarted] = useState(false);
   const [answers, setAnswers] = useState<Answers>({});
   const [index, setIndex] = useState(0);
@@ -348,6 +356,7 @@ export function Questionnaire() {
             onSubmit={submit}
             pending={pending}
             error={error}
+            deliveryPromise={deliveryPromise}
           />
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 36 }}>
@@ -450,12 +459,14 @@ function ContactScreen({
   onSubmit,
   pending,
   error,
+  deliveryPromise,
 }: {
   answers: Answers;
   setAnswers: React.Dispatch<React.SetStateAction<Answers>>;
   onSubmit: () => void;
   pending: boolean;
   error: string | null;
+  deliveryPromise: string;
 }) {
   const inputStyle = {
     width: "100%",
@@ -481,7 +492,7 @@ function ContactScreen({
           color: alpha.whiteCtaText,
         }}
       >
-        {ui.deliverable}
+        {deliveryPromise}
       </p>
 
       <input

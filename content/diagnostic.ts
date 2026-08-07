@@ -47,8 +47,6 @@ export const ui = {
   optionalComment: "Un point que vous souhaitez préciser ? (facultatif)",
   firstName: "Prénom",
   email: "Adresse email",
-  deliverable:
-    "Vous recevez immédiatement votre résultat préliminaire à l'écran, puis votre rapport éducatif et stratégique personnalisé par email.",
   submitting: "Analyse en cours…",
   consentLabel:
     "J'accepte de recevoir des contenus et informations sur les offres Admitto.",

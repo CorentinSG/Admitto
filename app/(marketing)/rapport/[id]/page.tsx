@@ -8,6 +8,7 @@ import { assembleReportLive } from "@/lib/matrices/load";
 import { resultAccess } from "@/lib/access/result";
 import { announcedDelay } from "@/lib/capacity/delay";
 import { rapport } from "@/content/rapport";
+import { emailsAreDelivered } from "@/lib/email/transport";
 import { ReportDocument } from "@/app/_components/ReportDocument";
 import { TrackView } from "@/app/_components/TrackView";
 
@@ -77,7 +78,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               color: colors.slate,
             }}
           >
-            {rapport.pendingBody(announcedDelay(active))}
+            {(emailsAreDelivered() ? rapport.pendingBody : rapport.pendingBodyWithoutEmail)(
+              announcedDelay(active)
+            )}
           </p>
           <Link
             href={`/resultat/${id}`}
