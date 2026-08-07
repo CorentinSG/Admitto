@@ -250,6 +250,39 @@ describe("feuille de route", () => {
     await roadmapStore.setStatus(a.id, "t-1", "DONE");
     expect(await roadmapStore.statuses(b.id)).toEqual({});
   });
+
+  it("conserve la note d'une tâche à côté de son statut", async () => {
+    const assessment = await newAssessment();
+    await roadmapStore.setNote(assessment.id, "t-1", "Relance envoyée le 3", "TODO");
+    expect(await roadmapStore.notes(assessment.id)).toEqual({ "t-1": "Relance envoyée le 3" });
+    // Une note ne compte pas comme un statut : la tâche reste au statut passé.
+    expect(await roadmapStore.statuses(assessment.id)).toEqual({ "t-1": "TODO" });
+  });
+
+  it("un changement de statut ne touche pas la note posée à côté", async () => {
+    // Le défaut qu'on veut interdire : cocher « en cours » effacerait le suivi.
+    const assessment = await newAssessment();
+    await roadmapStore.setNote(assessment.id, "t-1", "À suivre", "TODO");
+    await roadmapStore.setStatus(assessment.id, "t-1", "DONE");
+    expect(await roadmapStore.notes(assessment.id)).toEqual({ "t-1": "À suivre" });
+    expect(await roadmapStore.statuses(assessment.id)).toEqual({ "t-1": "DONE" });
+  });
+
+  it("une note vide (null) efface le suivi et le sort de la liste", async () => {
+    const assessment = await newAssessment();
+    await roadmapStore.setNote(assessment.id, "t-1", "provisoire", "TODO");
+    await roadmapStore.setNote(assessment.id, "t-1", null, "TODO");
+    expect(await roadmapStore.notes(assessment.id)).toEqual({});
+  });
+
+  it("écrire une note d'abord matérialise le statut courant, sans le déplacer", async () => {
+    // Une tâche jamais touchée n'a pas de ligne : la première note en crée une,
+    // avec le statut effectif transmis — jamais un statut par défaut arbitraire.
+    const assessment = await newAssessment();
+    await roadmapStore.setNote(assessment.id, "t-9", "note seule", "WAITING_THIRD_PARTY");
+    expect(await roadmapStore.statuses(assessment.id)).toEqual({ "t-9": "WAITING_THIRD_PARTY" });
+    expect(await roadmapStore.notes(assessment.id)).toEqual({ "t-9": "note seule" });
+  });
 });
 
 describe("scénarios de coût", () => {

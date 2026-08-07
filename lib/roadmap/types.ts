@@ -84,4 +84,6 @@ export interface Task extends TaskTemplate {
   status: TaskStatus;
   /** Échéance calculée (ISO, jour près). `null` si la rentrée n'est pas décidée. */
   dueDate: string | null;
+  /** Note de suivi écrite par la personne, ou `null`. Renseignée au chargement. */
+  note?: string | null;
 }

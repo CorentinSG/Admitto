@@ -123,6 +123,18 @@ export const dashboard = {
   // Une date déjà passée à l'arrivée : le badge le dit sans accuser.
   nbaBehind: "À rattraper",
   markDone: "Marquer comme complété",
+  /* La note de suivi (CDC §22) : la feuille de route devient un carnet de
+     travail, pas une simple liste à cocher. Le texte reste à la personne — le
+     produit ne le lit pas. */
+  taskNote: {
+    label: "Votre suivi",
+    placeholder: "Où en êtes-vous ? Relance envoyée, réponse attendue, pièce manquante…",
+    save: "Enregistrer",
+    saved: "Suivi enregistré",
+    empty: "Ajouter une note de suivi",
+    hint: "Vos notes ne servent qu'à vous : le produit ne les lit pas et elles partent avec vos données.",
+    tooLong: "Note trop longue : 600 caractères au maximum.",
+  },
   statsLabels: {
     tasksDone: "Tâches accomplies",
     tasksRemaining: "Tâches restantes",

@@ -16,15 +16,20 @@ export async function loadRoadmap(
   if (!assessment) return null;
 
   const overrides = await roadmapStore.statuses(assessmentId);
+  const notes = await roadmapStore.notes(assessmentId);
   const tasks = generateRoadmap(
     assessment.answers,
     assessment.derived.journeyType,
     reference
-  ).map((task) =>
+  ).map((task) => {
+    const note = notes[task.id] ?? null;
     // Un statut enregistré prime, sauf pour une tâche devenue hors périmètre :
-    // le parcours type reste la source de vérité sur ce qui s'applique.
-    task.status === "NOT_APPLICABLE" ? task : { ...task, status: overrides[task.id] ?? task.status }
-  );
+    // le parcours type reste la source de vérité sur ce qui s'applique. La note,
+    // elle, suit la tâche quel que soit son statut.
+    return task.status === "NOT_APPLICABLE"
+      ? { ...task, note }
+      : { ...task, status: overrides[task.id] ?? task.status, note };
+  });
 
   return { assessment, tasks };
 }

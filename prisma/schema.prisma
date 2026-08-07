@@ -207,6 +207,15 @@ model TaskStatus {
   taskId       String
   status       String
 
+  /// Note de suivi écrite par la personne (CDC §22).
+  ///
+  /// Texte libre borné, jamais lu ni indexé par le produit — comme les notes du
+  /// sélecteur d'écoles. Elle vit ICI, sur la même ligne que le statut, plutôt
+  /// que dans une table à part : une note se pose sur une tâche exactement là où
+  /// se pose son statut, et les tenir ensemble évite une seconde relation à
+  /// effacer, à exporter et à garder alignée.
+  note String?
+
   assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 
   @@id([assessmentId, taskId])

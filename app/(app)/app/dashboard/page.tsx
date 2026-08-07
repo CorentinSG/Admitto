@@ -203,7 +203,7 @@ export default async function DashboardPage() {
             </div>
 
             <div style={{ marginTop: 26 }}>
-              <TaskStatusControl taskId={nba.task.id} status={nba.task.status} />
+              <TaskStatusControl taskId={nba.task.id} status={nba.task.status} note={nba.task.note} />
             </div>
 
             {nba.resourceUrl && isModulePublished(nba.task.moduleSlug) && (
@@ -357,7 +357,7 @@ export default async function DashboardPage() {
                 {PHASE_LABELS[task.phase]} · {STATUS_LABELS[task.status]}
                 {task.dueDate ? ` · ${dateFr(task.dueDate)}` : ""}
               </span>
-              <TaskStatusControl taskId={task.id} status={task.status} />
+              <TaskStatusControl taskId={task.id} status={task.status} note={task.note} />
             </div>
           ))}
           <Link

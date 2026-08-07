@@ -365,7 +365,7 @@ export default async function RoadmapPage() {
                     {dashboard.timeline.declaredHint(declared.get(task.id)!)}
                   </p>
                 )}
-                <TaskStatusControl taskId={task.id} status={task.status} />
+                <TaskStatusControl taskId={task.id} status={task.status} note={task.note} />
               </div>
             ))}
         </section>

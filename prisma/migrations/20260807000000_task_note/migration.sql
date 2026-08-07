@@ -1,0 +1,11 @@
+-- Note de suivi par tâche (CDC §22).
+--
+-- La feuille de route cesse d'être une liste à cocher : la personne inscrit sur
+-- chaque tâche son propre état de travail. La note vit sur la ligne du statut
+-- plutôt que dans une table à part — une note se pose sur une tâche là où se
+-- pose son statut, et les tenir ensemble évite une seconde relation à effacer,
+-- à exporter et à garder alignée.
+--
+-- Colonne nullable, sans valeur par défaut : l'absence de note EST null, et une
+-- ligne de statut déjà écrite n'a aucune note à se voir inventer.
+ALTER TABLE "TaskStatus" ADD COLUMN "note" TEXT;

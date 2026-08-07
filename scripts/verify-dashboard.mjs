@@ -27,7 +27,7 @@ try {
 }
 
 const { signInByEmail } = await import("./lib/sign-in.mjs");
-const { waitFor, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
+const { waitFor, waitForText, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
 const { answerScreens } = await import("./lib/questionnaire.mjs");
 
 const failures = [];
@@ -124,6 +124,40 @@ const after = (await waitFor(async () => {
   return /\b0\s*%/.test(text) ? null : text;
 })) ?? (await page.locator("body").innerText());
 check("Statut modifiable et progression recalculée", !/\b0\s*%/.test(after), after.match(/\d+\s*%/)?.[0] ?? "?");
+
+// ── Note de suivi : la feuille de route devient un carnet de travail ────────
+// La note distingue un outil dans lequel on travaille des mois d'une simple
+// liste à cocher. On vérifie l'aller-retour complet : elle s'écrit, elle
+// survit à un rechargement, et un changement de statut ne l'efface pas — le
+// défaut qu'on veut interdire, puisque note et statut vivent sur la même ligne.
+{
+  const NOTE = `Relance envoyée le 3 — ${EMAIL}`;
+  await page.getByRole("button", { name: /Ajouter une note de suivi/ }).first().click();
+  const field = page.getByPlaceholder(/Où en êtes-vous/).first();
+  await field.fill(NOTE);
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).first().click();
+  check("Note enregistrée", Boolean(await waitForText(page, "Suivi enregistré")));
+
+  // Rechargée depuis la base : la note écrite est encore là, dépliée.
+  await page.goto(`${BASE}/app/dashboard`, { waitUntil: "networkidle" });
+  const reloaded = await page.locator(`textarea`).evaluateAll(
+    (nodes, wanted) => nodes.some((n) => n.value === wanted),
+    NOTE
+  );
+  check("Note persistée après rechargement", reloaded);
+
+  // Un changement de statut ne doit pas emporter la note posée à côté.
+  await page.getByRole("button", { name: "En cours" }).first().click();
+  await waitFor(async () =>
+    (await page.locator("body").innerText()).toLowerCase().includes("en cours") ? true : null
+  );
+  await page.goto(`${BASE}/app/dashboard`, { waitUntil: "networkidle" });
+  const survives = await page.locator(`textarea`).evaluateAll(
+    (nodes, wanted) => nodes.some((n) => n.value === wanted),
+    NOTE
+  );
+  check("Note conservée après un changement de statut", survives);
+}
 
 // ── Timeline sur le tableau de bord aussi ──────────────────────────────────
 {
