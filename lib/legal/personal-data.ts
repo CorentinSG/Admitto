@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/client";
+import { vaultStorage } from "@/lib/vault/storage";
 
 /**
  * Accès, portabilité et effacement (RGPD art. 15, 17 et 20 — revue §A1.2).
@@ -113,6 +114,18 @@ export interface ErasureSummary {
 export async function erasePersonalData(userId: string): Promise<ErasureSummary | null> {
   const db = prisma();
   if (!db) return null;
+
+  /*
+   * Les fichiers du coffre AVANT les lignes. La cascade du schéma emporte les
+   * lignes `Document`, pas les octets sur le disque — et l'ordre inverse
+   * laisserait, en cas d'interruption entre les deux, des fichiers que plus
+   * aucune ligne ne désigne : invisibles, irretirables, au nom de quelqu'un
+   * qui vient de demander leur effacement. Dans ce sens-ci, une interruption
+   * laisse des lignes sans octets — un état que la route de téléchargement
+   * traite déjà (« introuvable »), et que relancer l'effacement achève.
+   */
+  const assessments = await db.assessment.findMany({ where: { userId }, select: { id: true } });
+  for (const { id } of assessments) await vaultStorage.removeAll(id);
 
   const { count } = await db.assessment.deleteMany({ where: { userId } });
   await db.user.delete({ where: { id: userId } });

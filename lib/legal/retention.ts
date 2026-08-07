@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/client";
+import { vaultStorage } from "@/lib/vault/storage";
 
 /**
  * Rétention des diagnostics jamais rattachés à un compte (revue §A1.3).
@@ -43,8 +44,18 @@ export async function purgeUnclaimedAssessments(reference: Date = new Date()): P
   const db = prisma();
   if (!db) return 0;
 
-  const { count } = await db.assessment.deleteMany({
-    where: { userId: null, createdAt: { lt: unclaimedCutoff(reference) } },
-  });
+  /*
+   * Un diagnostic jamais rattaché ne DEVRAIT pas avoir de pièce au coffre —
+   * le dépôt exige un compte. Mais la purge est le dernier filet de la
+   * rétention : elle ne suppose pas que les chemins amont ont tenu leurs
+   * invariants, elle efface. Les fichiers d'abord, pour la même raison que
+   * l'effacement de compte : interrompue entre les deux, elle doit laisser
+   * des lignes sans octets, jamais des octets sans lignes.
+   */
+  const where = { userId: null, createdAt: { lt: unclaimedCutoff(reference) } };
+  const stale = await db.assessment.findMany({ where, select: { id: true } });
+  for (const { id } of stale) await vaultStorage.removeAll(id);
+
+  const { count } = await db.assessment.deleteMany({ where });
   return count;
 }

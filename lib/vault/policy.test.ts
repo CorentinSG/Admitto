@@ -1,7 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { decideUpload, detectSensitiveCategory, extensionOf } from "./policy";
-import { storageKeyFor } from "./storage";
+import { storageKeyFor, vaultStorage } from "./storage";
 import {
   ALLOWED_EXTENSIONS,
   DOCUMENT_TYPES,
@@ -221,5 +224,81 @@ describe("relecture d'une pièce déposée", () => {
     // route serait ouverte par défaut — l'inverse de la règle du projet.
     expect(existsSync("app/(app)/app/documents/[id]/route.ts")).toBe(true);
     expect(existsSync("app/api/documents/[id]/route.ts")).toBe(false);
+  });
+});
+
+describe("effacement des pièces d'une évaluation", () => {
+  /*
+   * Les chemins d'effacement (compte supprimé, purge de rétention) suppriment
+   * les lignes, et la cascade du schéma emporte les lignes `Document` — mais
+   * les OCTETS sous `ADMITTO_VAULT_DIR` n'étaient retirés nulle part ailleurs
+   * que par le bouton « Retirer ». Après un effacement de compte, le CV et le
+   * personal statement restaient sur le disque, orphelins : plus aucune ligne
+   * ne les désignait, plus personne ne pouvait les supprimer — la donnée
+   * qu'aucun geste humain ne peut retirer, exactement ce que la rétention
+   * existe pour empêcher.
+   */
+  const base = join(tmpdir(), `admitto-vault-test-${process.pid}`);
+
+  beforeEach(async () => {
+    vi.stubEnv("ADMITTO_VAULT_DIR", base);
+    await rm(base, { recursive: true, force: true });
+  });
+
+  afterEach(async () => {
+    vi.unstubAllEnvs();
+    await rm(base, { recursive: true, force: true });
+  });
+
+  it("retire toutes les pièces de l'évaluation, et n'en laisse aucune", async () => {
+    await vaultStorage.put(storageKeyFor("efface-1", "doc-a", ".pdf"), new Uint8Array([1]));
+    await vaultStorage.put(storageKeyFor("efface-1", "doc-b", ".docx"), new Uint8Array([2]));
+
+    await vaultStorage.removeAll("efface-1");
+
+    expect(await vaultStorage.get(storageKeyFor("efface-1", "doc-a", ".pdf"))).toBeNull();
+    expect(await vaultStorage.get(storageKeyFor("efface-1", "doc-b", ".docx"))).toBeNull();
+    expect(existsSync(join(base, "efface-1"))).toBe(false);
+  });
+
+  it("ne touche pas aux pièces des autres évaluations", async () => {
+    await vaultStorage.put(storageKeyFor("efface-2", "doc", ".pdf"), new Uint8Array([1]));
+    await vaultStorage.put(storageKeyFor("voisine", "doc", ".pdf"), new Uint8Array([9]));
+
+    await vaultStorage.removeAll("efface-2");
+
+    expect(await vaultStorage.get(storageKeyFor("voisine", "doc", ".pdf"))).not.toBeNull();
+  });
+
+  it("est idempotent : effacer ce qui n'existe pas n'échoue pas", async () => {
+    await expect(vaultStorage.removeAll("jamais-vue")).resolves.toBeUndefined();
+  });
+
+  it("un identifiant réduit à rien n'efface jamais la racine du coffre", async () => {
+    // L'identifiant est assaini avant de devenir un chemin ; réduit à vide,
+    // le geste viserait le répertoire du coffre ENTIER.
+    await vaultStorage.put(storageKeyFor("voisine-2", "doc", ".pdf"), new Uint8Array([9]));
+
+    await vaultStorage.removeAll("../..");
+    await vaultStorage.removeAll("");
+
+    expect(await vaultStorage.get(storageKeyFor("voisine-2", "doc", ".pdf"))).not.toBeNull();
+  });
+
+  it("les deux chemins d'effacement retirent les fichiers AVANT les lignes", () => {
+    /*
+     * Le contrat traverse deux modules ; le vérifier en base exigerait
+     * PostgreSQL et un compte. Le garde-fou lit donc la source, comme celui de
+     * la copie du rapport : chaque chemin d'effacement appelle `removeAll`, et
+     * l'appelle avant `deleteMany` — interrompu entre les deux, l'effacement
+     * doit laisser des lignes sans octets, jamais des octets sans lignes.
+     */
+    for (const file of ["lib/legal/personal-data.ts", "lib/legal/retention.ts"]) {
+      const source = readFileSync(file, "utf8");
+      const removeAt = source.indexOf("vaultStorage.removeAll");
+      const deleteAt = source.indexOf(".deleteMany");
+      expect(removeAt, `${file} n'efface pas les fichiers du coffre`).toBeGreaterThan(-1);
+      expect(removeAt, `${file} : les fichiers doivent partir avant les lignes`).toBeLessThan(deleteAt);
+    }
   });
 });

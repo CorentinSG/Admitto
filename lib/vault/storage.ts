@@ -82,4 +82,29 @@ export const vaultStorage = {
     if (!dir) return;
     await rm(path.join(dir, key), { force: true });
   },
+
+  /**
+   * Retire TOUTES les pièces d'une évaluation — le geste de l'effacement.
+   *
+   * Les chemins d'effacement (compte supprimé, purge de rétention) suppriment
+   * les lignes, et la cascade du schéma emporte les lignes `Document` ; mais
+   * les OCTETS écrits sous `ADMITTO_VAULT_DIR` n'étaient retirés nulle part
+   * ailleurs que par le bouton « Retirer ». Après un effacement de compte, le
+   * CV et le personal statement restaient donc sur le disque, orphelins :
+   * plus aucune ligne ne les désignait, et plus personne ne pouvait les
+   * supprimer — la donnée qu'aucun geste humain ne peut retirer, très
+   * exactement ce que la politique de rétention existe pour empêcher.
+   *
+   * Le répertoire entier est visé plutôt que les clés une à une : la clé de
+   * chaque pièce vit sous `<assessmentId>/`, et une liste lue en base juste
+   * avant sa suppression peut manquer une ligne écrite entre les deux.
+   */
+  async removeAll(assessmentId: string): Promise<void> {
+    const dir = vaultDirectory();
+    if (!dir) return;
+    const segment = sanitizeSegment(assessmentId);
+    // Un identifiant réduit à rien effacerait la RACINE du coffre.
+    if (!segment) return;
+    await rm(path.join(dir, segment), { recursive: true, force: true });
+  },
 };

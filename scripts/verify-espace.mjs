@@ -12,6 +12,7 @@
  */
 
 const BASE = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
+const { existsSync, readdirSync } = await import("node:fs");
 const { verifyEmail } = await import("./lib/identity.mjs");
 const EMAIL = verifyEmail("alix");
 
@@ -29,7 +30,7 @@ try {
 }
 
 const { signInByEmail } = await import("./lib/sign-in.mjs");
-const { waitForTextGone, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
+const { waitForText, waitForTextGone, waitForTextChange, warmUp } = await import("./lib/wait.mjs");
 const { answerScreens } = await import("./lib/questionnaire.mjs");
 
 const failures = [];
@@ -268,6 +269,62 @@ check("Sections rendues avec leurs points clés", keyPointBlocks >= 5, `${keyPoi
 check("Disclaimer présent", /ne constitue pas un conseil juridique/i.test(article));
 check("Aucune éligibilité affirmée", !/vous êtes éligible/i.test(article));
 check("Aucune garantie de résultat", !/(résultat|admission|succès) garanti/i.test(article));
+
+/*
+ * Effacement du compte : les OCTETS du coffre partent avec les lignes.
+ *
+ * Ce contrôle vit ICI, à la toute fin, parce qu'il détruit le compte de la
+ * suite — rien ne doit suivre. Les chemins d'effacement suppriment les lignes
+ * `Document` par cascade, mais les octets sous ADMITTO_VAULT_DIR n'étaient
+ * retirés que par le bouton « Retirer » : après un effacement de compte, le CV
+ * restait sur le disque, orphelin et irretirable. Un test unitaire vérifie
+ * `removeAll` ; seule une vérification bout en bout prouve que l'effacement du
+ * COMPTE l'appelle vraiment.
+ *
+ * Sauté quand le stockage n'est pas configuré : sans octet écrit, il n'y a
+ * rien à voir disparaître, et la suite tourne dans les deux régimes.
+ */
+const vaultDir = process.env.ADMITTO_VAULT_DIR;
+if (vaultDir) {
+  // Un diagnostic neuf, un compte neuf : ne pas détruire celui qui a servi au
+  // reste de la suite avant d'en avoir fini.
+  const eraseEmail = verifyEmail("efface");
+  await page.goto(`${BASE}/diagnostic`, { waitUntil: "networkidle" });
+  const beforeErase = await page.locator("body").innerText();
+  await page.getByRole("button", { name: "Commencer" }).click();
+  await waitForTextChange(page, beforeErase);
+  await answerScreens(page, [
+    "Je prépare mes candidatures", "Master 2", "Université Paris 1 Panthéon-Sorbonne",
+    "Grand cabinet international", "Garder les deux options ouvertes", "60 000 à 100 000 $",
+    "Les deux", "L'an prochain", "Test déjà passé", "Français, sans statut américain",
+  ]);
+  await page.getByPlaceholder("Prénom").fill("Efface");
+  await page.getByPlaceholder("Adresse email").fill(eraseEmail);
+  await page.getByRole("button", { name: "Obtenir mon résultat" }).click();
+  await page.waitForURL("**/resultat/**", { timeout: 30000 });
+  const eraseId = page.url().split("/resultat/")[1].split(/[?#]/)[0];
+  check("Diagnostic d'effacement soumis", await signInByEmail(page, BASE, eraseEmail));
+
+  await page.goto(`${BASE}/app/documents`, { waitUntil: "networkidle" });
+  await page.getByLabel("Choisir un fichier — CV").setInputFiles({
+    name: "cv-efface.pdf", mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.4 à effacer avec le compte"),
+  });
+  await page.getByRole("button", { name: "Ajouter" }).first().click();
+  await waitForText(page, "cv-efface.pdf");
+
+  const dir = `${vaultDir}/${eraseId}`;
+  const filesBefore = existsSync(dir) ? readdirSync(dir) : [];
+  check("Le fichier déposé est sur le disque", filesBefore.length > 0, filesBefore.join(", "));
+
+  await page.goto(`${BASE}/app/donnees`, { waitUntil: "networkidle" });
+  await page.getByLabel("Pour confirmer, saisissez SUPPRIMER").fill("SUPPRIMER");
+  await page.getByRole("button", { name: "Supprimer définitivement" }).click();
+  await page.waitForURL((url) => !url.pathname.startsWith("/app"), { timeout: 15000 });
+
+  check("Après effacement du compte, plus aucun octet au coffre", !existsSync(dir),
+    existsSync(dir) ? readdirSync(dir).join(", ") : "répertoire supprimé");
+}
 
 check("Aucune erreur console", consoleErrors.length === 0, consoleErrors.join(" | "));
 
