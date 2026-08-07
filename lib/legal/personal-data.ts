@@ -15,7 +15,9 @@ import { vaultStorage } from "@/lib/vault/storage";
  * 1. **L'export énumère les tables, il ne les résume pas.** Un export qui
  *    n'affiche qu'un profil « propre » cache précisément ce que la personne
  *    veut voir : ce qui est réellement stocké. Chaque section correspond à un
- *    modèle de `prisma/schema.prisma`.
+ *    modèle de `prisma/schema.prisma`, et un test lit le schéma pour qu'aucune
+ *    relation d'`Assessment` ne puisse être ajoutée sans rejoindre l'export —
+ *    la liste d'écoles y avait manqué le temps de s'en apercevoir.
  *
  * 2. **L'effacement supprime les diagnostics AVANT le compte.** `User` →
  *    `Assessment` porte `onDelete: SetNull`, pas `Cascade` : supprimer le
@@ -80,6 +82,12 @@ export async function exportPersonalData(userId: string): Promise<PersonalDataEx
       milestones: true,
       bookings: { include: { slot: true } },
       entitlement: true,
+      // La liste d'écoles déclarée (CDC §T-SEL-03) : nom, ambition, statut,
+      // échéance NOTÉE par la personne et notes en texte libre. C'est de la
+      // donnée qu'elle a écrite, et l'export l'omettait — la relation avait été
+      // ajoutée au modèle sans l'être ici. Un test lit désormais le schéma pour
+      // qu'aucune relation d'Assessment ne puisse à nouveau manquer à l'appel.
+      schools: true,
     },
   });
 

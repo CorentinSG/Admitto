@@ -180,6 +180,26 @@ check(
   )
 );
 
+// ── La liste déclarée fait partie de l'export d'accès (RGPD art. 15) ────────
+// La liste d'écoles est de la donnée que la personne a ÉCRITE — nom, ambition,
+// dates limites notées, texte libre. Elle était détenue, la page « Vos données »
+// l'annonçait, et pourtant l'export l'omettait : la relation avait été ajoutée
+// au modèle sans l'être à la requête d'export. L'école « sûre » ajoutée plus
+// haut et jamais retirée doit se retrouver dans le JSON exporté.
+const exportResponse = await page.request.get(`${BASE}/app/donnees/export`);
+let exportPayload = null;
+try {
+  exportPayload = JSON.parse(await exportResponse.text());
+} catch {
+  exportPayload = null;
+}
+const exportedSchools = (exportPayload?.assessments ?? []).flatMap((a) => a.schools ?? []);
+check(
+  "L'export d'accès porte la liste d'écoles déclarée",
+  exportedSchools.some((school) => school.name === "University of Miami School of Law"),
+  `${exportedSchools.length} école(s) dans l'export`
+);
+
 // ── La feuille de route mène à l'outil ─────────────────────────────────────
 await page.goto(`${BASE}/app/roadmap`, { waitUntil: "networkidle" });
 check(
