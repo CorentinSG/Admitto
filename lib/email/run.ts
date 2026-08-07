@@ -4,7 +4,7 @@ import { noticeStore } from "@/lib/store/notifications";
 import { baseUrl, dispatchEmail, emailVariables } from "./dispatch";
 import { eligibility } from "./eligibility";
 import { dueEmails, scheduleSequence } from "./schedule";
-import type { SequenceKind } from "./types";
+import { EMAIL_OFFSET_DAYS, type SequenceKind } from "./types";
 import { log } from "@/lib/observability/log";
 
 /**
@@ -47,6 +47,24 @@ import { log } from "@/lib/observability/log";
  */
 export const MAX_LATE_DAYS = 7;
 
+/**
+ * Ancienneté au-delà de laquelle un diagnostic ne peut plus rien recevoir.
+ *
+ * Le dernier email de la séquence part à J+25, et rien de plus tardif que
+ * `MAX_LATE_DAYS` n'est expédié : passé J+32, la liste des emails dus est vide
+ * par construction. Le passage balayait pourtant TOUS les diagnostics jamais
+ * soumis, à chaque tour, et lisait le journal de chacun pour découvrir à chaque
+ * fois qu'il n'y avait rien à faire. Le coût du passage grandissait avec
+ * l'histoire du produit, non avec son activité — un déclencheur horaire sur
+ * cinquante mille diagnostics, c'est cinquante mille lectures par heure pour
+ * n'envoyer aucun email.
+ *
+ * La borne est CALCULÉE depuis le calendrier, jamais écrite en dur : ajouter un
+ * J+40 à la séquence sans y penser rendrait sinon cet email impossible — le
+ * défaut exact que trois emails de cette séquence portaient déjà.
+ */
+export const SEQUENCE_SPAN_DAYS = Math.max(...Object.values(EMAIL_OFFSET_DAYS)) + MAX_LATE_DAYS;
+
 /** Préfixe du journal : la séquence partage la table des rappels envoyés. */
 const JOURNAL_PREFIX = "SEQ:";
 
@@ -69,7 +87,11 @@ export async function runEmailSequence(reference: Date): Promise<SequenceSummary
   const url = baseUrl();
   const floor = new Date(reference.getTime() - MAX_LATE_DAYS * 86_400_000).toISOString();
 
-  for (const assessment of await assessmentStore.all()) {
+  // Bornée : au-delà de la portée de la séquence, aucun email ne peut plus
+  // être dû. Voir `SEQUENCE_SPAN_DAYS`.
+  const oldest = new Date(reference.getTime() - SEQUENCE_SPAN_DAYS * 86_400_000);
+
+  for (const assessment of await assessmentStore.createdSince(oldest)) {
     const email = assessment.answers.email;
     if (!email) continue;
 

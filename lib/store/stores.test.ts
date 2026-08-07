@@ -103,6 +103,33 @@ describe("évaluations", () => {
     const saved = await newAssessment();
     expect((await assessmentStore.all()).map((a) => a.id)).toContain(saved.id);
   });
+
+  it("borne la liste sur la date de création", async () => {
+    /*
+     * Le passage de la séquence email balayait TOUS les diagnostics jamais
+     * soumis, à chaque tour, pour découvrir à chaque fois qu'un diagnostic de
+     * six mois n'a plus rien à recevoir : son coût grandissait avec l'histoire
+     * du produit, non avec son activité.
+     *
+     * Le contrat porte sur la BORNE, pas sur la liste complète : la base de
+     * vérification est partagée entre les tests, et exiger un contenu exact
+     * mesurerait aussi les diagnostics des autres cas.
+     */
+    const saved = await newAssessment();
+    const createdAt = new Date(saved.createdAt);
+
+    const inclusif = await assessmentStore.createdSince(createdAt);
+    expect(inclusif.map((a) => a.id)).toContain(saved.id);
+
+    // Bornée strictement au-dessus : une seconde plus tard, il est dehors.
+    const apres = await assessmentStore.createdSince(new Date(createdAt.getTime() + 1_000));
+    expect(apres.map((a) => a.id)).not.toContain(saved.id);
+
+    // Du plus ancien au plus récent, comme `all()` : le passage traite les
+    // diagnostics dans l'ordre où ils sont arrivés.
+    const dates = inclusif.map((a) => a.createdAt);
+    expect([...dates].sort()).toEqual(dates);
+  });
 });
 
 describe("rapports", () => {

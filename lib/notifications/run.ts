@@ -36,6 +36,16 @@ export async function runDeadlineNotifications(reference: Date): Promise<RunSumm
   const summary: RunSummary = { considered: 0, sent: 0, skipped: 0, failed: 0 };
   const url = baseUrl();
 
+  /*
+   * `all()` et non `createdSince()` — délibérément, à l'inverse de la séquence
+   * email qui, elle, est bornée à sa portée.
+   *
+   * Un rappel d'échéance ne se compte pas depuis la soumission mais depuis la
+   * rentrée visée : quelqu'un qui a rempli son diagnostic il y a un an a encore
+   * devant lui ses échéances de barreau. Borner ce passage sur l'âge du
+   * diagnostic ferait taire les rappels au moment précis où ils comptent le
+   * plus — quand la personne est allée au bout.
+   */
   for (const assessment of await assessmentStore.all()) {
     const email = assessment.answers.email;
     if (!email) continue;

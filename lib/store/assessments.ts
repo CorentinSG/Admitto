@@ -26,6 +26,18 @@ export interface AssessmentStore {
   get(id: string): Promise<Assessment | null>;
   all(): Promise<Assessment[]>;
   /**
+   * Diagnostics créés depuis une date, du plus ancien au plus récent.
+   *
+   * Existe pour les passages planifiés. Ils balayaient `all()` : la séquence
+   * email et les rappels d'échéance relisaient donc TOUS les diagnostics jamais
+   * soumis, à chaque passage, pour toujours. Un diagnostic vieux de six mois ne
+   * peut plus rien recevoir — la séquence s'arrête à J+25, et rien de plus
+   * tardif que `MAX_LATE_DAYS` n'est expédié — mais il coûtait une lecture de
+   * son journal à chaque tour. Le coût du passage grandissait avec l'histoire
+   * du produit au lieu de son activité.
+   */
+  createdSince(date: Date): Promise<Assessment[]>;
+  /**
    * Retrait du consentement marketing (CDC §34).
    *
    * Stocké à part de `answers.consentMarketing`, qui reste figé : cette
@@ -122,6 +134,20 @@ export const assessmentStore: AssessmentStore = {
   async all() {
     if (!usingDatabase()) return [...memory.values()];
     const rows = await db().assessment.findMany({ orderBy: { createdAt: "asc" } });
+    return rows.map(toDomain);
+  },
+
+  async createdSince(date) {
+    const floor = date.toISOString();
+    if (!usingDatabase()) {
+      return [...memory.values()]
+        .filter((assessment) => assessment.createdAt >= floor)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    }
+    const rows = await db().assessment.findMany({
+      where: { createdAt: { gte: date } },
+      orderBy: { createdAt: "asc" },
+    });
     return rows.map(toDomain);
   },
 
