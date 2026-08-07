@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { decideUpload, detectSensitiveCategory, extensionOf } from "./policy";
 import { storageKeyFor } from "./storage";
@@ -181,5 +182,44 @@ describe("quota par type", () => {
     expect(
       decideUpload(candidate({ fileName: "passeport.pdf", existingOfType: MAX_DOCUMENTS_PER_TYPE }))
     ).toMatchObject({ accepted: false, reason: "SENSITIVE_CONTENT" });
+  });
+});
+
+describe("relecture d'une pièce déposée", () => {
+  /*
+   * Le coffre écrivait sans jamais relire. Rien ne le signalait : l'écran
+   * listait un nom, une date et un bouton « Retirer », si bien que le seul
+   * geste possible sur un document était de le détruire. Les octets restaient
+   * pourtant sur le disque — conserver un fichier dont personne ne peut rien
+   * faire est le contraire de la minimisation.
+   */
+  const ROUTE = readFileSync("app/(app)/app/documents/[id]/route.ts", "utf8");
+
+  it("sert la pièce en fichier joint, jamais rendue dans le navigateur", () => {
+    // L'extension est contrôlée au dépôt, PAS le contenu : un fichier nommé
+    // `.pdf` peut porter du HTML. En pièce jointe, il ne s'exécute pas.
+    expect(ROUTE).toMatch(/attachment;/);
+    expect(ROUTE).toMatch(/application\/octet-stream/);
+    // Un type déduit de l'extension rouvrirait exactement ce que le point
+    // précédent ferme.
+    expect(ROUTE).not.toMatch(/text\/html|extensionOf|lookup\(/);
+  });
+
+  it("répond « introuvable » et jamais « interdit »", () => {
+    // Un 403 apprendrait à qui devine un identifiant que le document existe.
+    const statuts = [...ROUTE.matchAll(/status:\s*(\d{3})/g)].map((m) => m[1]);
+    expect(statuts.length).toBeGreaterThan(0);
+    expect([...new Set(statuts)]).toEqual(["404"]);
+  });
+
+  it("ne met en cache nulle part une pièce personnelle", () => {
+    expect(ROUTE).toMatch(/no-store/);
+  });
+
+  it("vit sous le chemin que le middleware protège", () => {
+    // Le middleware ne couvre que `/admin` et `/app`. Sous `/api`, la même
+    // route serait ouverte par défaut — l'inverse de la règle du projet.
+    expect(existsSync("app/(app)/app/documents/[id]/route.ts")).toBe(true);
+    expect(existsSync("app/api/documents/[id]/route.ts")).toBe(false);
   });
 });

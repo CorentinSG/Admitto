@@ -171,6 +171,39 @@ check(
   declarative ? /Document déclaré/i.test(accepted) : !/Document déclaré/i.test(accepted)
 );
 
+/*
+ * Une pièce déposée se rouvre.
+ *
+ * Le coffre écrivait sans jamais relire : l'écran listait un nom, une date et
+ * un bouton « Retirer », si bien que le seul geste possible sur un document
+ * était de le détruire — pendant que les octets, eux, restaient sur le disque.
+ * La vérification suit le lien plutôt que de le constater : un lien présent qui
+ * répondrait 404 aurait exactement l'air d'un lien qui marche.
+ */
+const lien = page.getByRole("link", { name: "cv-alix.pdf" });
+if (declarative) {
+  // Rien n'a été conservé : un lien mort serait pire que pas de lien.
+  check("Aucun lien de récupération sans stockage", (await lien.count()) === 0);
+} else {
+  check("Pièce déposée présentée comme récupérable", (await lien.count()) === 1);
+  const href = await lien.getAttribute("href");
+  const response = await page.request.get(`${BASE}${href}`);
+  check("Pièce récupérable", response.status() === 200, `HTTP ${response.status()}`);
+  check(
+    "Servie en pièce jointe, jamais rendue par le navigateur",
+    /attachment/.test(response.headers()["content-disposition"] ?? ""),
+    response.headers()["content-disposition"] ?? "aucun en-tête"
+  );
+  check(
+    "Contenu restitué à l'identique",
+    (await response.body()).toString().startsWith("%PDF-1.4"),
+  );
+  // Un identifiant deviné n'atteint pas le coffre de quelqu'un d'autre, et la
+  // réponse ne dit pas non plus que le document existe.
+  const autre = await page.request.get(`${BASE}/app/documents/inexistant-0000`);
+  check("Identifiant inconnu : introuvable", autre.status() === 404, `HTTP ${autre.status()}`);
+}
+
 // Le tableau de bord reprend le coffre.
 await page.goto(`${BASE}/app/dashboard`, { waitUntil: "networkidle" });
 check("Coffre repris au tableau de bord", contains(await page.locator("body").innerText(), "cv-alix.pdf"));

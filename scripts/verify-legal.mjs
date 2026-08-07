@@ -235,7 +235,17 @@ check(
 await page.getByLabel("Pour confirmer, saisissez SUPPRIMER").fill("SUPPRIMER");
 await page.getByRole("button", { name: "Supprimer définitivement" }).click();
 
-// La déconnexion suit la suppression : la preuve est la fermeture de l'espace.
+/*
+ * La déconnexion suit la suppression : la preuve est la fermeture de l'espace.
+ *
+ * L'attente porte d'abord sur la NAVIGATION, et seulement ensuite sur l'état de
+ * la session. Sonder directement l'espace payant après le clic revenait à
+ * courir contre l'action serveur : le cookie n'est effacé qu'au traitement de
+ * sa réponse, si bien que la première lecture voyait légitimement une session
+ * encore ouverte. Le test échouait alors par intermittence, en accusant le
+ * produit d'un défaut qui n'était que le sien.
+ */
+await page.waitForURL((url) => !url.pathname.startsWith("/app"), { timeout: 15_000 });
 check(
   "Session close après suppression",
   Boolean(

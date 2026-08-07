@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { ALLOWED_EXTENSIONS } from "./types";
 
@@ -52,6 +52,29 @@ export const vaultStorage = {
     const target = path.join(dir, key);
     await mkdir(path.dirname(target), { recursive: true });
     await writeFile(target, bytes);
+  },
+
+  /**
+   * Relecture d'une pièce déposée.
+   *
+   * Elle manquait, et son absence n'était pas visible : les fichiers entraient
+   * dans le coffre et n'en ressortaient jamais. L'écran listait un nom, une
+   * date et un bouton « Retirer » — le seul geste possible sur un document
+   * était de le détruire. Un coffre qu'on ne rouvre pas ne rend aucun service,
+   * et conserver des fichiers sans usage est le contraire de la minimisation.
+   *
+   * `null` plutôt qu'une exception quand le fichier manque : un enregistrement
+   * dont l'octet a disparu (répertoire local non persistant, cf. l'avertissement
+   * plus haut) doit produire un « introuvable » et non une page en erreur.
+   */
+  async get(key: string): Promise<Uint8Array | null> {
+    const dir = vaultDirectory();
+    if (!dir) return null;
+    try {
+      return await readFile(path.join(dir, key));
+    } catch {
+      return null;
+    }
   },
 
   async remove(key: string): Promise<void> {

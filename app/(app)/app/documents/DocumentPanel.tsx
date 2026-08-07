@@ -115,11 +115,25 @@ export function DocumentPanel({
                   color: colors.navy900,
                 }}
               >
-                {document.fileName}
+                {/* Une pièce déposée se rouvre : sans ce lien, le seul geste
+                    possible sur un document était de le retirer. Un document
+                    seulement DÉCLARÉ n'a pas d'octet à rendre — il reste du
+                    texte, et un lien mort serait pire que pas de lien. */}
+                {document.stored ? (
+                  <a
+                    href={`/app/documents/${document.id}`}
+                    download={document.fileName}
+                    style={{ color: colors.navy900, textDecoration: "underline" }}
+                  >
+                    {document.fileName}
+                  </a>
+                ) : (
+                  document.fileName
+                )}
                 <span style={{ color: colors.slate, fontSize: "0.78rem" }}>
                   {" · "}
                   {document.uploadedLabel}
-                  {document.stored ? "" : ` · ${vault.declaredNote}`}
+                  {document.stored ? ` · ${vault.downloadHint}` : ` · ${vault.declaredNote}`}
                 </span>
               </span>
               <button

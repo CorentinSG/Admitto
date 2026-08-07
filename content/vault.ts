@@ -42,6 +42,9 @@ export const vault = {
   disabledBody:
     "Le stockage n'est pas activé sur cette instance. Vous pouvez déclarer ci-dessous les documents que vous avez préparés : Admitto en suit l'avancement sans qu'aucun fichier ne quitte votre ordinateur.",
   declaredNote: "Document déclaré — aucun fichier conservé.",
+  /* Dit ce que le nom devient : cliquable. Sans cette mention, le lien se
+     confondait avec le titre de la ligne. */
+  downloadHint: "Cliquez sur le nom pour récupérer le fichier.",
   addLabel: "Ajouter",
   declareLabel: "Déclarer ce document",
   chooseFile: "Choisir un fichier",
