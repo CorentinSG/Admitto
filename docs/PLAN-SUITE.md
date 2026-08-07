@@ -169,6 +169,49 @@ d'environnement), l'audit SEO des sept pages publiques (100/100 partout), et la
 tenue du questionnaire à 390 px — l'écran « barreau » enrichi de ses deux
 précisions tient toujours dans la vue, à 783 px sur 844.
 
+### 2.5 Chasse aux défauts du 2026-08-07 — non planifiée
+
+Trois lentilles successives, chacune appliquée jusqu'à épuisement.
+
+**« Ce qui est écrit mais inatteignable. »** Trois emails de la séquence ne
+pouvaient partir pour personne : le J+12 citait un module dont le nom n'existe
+pas, le J+2 exigeait une déduction — donc un paiement — dans une bêta où le
+diagnostic est offert, et sa ligne de risque se rendait vide pour 14 % des
+profils. Un email non éligible n'étant pas journalisé, à dessein, rien ne le
+signalait : il s'accumulait en « en attente », indéfiniment.
+
+**« Ce que le produit conserve sans le rendre. »** Le coffre écrivait les
+fichiers et ne savait pas les relire : aucune route ne servait de document, et
+le seul geste possible sur une pièce déposée était de la retirer. Conserver des
+fichiers dont personne ne peut rien faire est le contraire de la minimisation
+que ce coffre existe pour tenir.
+
+**« Les régimes de configuration PARTIELS. »** La plus productive des trois —
+le produit vérifiait le régime minimal et le régime complet, jamais l'entre-deux,
+qui est pourtant l'état normal d'une mise en service :
+
+- **Le paiement s'ouvrait sur la seule clé secrète Stripe.** Sans le secret de
+  signature, Stripe encaissait et le webhook restait inerte : le rapport n'était
+  ni marqué payé, ni prioritaire, ni porteur d'une déduction. Les deux valeurs
+  viennent d'endroits différents du tableau de bord Stripe — n'avoir que la
+  première est l'état par lequel cette bascule passera forcément.
+- **Les emails partaient avec des liens vers `localhost`.** L'envoi ne dépendait
+  que de la clé et de l'expéditeur, alors que tout email du produit porte un
+  lien. Le lien de désinscription en fait plus qu'une gêne : sans lui, plus de
+  moyen de retirer son consentement.
+
+La lentille est devenue permanente : `lib/config/capabilities.ts` déclare les
+sept capacités et leurs variables, un test retire chaque variable à tour de rôle
+et exige que la capacité se referme, et le back-office gagne un **écran de
+configuration** disant ce qui est ouvert et quelle variable manque au reste —
+utile précisément le jour des points 1.2 et 1.3 ci-dessus.
+
+Corrigé au passage, sans lien avec la chasse : onze titres du rapport vivaient
+en dur dans le composant de rendu (le garde-fou posé la veille avait un seuil de
+quarante caractères et ne voyait donc que les paragraphes), les quatre libellés
+de coût y étaient écrits DEUX fois — rapport et page de résultat —, et deux
+écrans promettaient encore un email que la bêta n'expédie pas.
+
 ### 2.3 Corriger une réponse après soumission (PLAN-UX n° 4)
 
 Toujours différé, et toujours pour la même raison : la bêta dira quels champs
@@ -201,8 +244,8 @@ Fait                 1.1 Sections des modules       11 modules publiés sur 11
 
 Cette semaine        Relecture des échéances        votre calendrier vécu
 
-Dès que possible     1.2 Mentions légales           vous
-                     1.3 Clés de production         vous
+Dès que possible     1.2 Mentions légales           vous — comptées à /admin/configuration
+                     1.3 Clés de production         vous — l'écran dit ce qui manque
 
 Ensuite              → LANCEMENT BÊTA
 
@@ -211,4 +254,7 @@ Après la bêta        2.3 Correction de réponse      selon les demandes reçue
 ```
 
 Le chemin le plus court vers la bêta ne passe plus par du code : il passe par
-sept sections de modules à sourcer, dix-sept valeurs légales et cinq clés.
+dix-sept valeurs légales et les clés de production. Les sept sections de modules
+sont écrites et sourcées. `/admin/configuration` répond désormais à la seule
+question du jour de la mise en service : qu'est-ce qui est ouvert, et que
+manque-t-il pour le reste ?
