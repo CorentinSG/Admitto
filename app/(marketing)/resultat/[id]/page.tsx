@@ -15,7 +15,7 @@ import { recommendOffer } from "@/lib/offers/recommend";
 import { assembleReportLive } from "@/lib/matrices/load";
 import { OFFERS } from "@/lib/payments/offers";
 import { checkout } from "@/content/checkout";
-import { usingDatabase } from "@/lib/db/client";
+import { accountsAvailable } from "@/lib/config/capabilities";
 import { emailsAreDelivered } from "@/lib/email/transport";
 import { resultAccess } from "@/lib/access/result";
 import { AccessButton } from "./AccessButton";
@@ -35,8 +35,6 @@ const dateFr = (iso: string) =>
  * Résultat préliminaire immédiat (CDC §15).
  * Rendu serveur, dynamique par nature (donnée personnelle) — jamais mis en cache.
  */
-/** Les comptes exigent une base et un secret : sans eux, aucun accès à proposer. */
-const accountsAvailable = () => usingDatabase() && Boolean(process.env.AUTH_SECRET);
 
 export default async function ResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

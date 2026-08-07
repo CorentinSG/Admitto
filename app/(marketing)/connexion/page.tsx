@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { colors, fonts, alpha } from "@/design/tokens";
-import { usingDatabase } from "@/lib/db/client";
 import { auth as copy } from "@/content/auth";
 import { SignInForm } from "./SignInForm";
+import { accountsAvailable } from "@/lib/config/capabilities";
 
 export const metadata: Metadata = {
   title: "Connexion — Admitto",
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default function SignInPage() {
   // Fermé plutôt que cassé : sans base ni secret, aucune connexion n'est
   // possible et la page le dit, au lieu d'offrir un formulaire sans effet.
-  const available = usingDatabase() && Boolean(process.env.AUTH_SECRET);
+  const available = accountsAvailable();
 
   return (
     <main id="contenu" tabIndex={-1} style={{ backgroundColor: colors.ivory, minHeight: "100vh", padding: "120px 8%" }}>

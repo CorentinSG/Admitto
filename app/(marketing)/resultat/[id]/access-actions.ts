@@ -4,8 +4,8 @@ import { signIn } from "@/auth";
 import { assessmentStore } from "@/lib/store/assessments";
 import { paymentsEnabled } from "@/lib/payments/offers";
 import { reportStore } from "@/lib/store/reports";
-import { usingDatabase } from "@/lib/db/client";
 import { auth as copy } from "@/content/auth";
+import { accountsAvailable } from "@/lib/config/capabilities";
 
 /**
  * Ouverture de l'espace payant depuis le résultat (CDC §10 et §21).
@@ -23,7 +23,7 @@ import { auth as copy } from "@/content/auth";
  * Phase 1B et au-delà : suppose un rapport marqué payant par le webhook Stripe.
  */
 export async function requestPlatformAccess(assessmentId: string) {
-  if (!usingDatabase() || !process.env.AUTH_SECRET) {
+  if (!accountsAvailable()) {
     return { error: copy.closedBody };
   }
 

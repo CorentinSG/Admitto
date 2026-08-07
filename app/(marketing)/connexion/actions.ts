@@ -2,10 +2,10 @@
 
 import { headers } from "next/headers";
 import { signIn } from "@/auth";
-import { usingDatabase } from "@/lib/db/client";
 import { auth as copy } from "@/content/auth";
 import { callerIp, checkRateLimit } from "@/lib/security/rate-limit";
 import { security } from "@/content/security";
+import { accountsAvailable } from "@/lib/config/capabilities";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -17,7 +17,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
  * le formulaire en outil d'énumération des clients.
  */
 export async function requestSignIn(email: string) {
-  if (!usingDatabase() || !process.env.AUTH_SECRET) {
+  if (!accountsAvailable()) {
     return { error: copy.closedBody };
   }
 

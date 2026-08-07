@@ -406,6 +406,59 @@ check("Aucune éligibilité affirmée", !/vous êtes éligible/i.test(printed));
   );
 }
 
+/*
+ * Écran de configuration.
+ *
+ * Chaque capacité du produit est fermée par défaut et s'ouvre par
+ * configuration ; c'était vrai, documenté, et invisible — pour savoir si le
+ * paiement était actif il fallait ouvrir une page de paiement. Trois capacités
+ * s'ouvraient d'ailleurs à MOITIÉ configurées sans que rien ne le dise.
+ *
+ * La vérification porte sur les deux propriétés qui comptent : l'écran dit ce
+ * qui manque, et il ne dit JAMAIS la valeur de ce qui est présent.
+ */
+{
+  await page.goto(`${BASE}/admin/configuration`, { waitUntil: "networkidle" });
+  const text = await page.locator("body").innerText();
+
+  check("Écran de configuration servi", text.includes("Configuration"));
+
+  // Le régime de vérification a une base, un secret de session et une boîte
+  // aux lettres de développement : les comptes sont ouverts, l'envoi ne l'est
+  // pas. L'écran doit distinguer les deux.
+  check("Capacité ouverte signalée", text.includes("Comptes et espace payant"));
+  check("Capacité fermée signalée", text.includes("Expédition des emails"));
+  check("Ce qui manque est nommé", /Il manque\s*:/.test(text), text.match(/Il manque[^\n]*/)?.[0] ?? "");
+  check(
+    "Les variables absentes sont citées par leur nom",
+    text.includes("RESEND_API_KEY") || text.includes("STRIPE_SECRET_KEY")
+  );
+
+  /*
+   * Aucune VALEUR de variable ne doit paraître. Le contrôle porte sur les
+   * secrets réellement définis dans l'environnement de la vérification : c'est
+   * le seul moyen de distinguer « la page n'affiche pas de secret » de « il
+   * n'y avait pas de secret à afficher ».
+   */
+  const secrets = [process.env.AUTH_SECRET, process.env.DATABASE_URL].filter(Boolean);
+  check(
+    "Aucune valeur de variable affichée",
+    secrets.length > 0 && secrets.every((value) => !text.includes(value)),
+    `${secrets.length} secret(s) contrôlé(s)`
+  );
+
+  // Les mentions légales manquantes relèvent de la même question : ce qui
+  // reste à faire avant d'ouvrir.
+  check("Mentions légales reprises", text.includes("Mentions légales"));
+
+  // Accessible depuis la file, sans quoi personne ne la trouverait.
+  await page.goto(`${BASE}/admin`, { waitUntil: "networkidle" });
+  check(
+    "Lien depuis la file de rapports",
+    (await page.getByRole("link", { name: /Configuration/ }).count()) > 0
+  );
+}
+
 await browser.close();
 
 if (failures.length) {

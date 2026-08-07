@@ -94,6 +94,17 @@ export default async function AdminQueuePage() {
         >
           Matrices →
         </Link>
+        <Link
+          href="/admin/configuration"
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: "0.82rem",
+            color: colors.goldText,
+            textDecoration: "none",
+          }}
+        >
+          Configuration →
+        </Link>
       </div>
 
       <div
