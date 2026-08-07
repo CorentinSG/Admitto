@@ -1,4 +1,5 @@
 import type { LegalBasis, RenderedEmail } from "./types";
+import { publicBaseUrl } from "@/lib/seo/site";
 
 /**
  * Transport d'email. L'implémentation réelle (Resend) n'est active que si la
@@ -75,10 +76,28 @@ export function resendTransport(apiKey: string, from: string): EmailTransport {
   };
 }
 
+/**
+ * Trois valeurs, pas deux.
+ *
+ * La clé et l'expéditeur suffisaient à expédier pour de bon. Or TOUT email de
+ * ce produit porte un lien — le résultat, le rapport, la ressource, la
+ * désinscription — et ces liens sont bâtis sur `ADMITTO_BASE_URL`, dont le
+ * repli est `http://localhost:3000`. Sans elle, le produit envoyait donc de
+ * vrais messages à de vraies personnes, contenant des liens qui ne mènent
+ * nulle part et que rien ne rattrape : un email parti est parti.
+ *
+ * `publicBaseUrl()` refuse aussi une adresse locale, ce qui est le même
+ * défaut sous une autre forme : `http://localhost:3000` renseigné à la main
+ * n'est pas plus cliquable depuis la boîte du destinataire.
+ *
+ * Le lien de désinscription rend la chose plus grave qu'une gêne : un
+ * promotionnel dont le lien de retrait ne fonctionne pas n'offre plus le
+ * moyen de retirer son consentement (CDC §34).
+ */
 export function getTransport(): EmailTransport {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.ADMITTO_EMAIL_FROM;
-  if (apiKey && from) return resendTransport(apiKey, from);
+  if (apiKey && from && publicBaseUrl()) return resendTransport(apiKey, from);
   return consoleTransport;
 }
 

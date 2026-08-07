@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { scheduleSequence, dueEmails } from "./schedule";
 import { renderEmail } from "./render";
-import { sendGuarded, type EmailTransport } from "./transport";
+import { emailsAreDelivered, sendGuarded, type EmailTransport } from "./transport";
+import { baseUrl } from "./dispatch";
 import { EMAIL_LEGAL_BASIS } from "./types";
 import { J12_MODULE_SLUG } from "./eligibility";
 import { J2_FRAGMENTS } from "@/content/emails";
@@ -144,6 +145,61 @@ describe("fragments du J+2 (CDC §19 : aucun texte produit librement)", () => {
     const avec = J2_FRAGMENTS.offerWithDeduction("Roadmap & Platform", "79 €", "27 août 2026");
     expect(avec).toContain("79 €");
     expect(avec).toContain("27 août 2026");
+  });
+});
+
+describe("aucun email ne part avec des liens qui ne mènent nulle part", () => {
+  /*
+   * Tout email de ce produit porte un lien : le résultat, le rapport, la
+   * ressource, la désinscription. Ils sont bâtis sur `ADMITTO_BASE_URL`, dont
+   * le repli est `http://localhost:3000`. La clé et l'expéditeur suffisaient
+   * pourtant à expédier pour de bon — le produit envoyait donc de vrais
+   * messages à de vraies personnes, avec des liens morts, et rien ne rattrape
+   * un email parti.
+   *
+   * Le lien de désinscription en fait plus qu'une gêne : un promotionnel dont
+   * le lien de retrait ne fonctionne pas n'offre plus le moyen de retirer son
+   * consentement (CDC §34).
+   */
+  const configure = (base?: string) => {
+    vi.stubEnv("RESEND_API_KEY", "re_test_x");
+    vi.stubEnv("ADMITTO_EMAIL_FROM", "bonjour@admitto.fr");
+    vi.stubEnv("ADMITTO_BASE_URL", base ?? "");
+  };
+
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("expédie quand les trois valeurs sont là", () => {
+    configure("https://admitto.fr");
+    expect(emailsAreDelivered()).toBe(true);
+    expect(baseUrl()).toBe("https://admitto.fr");
+  });
+
+  it("n'expédie pas sans adresse publique, même avec la clé et l'expéditeur", () => {
+    configure();
+    expect(emailsAreDelivered()).toBe(false);
+  });
+
+  it("traite une adresse locale comme une absence", () => {
+    // `http://localhost:3000` saisi à la main n'est pas plus cliquable depuis
+    // la boîte du destinataire qu'une variable absente.
+    for (const local of ["http://localhost:3000", "http://127.0.0.1:3100"]) {
+      configure(local);
+      expect(emailsAreDelivered(), local).toBe(false);
+      expect(baseUrl(), local).toBe("http://localhost:3000");
+    }
+  });
+
+  it("chaque lien d'un email est bâti sur cette même racine", () => {
+    // Un lien qui échapperait à `baseUrl()` échapperait aussi au verrou.
+    configure("https://admitto.fr");
+    const url = baseUrl();
+    for (const kind of Object.keys(EMAIL_LEGAL_BASIS) as Array<keyof typeof EMAIL_LEGAL_BASIS>) {
+      const body = renderEmail(kind, VARIABLES).body;
+      for (const lien of body.match(/https?:\/\/[^\s]+/g) ?? []) {
+        expect(lien.startsWith(VARIABLES.resultUrl.slice(0, 20)) || lien.startsWith(url)).toBe(true);
+      }
+    }
   });
 });
 

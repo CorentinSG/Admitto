@@ -4,14 +4,24 @@ import { PATH_LABELS } from "@/content/result";
 import { renderEmail, type EmailVariables } from "./render";
 import { getTransport, sendGuarded } from "./transport";
 import type { EmailKind, LegalBasis } from "./types";
+import { publicBaseUrl } from "@/lib/seo/site";
 
 /**
  * Envoi d'un email de la séquence à partir d'une évaluation (CDC §19).
  * Les variables sont construites ici, jamais dans les blocs de texte.
  */
 
+/**
+ * Racine des liens des emails.
+ *
+ * `publicBaseUrl()` plutôt que la variable brute : une valeur locale ou mal
+ * formée doit valoir ABSENTE, pas être recopiée telle quelle dans un lien
+ * envoyé. Le repli reste `localhost`, mais il ne concerne plus que le
+ * développement — `getTransport()` n'expédie rien tant que cette racine n'est
+ * pas publique, précisément pour qu'aucun de ces liens ne parte.
+ */
 export function baseUrl(): string {
-  return process.env.ADMITTO_BASE_URL ?? "http://localhost:3000";
+  return publicBaseUrl() ?? "http://localhost:3000";
 }
 
 export function emailVariables(
