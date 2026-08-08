@@ -164,6 +164,16 @@ await page.getByLabel("Choisir un créneau — ORIENTATION").selectOption({ inde
 await page.getByRole("button", { name: "Réserver — ORIENTATION" }).click();
 text = (await waitForText(page, "Vos séances à venir")) ?? "";
 check("Séance réservée", contains(text, "Vos séances à venir"));
+/*
+ * L'heure est celle de PARIS, et le dit.
+ *
+ * Les créneaux étaient affichés en UTC — « 12:00 UTC » n'est l'heure de
+ * personne : le client devait convertir de tête pour une séance qu'il a payée,
+ * et pouvait la manquer. Paris est l'heure du fondateur qui donne la séance, et
+ * reste un fuseau FIXE, donc aussi déterministe qu'UTC côté rendu.
+ */
+check("L'heure du rendez-vous porte son fuseau", contains(text, "heure de Paris"));
+check("Plus aucune heure affichée en UTC", !contains(text, "UTC"));
 check("Solde décrémenté", contains(text, "2 sur 3"));
 
 // Le créneau réservé n'est plus proposé aux autres types de séance.

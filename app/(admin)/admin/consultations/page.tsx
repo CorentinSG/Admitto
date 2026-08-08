@@ -7,6 +7,9 @@ import { CONSULTATIONS } from "@/lib/consultations/types";
 import { remainingAllowance, totalAllowance } from "@/lib/consultations/booking";
 import { adminConsultations } from "@/content/consultations";
 import { CloseSlotButton, GrantForm, OpenSlotForm } from "./SlotControls";
+// Le MÊME libellé que la page du client : deux formatages divergeraient, et le
+// créneau ouvert ici cesserait de correspondre à celui qui est lu là-bas.
+import { slotLabel } from "@/lib/consultations/time";
 
 export const metadata: Metadata = {
   title: "Consultations — Admitto",
@@ -15,16 +18,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const slotLabel = (iso: string, minutes: number) =>
-  `${new Date(iso).toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  })} à ${new Date(iso).toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-  })} UTC · ${minutes} min`;
 
 /** Back-office — gestion des consultations (CDC §31 et §33). */
 export default async function AdminConsultationsPage() {

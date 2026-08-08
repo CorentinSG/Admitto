@@ -39,8 +39,16 @@ export function OpenSlotForm() {
           onClick={() =>
             startTransition(async () => {
               setError(null);
-              // Saisie locale : convertie en instant absolu avant l'envoi.
-              const res = await openSlot(new Date(startsAt).toISOString(), Number(minutes));
+              /*
+               * La saisie part TELLE QUELLE, sans fuseau.
+               *
+               * `new Date(startsAt).toISOString()` la convertissait ici, donc
+               * dans le fuseau du NAVIGATEUR : le même créneau saisi depuis
+               * Paris ou depuis New York ne produisait pas le même instant.
+               * Le serveur l'interprète en heure de Paris — l'heure du
+               * fondateur qui donne la séance, et la seule que le client verra.
+               */
+              const res = await openSlot(startsAt, Number(minutes));
               if (res?.error) setError(res.error);
               else setStartsAt("");
             })

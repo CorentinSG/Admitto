@@ -6,6 +6,9 @@ import { consultationStore } from "@/lib/store/consultations";
 import { bookableSlots, remainingAllowance, totalAllowance } from "@/lib/consultations/booking";
 import { CONSULTATIONS, CONSULTATION_TYPES } from "@/lib/consultations/types";
 import { consultations } from "@/content/consultations";
+// Libellé partagé avec le back-office : deux formatages divergeraient, et le
+// créneau que le fondateur ouvre cesserait de correspondre à celui qui est lu.
+import { slotLabel } from "@/lib/consultations/time";
 import { BookingForm, CancelButton } from "./BookingForm";
 
 export const metadata: Metadata = {
@@ -15,17 +18,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-/** Dates formatées côté serveur : aucun composant client ne formate de date. */
-const slotLabel = (iso: string, minutes: number) =>
-  `${new Date(iso).toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  })} à ${new Date(iso).toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-  })} UTC · ${minutes} min`;
 
 /** Consultations (CDC §30 et §31). */
 export default async function ConsultationsPage() {
