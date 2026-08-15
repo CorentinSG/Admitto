@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { timingSafeEqualString } from "@/lib/access/constant-time";
 import { runDeadlineNotifications } from "@/lib/notifications/run";
 import { runEmailSequence } from "@/lib/email/run";
+import { runBookingReminders } from "@/lib/consultations/remind";
 import { purgeTechnicalData } from "@/lib/security/purge";
 import { log } from "@/lib/observability/log";
 
@@ -41,6 +42,10 @@ export async function POST(request: Request) {
   // soumission du questionnaire. Les quatre suivants — dont le J+2 qui porte
   // le rapport — n'ont jamais quitté le produit.
   const sequence = await runEmailSequence(now);
+  // Les rappels de séance suivent le même déclencheur. Ils balaient les
+  // réservations, pas les diagnostics : peu nombreuses et déjà bornées à
+  // l'avenir proche.
+  const reminders = await runBookingReminders(now);
   // La purge suit le même déclencheur : un cron de moins à configurer, et
   // l'un ne va pas sans l'autre en production (revue §B2 et §C6).
   const purged = await purgeTechnicalData(now);
@@ -50,5 +55,5 @@ export async function POST(request: Request) {
   // trente secondes à dix minutes annonce sa prochaine panne.
   log("info", "cron.done", { ms: Date.now() - startedAt });
 
-  return NextResponse.json({ ...summary, sequence, purged });
+  return NextResponse.json({ ...summary, sequence, reminders, purged });
 }

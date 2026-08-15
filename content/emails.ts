@@ -164,4 +164,35 @@ Cette confirmation fait partie du service auquel vous avez souscrit. Elle ne vou
 Corentin Saint-Girons
 Founder`,
   },
+
+  /*
+   * Rappel de séance (CDC §31).
+   *
+   * La confirmation part à la réservation, souvent des semaines avant ; entre
+   * les deux, la séance sort de la tête. Sans rappel, le produit encaisse une
+   * séance que la personne oublie.
+   *
+   * Volontairement COURT, et il ne redit pas le périmètre : la confirmation le
+   * porte déjà en entier, et un rappel qui recopie tout se lit en diagonale —
+   * donc plus du tout. Il désigne où le périmètre se trouve plutôt que d'en
+   * réénoncer la moitié, ce qui le ferait paraître plus ouvert qu'il n'est.
+   */
+  BOOKING_REMINDER: {
+    subject: "Demain : {consultationName}",
+    body: `Bonjour {firstName},
+
+Votre séance a lieu demain.
+
+{consultationName}
+{slotLabel}
+
+Le périmètre exact de la séance figure dans votre email de confirmation.
+
+Un empêchement ? Vous pouvez annuler depuis votre espace, ce qui libère le créneau pour quelqu'un d'autre : {consultationsUrl}
+
+Ce rappel fait partie du service auquel vous avez souscrit. Il ne vous est pas envoyé à des fins promotionnelles.
+
+Corentin Saint-Girons
+Founder`,
+  },
 };

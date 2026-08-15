@@ -32,6 +32,7 @@ export const LOG_EVENTS = [
   "cron.done",
   "notifications.done",
   "email.sequence.done",
+  "consultations.reminders.done",
   "purge.done",
   "stripe.rejected",
   "stripe.accepted",

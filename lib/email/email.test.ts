@@ -164,6 +164,26 @@ describe("confirmation de séance (CDC §31)", () => {
       "BOOKING_CONFIRMATION"
     );
   });
+
+  it("le rappel repose lui aussi sur le contrat, et reste court", () => {
+    expect(EMAIL_LEGAL_BASIS.BOOKING_REMINDER).toBe("CONTRACT");
+    const body = renderEmail("BOOKING_REMINDER", VARIABLES).body;
+    expect(body).not.toContain(VARIABLES.unsubscribeUrl);
+    expect(body).toMatch(/pas envoyé à des fins promotionnelles/);
+    expect(body).toContain(VARIABLES.slotLabel);
+
+    /*
+     * Il ne REDIT pas le périmètre : la confirmation le porte en entier, et un
+     * rappel qui recopie tout se lit en diagonale. Réénoncer la moitié du
+     * périmètre le ferait de surcroît paraître plus ouvert qu'il n'est — il
+     * désigne donc où le trouver.
+     */
+    expect(body).not.toContain(VARIABLES.consultationExcludes);
+    expect(body).toMatch(/email de confirmation/);
+    expect(body.length).toBeLessThan(
+      renderEmail("BOOKING_CONFIRMATION", VARIABLES).body.length
+    );
+  });
 });
 
 describe("fragments du J+2 (CDC §19 : aucun texte produit librement)", () => {

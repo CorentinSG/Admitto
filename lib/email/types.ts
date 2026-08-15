@@ -23,7 +23,11 @@ export type SequenceKind = (typeof SEQUENCE_KINDS)[number];
  * Séparés de la séquence : ils n'ont pas de décalage depuis la soumission, et
  * les mélanger ferait planifier un rappel d'échéance à J+12.
  */
-export const TRIGGERED_KINDS = ["DEADLINE_NOTICE", "BOOKING_CONFIRMATION"] as const;
+export const TRIGGERED_KINDS = [
+  "DEADLINE_NOTICE",
+  "BOOKING_CONFIRMATION",
+  "BOOKING_REMINDER",
+] as const;
 
 export type TriggeredKind = (typeof TRIGGERED_KINDS)[number];
 
@@ -51,6 +55,8 @@ export const EMAIL_LEGAL_BASIS: Record<EmailKind, LegalBasis> = {
    * quelqu'un qui vient de réserver une séance qu'il a payée.
    */
   BOOKING_CONFIRMATION: "CONTRACT",
+  /* Rappel de séance : exécution du service, comme la confirmation. */
+  BOOKING_REMINDER: "CONTRACT",
 };
 
 /** Décalage d'envoi, en jours, depuis la soumission du questionnaire. */
