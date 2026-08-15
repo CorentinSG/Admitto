@@ -125,4 +125,43 @@ Ce rappel fait partie du service auquel vous avez souscrit. Il ne vous est pas e
 Corentin Saint-Girons
 Founder`,
   },
+
+  /*
+   * Confirmation de séance (CDC §31).
+   *
+   * Réserver une séance ne produisait AUCUN email : la personne venait de poser
+   * un rendez-vous et n'avait rien à mettre dans son agenda, rien à retrouver
+   * dans sa boîte. Pour le seul rendez-vous humain du produit, et le plus cher,
+   * c'est la confirmation qui fait exister le service.
+   *
+   * L'heure porte son fuseau, comme à l'écran : « 14:00 » sans fuseau dans un
+   * email est une heure que le destinataire doit deviner.
+   *
+   * Le périmètre EXCLU figure dans le corps, pas seulement les inclusions. Un
+   * périmètre qui n'énonce que ce qu'il couvre se lit comme ouvert — c'est ainsi
+   * qu'une séance de méthode devient, dans l'esprit de la personne, une
+   * relecture juridique (CDC §30).
+   */
+  BOOKING_CONFIRMATION: {
+    subject: "Séance confirmée — {consultationName}",
+    body: `Bonjour {firstName},
+
+Votre séance est réservée.
+
+{consultationName}
+{slotLabel}
+
+Ce que cette séance couvre :
+{consultationCovers}
+
+Ce qu'elle ne couvre pas :
+{consultationExcludes}
+
+Vous pouvez annuler ou reprogrammer depuis votre espace : {consultationsUrl}
+
+Cette confirmation fait partie du service auquel vous avez souscrit. Elle ne vous est pas envoyée à des fins promotionnelles.
+
+Corentin Saint-Girons
+Founder`,
+  },
 };

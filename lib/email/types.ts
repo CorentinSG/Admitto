@@ -23,7 +23,7 @@ export type SequenceKind = (typeof SEQUENCE_KINDS)[number];
  * Séparés de la séquence : ils n'ont pas de décalage depuis la soumission, et
  * les mélanger ferait planifier un rappel d'échéance à J+12.
  */
-export const TRIGGERED_KINDS = ["DEADLINE_NOTICE"] as const;
+export const TRIGGERED_KINDS = ["DEADLINE_NOTICE", "BOOKING_CONFIRMATION"] as const;
 
 export type TriggeredKind = (typeof TRIGGERED_KINDS)[number];
 
@@ -43,6 +43,14 @@ export const EMAIL_LEGAL_BASIS: Record<EmailKind, LegalBasis> = {
   J25_DEDUCTION_EXPIRY: "CONSENT",
   // Rappel d'échéance : exécution du service payé, jamais promotionnel.
   DEADLINE_NOTICE: "CONTRACT",
+  /*
+   * Confirmation de séance : exécution du service, jamais promotionnel.
+   *
+   * La qualifier autrement la ferait cesser de partir pour qui n'a pas consenti
+   * aux contenus — c'est-à-dire priver d'une confirmation de rendez-vous
+   * quelqu'un qui vient de réserver une séance qu'il a payée.
+   */
+  BOOKING_CONFIRMATION: "CONTRACT",
 };
 
 /** Décalage d'envoi, en jours, depuis la soumission du questionnaire. */

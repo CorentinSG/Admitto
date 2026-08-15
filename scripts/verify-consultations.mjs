@@ -174,6 +174,34 @@ check("Séance réservée", contains(text, "Vos séances à venir"));
  */
 check("L'heure du rendez-vous porte son fuseau", contains(text, "heure de Paris"));
 check("Plus aucune heure affichée en UTC", !contains(text, "UTC"));
+
+/*
+ * La réservation produit une CONFIRMATION par email.
+ *
+ * Réserver ne produisait aucun message : la personne posait un rendez-vous et
+ * n'avait rien à mettre dans son agenda. Le corps est lu dans la boîte aux
+ * lettres de développement — aucune route n'expose les emails.
+ */
+{
+  const { readFileSync } = await import("node:fs");
+  const mails = readFileSync(process.env.ADMITTO_MAIL_LOG, "utf8")
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => { try { return JSON.parse(line); } catch { return null; } })
+    .filter((mail) => mail && mail.to === EMAIL && /Séance confirmée/.test(mail.subject ?? ""));
+  const confirmation = mails.at(-1);
+
+  check("Confirmation de séance envoyée", Boolean(confirmation), confirmation?.subject ?? "aucune");
+  if (confirmation) {
+    check("La confirmation porte l'heure avec son fuseau", /heure de Paris/.test(confirmation.body));
+    // Un périmètre qui n'énonce que ses inclusions se lit comme ouvert.
+    check("La confirmation énonce ce qui n'est PAS couvert", /ne couvre pas/i.test(confirmation.body));
+    // Base contractuelle : aucune désinscription à proposer sur une confirmation
+    // de rendez-vous.
+    check("La confirmation ne se présente pas comme promotionnelle",
+      /pas envoyée à des fins promotionnelles/.test(confirmation.body));
+  }
+}
 check("Solde décrémenté", contains(text, "2 sur 3"));
 
 // Le créneau réservé n'est plus proposé aux autres types de séance.

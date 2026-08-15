@@ -32,6 +32,11 @@ const VARIABLES = {
   noticeLead: "est à faire dans 7 jours",
   deadlineList: "— Demander vos relevés de notes : 2026-09-15 (est à faire dans 7 jours)",
   dashboardUrl: "https://admitto.app/app/roadmap",
+  consultationName: "Cadrage du projet",
+  consultationCovers: "— Clarifier le marché visé",
+  consultationExcludes: "— Aucune appréciation de votre dossier",
+  consultationsUrl: "https://admitto.app/app/consultations",
+  slotLabel: "lundi 3 novembre à 14:00 (heure de Paris) · 45 min",
 };
 
 describe("calendrier de la séquence (CDC §19)", () => {
@@ -117,6 +122,47 @@ describe("rendu des emails", () => {
      */
     expect(findModule(J12_MODULE_SLUG), `slug inconnu : ${J12_MODULE_SLUG}`).not.toBeNull();
     expect(isModulePublished(J12_MODULE_SLUG)).toBe(true);
+  });
+});
+
+describe("confirmation de séance (CDC §31)", () => {
+  /*
+   * Réserver une séance ne produisait AUCUN email : la personne posait un
+   * rendez-vous et n'avait rien à mettre dans son agenda, rien à retrouver dans
+   * sa boîte. Pour le seul rendez-vous humain du produit — et le plus cher —
+   * c'est la confirmation qui fait exister le service.
+   */
+  it("repose sur le contrat, jamais sur le consentement", () => {
+    // La requalifier en promotionnel priverait de confirmation quelqu'un qui
+    // vient de réserver une séance qu'il a payée.
+    expect(EMAIL_LEGAL_BASIS.BOOKING_CONFIRMATION).toBe("CONTRACT");
+    const body = renderEmail("BOOKING_CONFIRMATION", VARIABLES).body;
+    expect(body).not.toContain(VARIABLES.unsubscribeUrl);
+    expect(body).toMatch(/pas envoyée à des fins promotionnelles/);
+  });
+
+  it("porte l'heure avec son fuseau, jamais une heure nue", () => {
+    // « 14:00 » sans fuseau dans un email est une heure que le destinataire
+    // doit deviner — et il peut manquer sa séance.
+    const body = renderEmail("BOOKING_CONFIRMATION", VARIABLES).body;
+    expect(body).toContain(VARIABLES.slotLabel);
+    expect(body).toMatch(/heure de Paris/);
+  });
+
+  it("énonce ce que la séance NE couvre PAS", () => {
+    // Un périmètre qui n'énonce que ses inclusions se lit comme ouvert : c'est
+    // ainsi qu'une séance de méthode devient une relecture juridique (CDC §30).
+    const body = renderEmail("BOOKING_CONFIRMATION", VARIABLES).body;
+    expect(body).toContain(VARIABLES.consultationExcludes);
+    expect(body).toMatch(/ne couvre pas/i);
+  });
+
+  it("n'entre pas dans la séquence datée", () => {
+    // Elle se déclenche à la réservation, pas à un décalage depuis la
+    // soumission : les mélanger la planifierait à J+12.
+    expect(scheduleSequence(SUBMITTED, true).map((e) => e.kind)).not.toContain(
+      "BOOKING_CONFIRMATION"
+    );
   });
 });
 

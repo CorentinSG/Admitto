@@ -26,6 +26,11 @@ export const ALLOWED_EMAIL_VARIABLES = [
   "noticeLead",
   "deadlineList",
   "dashboardUrl",
+  "consultationName",
+  "consultationCovers",
+  "consultationExcludes",
+  "consultationsUrl",
+  "slotLabel",
 ] as const;
 
 export type AllowedEmailVariable = (typeof ALLOWED_EMAIL_VARIABLES)[number];
