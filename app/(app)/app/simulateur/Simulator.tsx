@@ -17,10 +17,13 @@ import { removeScenario, saveScenario } from "./actions";
  */
 export function Simulator({
   saved,
+  seed = null,
 }: {
   saved: Array<{ id: string; inputs: ScenarioInputs }>;
+  /** Scénario de départ pré-rempli depuis le diagnostic — voir `lib/simulator/seed.ts`. */
+  seed?: ScenarioInputs | null;
 }) {
-  const [inputs, setInputs] = useState<ScenarioInputs>(() => defaultInputs("Mon scénario"));
+  const [inputs, setInputs] = useState<ScenarioInputs>(() => seed ?? defaultInputs("Mon scénario"));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -54,6 +57,27 @@ export function Simulator({
 
   return (
     <div>
+      {/* Provenance du pré-remplissage : ces montants viennent de LEUR
+          diagnostic, et la personne doit le savoir — des chiffres personnels
+          non expliqués se liraient comme un devis. Rendue seulement quand le
+          scénario proposé est actif. */}
+      {seed && (
+        <p
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: "0.85rem",
+            lineHeight: 1.7,
+            maxWidth: 680,
+            margin: "24px 0 0",
+            padding: "12px 16px",
+            backgroundColor: alpha.goldBadgeBg,
+            color: colors.navy900,
+          }}
+        >
+          {simulator.seedNote}
+        </p>
+      )}
+
       {/* ── Sorties, visibles en permanence ─────────────────────────────── */}
       <section
         style={{

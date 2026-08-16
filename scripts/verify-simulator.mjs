@@ -83,6 +83,26 @@ await page.goto(`${BASE}/app/simulateur`, { waitUntil: "networkidle" });
 const body = await page.locator("body").innerText();
 const has = (needle) => body.toLowerCase().includes(needle.toLowerCase());
 
+/*
+ * Premier passage : le scénario proposé vient de LEUR diagnostic
+ * (personnalisation 1.1). Le nom porte leur rentrée — « L'an prochain » a été
+ * répondu plus haut —, la provenance est dite, et la scolarité pré-remplie
+ * n'est PAS le gabarit générique : elle tombe sur le milieu de leur fourchette.
+ */
+check("Provenance du scénario proposé annoncée", has("pré-rempli depuis votre diagnostic"));
+const seedLabel = await page.getByLabel(/Nom du scénario/i).inputValue();
+check(
+  "Le scénario porte leur rentrée",
+  /^Votre point de départ — rentrée \d{4}$/.test(seedLabel),
+  seedLabel
+);
+const seedTuition = Number(await page.locator('input[type="number"]').first().inputValue());
+check(
+  "La scolarité pré-remplie n'est pas le gabarit générique",
+  Number.isFinite(seedTuition) && seedTuition !== 60000,
+  `${seedTuition} $`
+);
+
 // ── Les six sorties du CDC §26 ─────────────────────────────────────────────
 for (const sortie of [
   "Coût académique",
@@ -147,6 +167,17 @@ check(
   "Le quatrième scénario est refusé avec une explication",
   (await page.locator("body").innerText()).includes("trois scénarios au maximum".toLowerCase()) ||
     /Trois scénarios au maximum/i.test(await page.locator("body").innerText())
+);
+
+/*
+ * Dès qu'un scénario existe, l'éditeur redevient neutre : la personne a pris
+ * la main, le produit ne repropose pas son point de départ — et la note de
+ * provenance disparaît avec lui.
+ */
+await page.goto(`${BASE}/app/simulateur`, { waitUntil: "networkidle" });
+check(
+  "Le scénario proposé s'efface une fois la main prise",
+  !(await page.locator("body").innerText()).toLowerCase().includes("pré-rempli depuis votre diagnostic")
 );
 
 // ── Aucune promesse de rentabilité ─────────────────────────────────────────

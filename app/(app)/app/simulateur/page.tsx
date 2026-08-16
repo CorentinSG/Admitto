@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { colors, fonts } from "@/design/tokens";
 import { currentAssessmentId } from "@/lib/auth/current";
 import { scenarioStore } from "@/lib/store/scenarios";
+import { assessmentStore } from "@/lib/store/assessments";
+import { seedScenario } from "@/lib/simulator/seed";
 import { simulator } from "@/content/simulator";
 import { Simulator } from "./Simulator";
 
@@ -21,6 +23,15 @@ export default async function SimulatorPage() {
   if (!assessmentId) redirect("/diagnostic");
 
   const saved = await scenarioStore.list(assessmentId);
+
+  /*
+   * Premier passage (aucun scénario enregistré) : l'éditeur s'ouvre sur un
+   * scénario pré-rempli depuis LEUR diagnostic — proposé, jamais enregistré
+   * d'office (CDC §24). Dès qu'un scénario existe, l'éditeur redevient neutre :
+   * la personne a pris la main, le produit ne repropose pas son point de départ.
+   */
+  const assessment = saved.length === 0 ? await assessmentStore.get(assessmentId) : null;
+  const seed = assessment ? seedScenario(assessment) : null;
 
   return (
     <div>
@@ -48,7 +59,7 @@ export default async function SimulatorPage() {
         {simulator.intro}
       </p>
 
-      <Simulator saved={saved} />
+      <Simulator saved={saved} seed={seed} />
     </div>
   );
 }

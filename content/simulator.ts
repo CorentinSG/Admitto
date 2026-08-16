@@ -68,6 +68,11 @@ export const simulator = {
     "Ce simulateur chiffre une dépense. Il ne prédit aucun revenu, aucune rentabilité et aucun retour sur investissement.",
   cityLabel: "Ville",
   cityNote: "Choisir une ville préremplit logement, vie quotidienne et transport.",
+  /* Provenance du scénario proposé (personnalisation 1.1) : chaque écart au
+     gabarit vient d'une réponse ou de la fourchette déjà rendue. Rien n'est
+     enregistré sans le clic de la personne (CDC §24). */
+  seedNote:
+    "Ce scénario de départ est pré-rempli depuis votre diagnostic : la somme scolarité + frais universitaires correspond au milieu de votre fourchette, et les postes visa et période sans revenu suivent vos réponses. Ajustez chaque montant — rien n'est enregistré sans vous.",
   scenarioName: "Nom du scénario",
   outputs: {
     academic: "Coût académique",
