@@ -195,4 +195,29 @@ Ce rappel fait partie du service auquel vous avez souscrit. Il ne vous est pas e
 Corentin Saint-Girons
 Founder`,
   },
+
+  /*
+   * Annonce du compte rendu (CDC §31).
+   *
+   * Le compte rendu VIT dans l'espace, il n'est pas recopié ici : un email se
+   * transfère et se retrouve dans des boîtes que personne ne maîtrise, quand la
+   * page est derrière la session. L'email dit qu'il existe, et où.
+   *
+   * Envoyé à la PREMIÈRE publication seulement : une correction ultérieure ne
+   * renvoie rien — trois emails « votre compte rendu est disponible » pour une
+   * coquille corrigée feraient douter du premier.
+   */
+  BOOKING_SUMMARY: {
+    subject: "Le compte rendu de votre séance est disponible",
+    body: `Bonjour {firstName},
+
+Le compte rendu de votre séance « {consultationName} » est disponible dans votre espace : {consultationsUrl}
+
+Il reprend ce qui a été décidé ensemble et ce qui reste à faire.
+
+Ce message fait partie du service auquel vous avez souscrit. Il ne vous est pas envoyé à des fins promotionnelles.
+
+Corentin Saint-Girons
+Founder`,
+  },
 };

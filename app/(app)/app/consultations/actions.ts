@@ -47,6 +47,8 @@ export async function bookConsultation(type: string, slotId: string) {
     slotId: decision.slot.id,
     type: decision.type,
     bookedAt: now.toISOString(),
+    summary: null,
+    summaryAt: null,
   });
   if (!claimed) return { error: REFUSAL_MESSAGES.SLOT_TAKEN };
 

@@ -426,6 +426,8 @@ describe("consultations", () => {
       slotId,
       type: "ORIENTATION",
       bookedAt: "2026-07-29T10:00:00.000Z",
+      summary: null,
+      summaryAt: null,
     });
 
     expect((await consultationStore.bookingsOf(assessment.id)).map((b) => b.id)).toEqual([bookingId]);
@@ -446,6 +448,8 @@ describe("consultations", () => {
       slotId,
       type: "ORIENTATION",
       bookedAt: "2026-07-29T10:00:00.000Z",
+      summary: null,
+      summaryAt: null,
     });
 
     expect(await consultationStore.removeBooking(b.id, `${a.id}-b`)).toBe(false);
@@ -453,6 +457,50 @@ describe("consultations", () => {
 
     await consultationStore.removeBooking(a.id, `${a.id}-b`);
     await consultationStore.removeSlot(slotId);
+  });
+
+  it("publie puis corrige un compte rendu, sans redéclarer la première fois", async () => {
+    /*
+     * `firstTime` décide de l'email d'annonce : vrai à la PREMIÈRE publication,
+     * faux à toute correction — trois « votre compte rendu est disponible »
+     * pour une coquille corrigée feraient douter du premier. La date de
+     * première publication ne bouge plus : elle est la preuve du moment où le
+     * client a été prévenu.
+     */
+    const a = await newAssessment();
+    const slotId = `contrat-slot-${Date.now()}-${counter++}`;
+    await consultationStore.addSlot({ id: slotId, startsAt: "2026-07-01T09:00:00.000Z", minutes: 45 });
+    await consultationStore.addBooking({
+      id: `${a.id}-cr`,
+      assessmentId: a.id,
+      slotId,
+      type: "ORIENTATION",
+      bookedAt: "2026-06-20T10:00:00.000Z",
+      summary: null,
+      summaryAt: null,
+    });
+
+    const first = await consultationStore.setSummary(`${a.id}-cr`, "Décidé : trois écoles.", "2026-07-02T10:00:00.000Z");
+    expect(first).toMatchObject({ firstTime: true });
+    expect(first!.booking.summary).toBe("Décidé : trois écoles.");
+    expect(first!.booking.summaryAt).toBe("2026-07-02T10:00:00.000Z");
+
+    const second = await consultationStore.setSummary(`${a.id}-cr`, "Décidé : quatre écoles.", "2026-07-03T10:00:00.000Z");
+    expect(second).toMatchObject({ firstTime: false });
+    expect(second!.booking.summary).toBe("Décidé : quatre écoles.");
+    // La date de première publication est conservée, pas réécrite.
+    expect(second!.booking.summaryAt).toBe("2026-07-02T10:00:00.000Z");
+
+    // Relu depuis le store : le compte rendu voyage avec la réservation.
+    const read = (await consultationStore.bookingsOf(a.id)).find((b) => b.id === `${a.id}-cr`);
+    expect(read!.summary).toBe("Décidé : quatre écoles.");
+
+    await consultationStore.removeBooking(a.id, `${a.id}-cr`);
+    await consultationStore.removeSlot(slotId);
+  });
+
+  it("rend null pour une réservation disparue plutôt que d'inventer", async () => {
+    expect(await consultationStore.setSummary("jamais-vue", "texte", "2026-07-02T10:00:00.000Z")).toBeNull();
   });
 
   it("refuse un second créneau déjà réservé, sur les deux backends", async () => {
@@ -474,6 +522,8 @@ describe("consultations", () => {
         slotId,
         type: "ORIENTATION",
         bookedAt: new Date().toISOString(),
+        summary: null,
+        summaryAt: null,
       })
     ).toBe(true);
 
@@ -484,6 +534,8 @@ describe("consultations", () => {
         slotId,
         type: "ORIENTATION",
         bookedAt: new Date().toISOString(),
+        summary: null,
+        summaryAt: null,
       })
     ).toBe(false);
 

@@ -27,6 +27,7 @@ export const TRIGGERED_KINDS = [
   "DEADLINE_NOTICE",
   "BOOKING_CONFIRMATION",
   "BOOKING_REMINDER",
+  "BOOKING_SUMMARY",
 ] as const;
 
 export type TriggeredKind = (typeof TRIGGERED_KINDS)[number];
@@ -57,6 +58,8 @@ export const EMAIL_LEGAL_BASIS: Record<EmailKind, LegalBasis> = {
   BOOKING_CONFIRMATION: "CONTRACT",
   /* Rappel de séance : exécution du service, comme la confirmation. */
   BOOKING_REMINDER: "CONTRACT",
+  /* Annonce du compte rendu : le livrable de la séance payée. */
+  BOOKING_SUMMARY: "CONTRACT",
 };
 
 /** Décalage d'envoi, en jours, depuis la soumission du questionnaire. */

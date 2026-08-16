@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { colors, fonts, alpha, gradients } from "@/design/tokens";
 import { adminConsultations } from "@/content/consultations";
 import { OFFER_CODES } from "@/lib/payments/offers";
-import { closeSlot, grantConsultations, openSlot } from "./actions";
+import { closeSlot, grantConsultations, openSlot, saveSummary } from "./actions";
+import { MAX_SUMMARY_LENGTH } from "@/lib/consultations/summary";
 
 /** Ouverture d'un créneau (CDC §31). */
 export function OpenSlotForm() {
@@ -157,6 +158,66 @@ export function GrantForm({
       {saved && !error && (
         <span style={{ fontFamily: fonts.sans, fontSize: "0.75rem", color: colors.goldText }}>✓</span>
       )}
+      {error && <Error>{error}</Error>}
+    </div>
+  );
+}
+
+/**
+ * Compte rendu d'une séance (CDC §31).
+ *
+ * Rendu seulement pour une séance COMMENCÉE — c'est la page serveur qui en
+ * décide, et l'action le revérifie : un compte rendu d'une séance à venir
+ * serait une invention.
+ */
+export function SummaryForm({ bookingId, summary }: { bookingId: string; summary: string | null }) {
+  const [value, setValue] = useState(summary ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const existing = summary !== null;
+
+  return (
+    <div style={{ margin: "10px 0 4px", maxWidth: 640 }}>
+      <textarea
+        value={value}
+        rows={4}
+        maxLength={MAX_SUMMARY_LENGTH}
+        aria-label={`Compte rendu — ${bookingId}`}
+        placeholder={adminConsultations.summaryPlaceholder}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setStatus(null);
+        }}
+        style={{ ...field, width: "100%", lineHeight: 1.6, resize: "vertical" }}
+      />
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() =>
+            startTransition(async () => {
+              setError(null);
+              const result = await saveSummary(bookingId, value);
+              if (result?.error) setError(result.error);
+              else
+                setStatus(
+                  result?.firstTime
+                    ? adminConsultations.summarySaved
+                    : adminConsultations.summaryUpdated
+                );
+            })
+          }
+          style={button}
+        >
+          {existing ? adminConsultations.summaryUpdate : adminConsultations.summarySave}
+        </button>
+        {status && (
+          <span style={{ fontFamily: fonts.sans, fontSize: "0.78rem", color: colors.slate }}>
+            {status}
+          </span>
+        )}
+      </div>
       {error && <Error>{error}</Error>}
     </div>
   );

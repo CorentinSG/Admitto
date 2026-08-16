@@ -393,6 +393,17 @@ model Booking {
   type         String
   bookedAt     DateTime
 
+  /// Compte rendu de la séance, rédigé par le fondateur (CDC §31).
+  ///
+  /// Sur la ligne de la réservation, comme la note de suivi vit sur la ligne
+  /// du statut : le compte rendu appartient à la séance, et une table à part
+  /// serait une seconde relation à effacer, à exporter et à garder alignée.
+  /// L'export et l'effacement le couvrent donc déjà, via `bookings`.
+  summary   String?
+  /// Date de PREMIÈRE publication : c'est elle qui décide de l'email — une
+  /// correction ultérieure ne renvoie rien.
+  summaryAt DateTime?
+
   assessment Assessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   slot       ConsultationSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
 

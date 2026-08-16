@@ -20,6 +20,8 @@ const booking = (id: string, slotId: string, assessmentId = "moi"): Booking => (
   slotId,
   type: "ORIENTATION",
   bookedAt: NOW.toISOString(),
+  summary: null,
+  summaryAt: null,
 });
 
 const request = (over: Partial<Parameters<typeof decideBooking>[0]> = {}) => ({

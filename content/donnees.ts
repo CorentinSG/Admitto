@@ -62,6 +62,6 @@ export const HELD_DATA = [
   "Votre liste d'écoles : programmes visés, classement, avancement, dates limites et notes.",
   "Les métadonnées des documents déposés : type, nom, taille et date. Le contenu des fichiers reste dans le coffre.",
   "Les rappels d'échéance déjà envoyés, pour ne pas vous les renvoyer.",
-  "Vos séances réservées et le solde de séances de votre offre.",
+  "Vos séances réservées, leurs comptes rendus et le solde de séances de votre offre.",
   "Vos sessions de connexion en cours.",
 ] as const;

@@ -18,6 +18,8 @@ const booking = (id: string, slotId: string): Booking => ({
   slotId,
   type: "ORIENTATION",
   bookedAt: NOW.toISOString(),
+  summary: null,
+  summaryAt: null,
 });
 
 describe("rappel avant une séance (CDC §31)", () => {

@@ -35,7 +35,23 @@ export const consultations = {
   duration: (minutes: number) => `${minutes} min`,
   accessError: "Session expirée. Reconnectez-vous pour poursuivre.",
   noticeNote: `Une séance se réserve au moins ${MIN_NOTICE_HOURS} heures à l'avance et peut être annulée depuis cette page.`,
+  /* Compte rendu (CDC §31) : la trace écrite de la séance, rédigée à la main. */
+  pastTitle: "Vos séances passées",
+  summaryLabel: "Compte rendu",
+  summaryPending:
+    "Le compte rendu de cette séance est en cours de rédaction. Il paraîtra ici, et vous serez prévenu par email.",
 };
+
+export const SUMMARY_REFUSALS = {
+  EMPTY:
+    "Un compte rendu vide ne se publie pas : une correction remplace le texte, elle ne l'efface pas.",
+  TOO_LONG: "Compte rendu trop long : 4 000 caractères au maximum.",
+  SESSION_NOT_STARTED:
+    "Cette séance n'a pas encore eu lieu : son compte rendu ne peut pas être rédigé avant.",
+  /* Le motif précis est ajouté par l'action : il vient du miroir d'exécution
+     du vocabulaire, le même que pour les blocs des matrices. */
+  FORBIDDEN_VOCABULARY: "Vocabulaire refusé —",
+} as const;
 
 export const adminConsultations = {
   title: "Consultations",
@@ -53,4 +69,11 @@ export const adminConsultations = {
   grant: "Accorder",
   slotTaken: "Réservé",
   slotFree: "Libre",
+  summaryTitle: "Compte rendu",
+  summaryPlaceholder: "Ce qui a été décidé ensemble, ce qui reste à faire, les points laissés ouverts…",
+  summarySave: "Publier le compte rendu",
+  summaryUpdate: "Corriger le compte rendu",
+  summarySaved: "Compte rendu publié — le client est prévenu par email.",
+  summaryUpdated: "Compte rendu corrigé — aucune relance envoyée.",
+  summaryFuture: "Séance à venir : le compte rendu se rédige après.",
 };

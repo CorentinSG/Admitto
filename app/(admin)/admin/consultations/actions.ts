@@ -5,6 +5,13 @@ import { revalidatePath } from "next/cache";
 import { consultationStore } from "@/lib/store/consultations";
 import { OFFER_CODES, type OfferCode } from "@/lib/payments/offers";
 import { parisWallClockToIso } from "@/lib/consultations/time";
+import { decideSummary } from "@/lib/consultations/summary";
+import { CONSULTATIONS } from "@/lib/consultations/types";
+import { SUMMARY_REFUSALS } from "@/content/consultations";
+import { assessmentStore } from "@/lib/store/assessments";
+import { baseUrl, dispatchEmail } from "@/lib/email/dispatch";
+import { currentUser } from "@/lib/auth/current";
+import { isBackofficeRole } from "@/auth.config";
 
 /**
  * Ouverture de créneaux et attribution de séances (CDC §31).
@@ -42,6 +49,71 @@ export async function openSlot(startsAt: string, minutes: number) {
 
   revalidatePath("/admin/consultations");
   return { ok: true };
+}
+
+/**
+ * Publie ou corrige le compte rendu d'une séance (CDC §31).
+ *
+ * Le rôle est revérifié ICI, comme pour les matrices et pour la même raison :
+ * ce texte est lu par un client. Le reste du back-office s'en remet au
+ * middleware ; ce qui écrit du contenu visible se défend en profondeur.
+ *
+ * La décision vit dans lib/ (`decideSummary`) : une action appelée directement
+ * se heurte aux mêmes refus que le formulaire — séance non commencée, texte
+ * vide, vocabulaire interdit.
+ */
+export async function saveSummary(bookingId: string, text: string) {
+  const user = await currentUser();
+  if (!user || !isBackofficeRole(user.role)) return { error: "Accès refusé." };
+
+  const booking = (await consultationStore.allBookings()).find((b) => b.id === bookingId);
+  if (!booking) return { error: "Réservation introuvable." };
+
+  const slot = (await consultationStore.slots()).find((s) => s.id === booking.slotId) ?? null;
+  const decision = decideSummary({ text, slot }, new Date());
+  if (!decision.accepted) {
+    return {
+      error:
+        decision.reason === "FORBIDDEN_VOCABULARY"
+          ? `${SUMMARY_REFUSALS.FORBIDDEN_VOCABULARY} ${decision.why}`
+          : SUMMARY_REFUSALS[decision.reason],
+    };
+  }
+
+  const written = await consultationStore.setSummary(
+    bookingId,
+    decision.summary,
+    new Date().toISOString()
+  );
+  if (!written) return { error: "Réservation introuvable." };
+
+  /*
+   * L'email n'annonce que la PREMIÈRE publication : une coquille corrigée ne
+   * renvoie rien — trois « votre compte rendu est disponible » pour le même
+   * texte feraient douter du premier. Et comme pour la confirmation, l'échec
+   * d'envoi n'annule pas la publication : le compte rendu est en ligne, c'est
+   * le fait qui compte, le back-office voit le statut renvoyé.
+   */
+  if (written.firstTime) {
+    const assessment = await assessmentStore.get(booking.assessmentId);
+    const email = assessment?.answers.email;
+    if (email) {
+      await dispatchEmail(
+        "BOOKING_SUMMARY",
+        email,
+        {
+          firstName: assessment?.answers.firstName ?? "",
+          consultationName: CONSULTATIONS[booking.type].name,
+          consultationsUrl: `${baseUrl()}/app/consultations`,
+        },
+        false
+      );
+    }
+  }
+
+  revalidatePath("/admin/consultations");
+  revalidatePath("/app/consultations");
+  return { ok: true, firstTime: written.firstTime };
 }
 
 export async function closeSlot(slotId: string) {

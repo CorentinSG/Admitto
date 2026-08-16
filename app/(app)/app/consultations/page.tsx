@@ -39,10 +39,21 @@ export default async function ConsultationsPage() {
     label: slotLabel(slot.startsAt, slot.minutes),
   }));
 
-  const upcoming = mine
+  const withSlots = mine
     .map((booking) => ({ booking, slot: slots.find((s) => s.id === booking.slotId) }))
     .filter((row) => row.slot)
     .sort((a, b) => a.slot!.startsAt.localeCompare(b.slot!.startsAt));
+
+  /*
+   * À venir et passées, séparées : une séance passée ne s'annule plus, elle se
+   * relit. C'est là que vit le compte rendu (CDC §31) — et tant qu'il n'est pas
+   * rédigé, la séance le dit, plutôt que de disparaître de l'écran comme si
+   * elle n'avait pas eu lieu.
+   */
+  const upcoming = withSlots.filter((row) => Date.parse(row.slot!.startsAt) > now.getTime());
+  const past = withSlots
+    .filter((row) => Date.parse(row.slot!.startsAt) <= now.getTime())
+    .reverse(); // la plus récente d'abord : c'est elle qu'on vient relire
 
   return (
     <div>
@@ -140,6 +151,73 @@ export default async function ConsultationsPage() {
                   </span>
                 </span>
                 <CancelButton bookingId={booking.id} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {past.length > 0 && (
+        <section style={{ marginTop: 44 }}>
+          <SectionTitle>{consultations.pastTitle}</SectionTitle>
+          <ul style={{ listStyle: "none", margin: "14px 0 0", padding: 0 }}>
+            {past.map(({ booking, slot }) => (
+              <li
+                key={booking.id}
+                style={{
+                  padding: "16px 0",
+                  borderTop: `1px solid ${alpha.cardGridGap}`,
+                  fontFamily: fonts.sans,
+                  fontSize: "0.88rem",
+                  color: colors.navy900,
+                }}
+              >
+                <span>
+                  {CONSULTATIONS[booking.type].name}
+                  <span style={{ color: colors.slate }}>
+                    {" · "}
+                    {slotLabel(slot!.startsAt, slot!.minutes)}
+                  </span>
+                </span>
+                {booking.summary ? (
+                  <div style={{ marginTop: 10, maxWidth: 680 }}>
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: "0.66rem",
+                        letterSpacing: "0.14em",
+                        textTransform: "uppercase",
+                        color: colors.goldText,
+                      }}
+                    >
+                      {consultations.summaryLabel}
+                    </span>
+                    {/* Les paragraphes du fondateur, tels qu'écrits : le saut de
+                        ligne est sa ponctuation, on ne l'aplatit pas. */}
+                    <p
+                      style={{
+                        fontSize: "0.88rem",
+                        lineHeight: 1.75,
+                        whiteSpace: "pre-line",
+                        margin: "8px 0 0",
+                        color: colors.navy900,
+                      }}
+                    >
+                      {booking.summary}
+                    </p>
+                  </div>
+                ) : (
+                  <p
+                    style={{
+                      fontSize: "0.82rem",
+                      lineHeight: 1.7,
+                      margin: "8px 0 0",
+                      color: colors.slate,
+                    }}
+                  >
+                    {consultations.summaryPending}
+                  </p>
+                )}
               </li>
             ))}
           </ul>

@@ -165,6 +165,18 @@ describe("confirmation de séance (CDC §31)", () => {
     );
   });
 
+  it("l'annonce du compte rendu repose sur le contrat et pointe vers l'espace", () => {
+    // Le compte rendu VIT dans l'espace, derrière la session : l'email dit
+    // qu'il existe et où, il ne recopie pas son contenu — un email se
+    // transfère et finit dans des boîtes que personne ne maîtrise.
+    expect(EMAIL_LEGAL_BASIS.BOOKING_SUMMARY).toBe("CONTRACT");
+    const body = renderEmail("BOOKING_SUMMARY", VARIABLES).body;
+    expect(body).not.toContain(VARIABLES.unsubscribeUrl);
+    expect(body).toMatch(/pas envoyé à des fins promotionnelles/);
+    expect(body).toContain(VARIABLES.consultationsUrl);
+    expect(body).toContain(VARIABLES.consultationName);
+  });
+
   it("le rappel repose lui aussi sur le contrat, et reste court", () => {
     expect(EMAIL_LEGAL_BASIS.BOOKING_REMINDER).toBe("CONTRACT");
     const body = renderEmail("BOOKING_REMINDER", VARIABLES).body;

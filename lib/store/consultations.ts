@@ -39,12 +39,16 @@ const bookingToDomain = (row: {
   slotId: string;
   type: string;
   bookedAt: Date;
+  summary: string | null;
+  summaryAt: Date | null;
 }): Booking => ({
   id: row.id,
   assessmentId: row.assessmentId,
   slotId: row.slotId,
   type: row.type as ConsultationType,
   bookedAt: row.bookedAt.toISOString(),
+  summary: row.summary,
+  summaryAt: row.summaryAt?.toISOString() ?? null,
 });
 
 export const consultationStore = {
@@ -131,6 +135,46 @@ export const consultationStore = {
       if ((error as { code?: string }).code === "P2002") return false;
       throw error;
     }
+  },
+
+  /**
+   * Écrit (ou réécrit) le compte rendu d'une séance.
+   *
+   * Rend la réservation mise à jour et `firstTime` — vrai à la PREMIÈRE
+   * publication seulement : c'est ce qui décide de l'email d'annonce, une
+   * correction ultérieure ne renvoie rien. Rend `null` si la réservation
+   * n'existe pas (annulée entre l'affichage et la sauvegarde).
+   *
+   * Pas de borne par évaluation, à la différence de `removeBooking` : ce geste
+   * est celui du back-office, dont l'action revérifie le rôle.
+   */
+  async setSummary(
+    bookingId: string,
+    summary: string,
+    at: string
+  ): Promise<{ booking: Booking; firstTime: boolean } | null> {
+    if (!usingDatabase()) {
+      const existing = bookings.get(bookingId);
+      if (!existing) return null;
+      const firstTime = existing.summaryAt === null;
+      const updated: Booking = {
+        ...existing,
+        summary,
+        // La date de première publication ne bouge plus : elle est la preuve
+        // du moment où le client a été prévenu.
+        summaryAt: existing.summaryAt ?? at,
+      };
+      bookings.set(bookingId, updated);
+      return { booking: updated, firstTime };
+    }
+    const row = await db().booking.findUnique({ where: { id: bookingId } });
+    if (!row) return null;
+    const firstTime = row.summaryAt === null;
+    const updated = await db().booking.update({
+      where: { id: bookingId },
+      data: { summary, summaryAt: row.summaryAt ?? new Date(at) },
+    });
+    return { booking: bookingToDomain(updated), firstTime };
   },
 
   async removeBooking(assessmentId: string, bookingId: string): Promise<boolean> {

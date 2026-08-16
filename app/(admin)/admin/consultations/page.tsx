@@ -6,7 +6,7 @@ import { assessmentStore } from "@/lib/store/assessments";
 import { CONSULTATIONS } from "@/lib/consultations/types";
 import { remainingAllowance, totalAllowance } from "@/lib/consultations/booking";
 import { adminConsultations } from "@/content/consultations";
-import { CloseSlotButton, GrantForm, OpenSlotForm } from "./SlotControls";
+import { CloseSlotButton, GrantForm, OpenSlotForm, SummaryForm } from "./SlotControls";
 // Le MÊME libellé que la page du client : deux formatages divergeraient, et le
 // créneau ouvert ici cesserait de correspondre à celui qui est lu là-bas.
 import { slotLabel } from "@/lib/consultations/time";
@@ -119,6 +119,9 @@ export default async function AdminConsultationsPage() {
             {bookings.map((booking) => {
               const slot = slots.find((s) => s.id === booking.slotId);
               const person = assessments.find((a) => a.id === booking.assessmentId);
+              // Le compte rendu se rédige APRÈS la séance ; avant, la zone dit
+              // pourquoi elle n'est pas là plutôt que de manquer sans raison.
+              const started = slot ? Date.parse(slot.startsAt) <= Date.now() : false;
               return (
                 <li
                   key={booking.id}
@@ -136,6 +139,20 @@ export default async function AdminConsultationsPage() {
                     {person?.answers.firstName ?? "—"} ({person?.answers.email ?? "—"})
                     {slot ? ` · ${slotLabel(slot.startsAt, slot.minutes)}` : " · créneau retiré"}
                   </span>
+                  {started ? (
+                    <SummaryForm bookingId={booking.id} summary={booking.summary} />
+                  ) : (
+                    <span
+                      style={{
+                        display: "block",
+                        marginTop: 6,
+                        fontSize: "0.78rem",
+                        color: colors.slate,
+                      }}
+                    >
+                      {adminConsultations.summaryFuture}
+                    </span>
+                  )}
                 </li>
               );
             })}

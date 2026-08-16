@@ -123,4 +123,8 @@ export interface Booking {
   slotId: string;
   type: ConsultationType;
   bookedAt: string;
+  /** Compte rendu rédigé par le fondateur après la séance, ou `null`. */
+  summary: string | null;
+  /** Date de première publication du compte rendu — c'est elle qui décide de l'email. */
+  summaryAt: string | null;
 }

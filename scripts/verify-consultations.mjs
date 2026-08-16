@@ -202,6 +202,24 @@ check("Plus aucune heure affichée en UTC", !contains(text, "UTC"));
       /pas envoyée à des fins promotionnelles/.test(confirmation.body));
   }
 }
+
+/*
+ * Compte rendu (CDC §31) : ce que la suite peut atteindre.
+ *
+ * La séance réservée ici est à venir — le back-office doit donc REFUSER d'en
+ * rédiger le compte rendu, et le dire. Le parcours complet (séance passée,
+ * publication, lecture par le client, email d'annonce) est couvert par les
+ * tests du contrat de store et de la décision : une séance passée ne se
+ * fabrique pas depuis le navigateur, `openSlot` refuse le passé.
+ */
+{
+  await adminPage.goto(`${BASE}/admin/consultations`, { waitUntil: "networkidle" });
+  const adminText = await adminPage.locator("body").innerText();
+  check(
+    "Compte rendu refusé tant que la séance n'a pas eu lieu",
+    contains(adminText, "le compte rendu se rédige après")
+  );
+}
 check("Solde décrémenté", contains(text, "2 sur 3"));
 
 // Le créneau réservé n'est plus proposé aux autres types de séance.
