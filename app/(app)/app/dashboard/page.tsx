@@ -13,6 +13,9 @@ import { findModule, isModulePublished } from "@/content/modules";
 import { DOCUMENT_TYPE_LABELS, vault } from "@/content/vault";
 import { rapport } from "@/content/rapport";
 import { documentStore } from "@/lib/store/documents";
+import { consultationStore } from "@/lib/store/consultations";
+import { CONSULTATIONS } from "@/lib/consultations/types";
+import { slotLabel } from "@/lib/consultations/time";
 import { reportStore } from "@/lib/store/reports";
 import { buildTimelineView } from "@/lib/roadmap/timeline-view";
 import { Timeline } from "../roadmap/Timeline";
@@ -48,6 +51,21 @@ export default async function DashboardPage() {
 
   const { assessment, tasks } = loaded;
   const documents = await documentStore.list(assessmentId);
+
+  /*
+   * La prochaine séance réservée (CDC §21 et §31).
+   *
+   * Le tableau de bord est l'écran d'arrivée — « où j'en suis » — et une
+   * séance payée à venir en fait partie au premier chef : elle était pourtant
+   * invisible hors de la page Consultations. Rendue seulement quand elle
+   * existe : un encart qui se montre toujours cesse d'être lu.
+   */
+  const myBookings = await consultationStore.bookingsOf(assessmentId);
+  const allSlots = myBookings.length > 0 ? await consultationStore.slots() : [];
+  const nextSession = myBookings
+    .map((booking) => ({ booking, slot: allSlots.find((s) => s.id === booking.slotId) }))
+    .filter((row) => row.slot && Date.parse(row.slot.startsAt) > now.getTime())
+    .sort((a, b) => a.slot!.startsAt.localeCompare(b.slot!.startsAt))[0];
   const milestoneDates = await milestoneStore.dates(assessmentId);
   // L'identifiant du rapport EST celui du diagnostic (voir `reportStore.create`).
   const reportReady = (await reportStore.get(assessmentId))?.status === "SENT";
@@ -301,6 +319,41 @@ export default async function DashboardPage() {
           />
         </div>
       </Section>
+
+      {/* 3 bis. Prochaine séance réservée — n'apparaît que si elle existe */}
+      {nextSession && (
+        <Section title={dashboard.sections.nextSession}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: 12,
+              padding: "14px 0 0",
+            }}
+          >
+            <span style={{ fontFamily: fonts.sans, fontSize: "0.95rem", color: colors.navy900 }}>
+              {CONSULTATIONS[nextSession.booking.type].name}
+              <span style={{ color: colors.slate }}>
+                {" · "}
+                {slotLabel(nextSession.slot!.startsAt, nextSession.slot!.minutes)}
+              </span>
+            </span>
+            <Link
+              href="/app/consultations"
+              style={{
+                fontFamily: fonts.sans,
+                fontSize: "0.82rem",
+                color: colors.goldText,
+                textDecoration: "none",
+              }}
+            >
+              {dashboard.nextSessionLink} →
+            </Link>
+          </div>
+        </Section>
+      )}
 
       {/* 4. Échéances */}
       {upcoming.length > 0 && (

@@ -204,6 +204,21 @@ check("Plus aucune heure affichée en UTC", !contains(text, "UTC"));
 }
 
 /*
+ * La séance réservée paraît sur le tableau de bord — l'écran d'arrivée.
+ *
+ * Une séance payée à venir fait partie de « où j'en suis » au premier chef :
+ * elle était invisible hors de la page Consultations. L'encart n'apparaît que
+ * si une séance existe ; la suite du tableau de bord vérifie l'inverse — son
+ * absence pour qui n'a rien réservé.
+ */
+{
+  await page.goto(`${BASE}/app/dashboard`, { waitUntil: "networkidle" });
+  const board = await page.locator("body").innerText();
+  check("Prochaine séance sur le tableau de bord", contains(board, "Votre prochaine séance"));
+  check("Avec son heure de Paris", contains(board, "heure de Paris"));
+}
+
+/*
  * Compte rendu (CDC §31) : ce que la suite peut atteindre.
  *
  * La séance réservée ici est à venir — le back-office doit donc REFUSER d'en
@@ -236,6 +251,9 @@ if ((await page.getByLabel("Choisir un créneau — SCHOOL_LIST_REVIEW").count()
 }
 
 // ── Annulation ─────────────────────────────────────────────────────────────
+// Retour sur la page des séances : le détour par le tableau de bord ci-dessus
+// a laissé la page ailleurs, et le bouton n'existe que là.
+await page.goto(`${BASE}/app/consultations`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: "Annuler" }).first().click();
 text = (await waitForText(page, "3 sur 3")) ?? "";
 check("Séance annulable", contains(text, "3 sur 3"));

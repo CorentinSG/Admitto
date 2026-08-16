@@ -110,7 +110,11 @@ export const dashboard = {
     milestones: "Étapes clés",
     module: "Module recommandé",
     documents: "Vos documents",
+    /* Une séance payée à venir fait partie de « où j'en suis » au premier
+       chef : elle était invisible hors de la page Consultations. */
+    nextSession: "Votre prochaine séance",
   },
+  nextSessionLink: "Voir vos séances",
   nbaEmpty:
     "Aucune action ne vous attend actuellement. Les tâches en attente d'un tiers avancent sans vous ; celles qui sont bloquées demandent d'abord de lever leur prérequis.",
   nbaReason: "Pourquoi maintenant",

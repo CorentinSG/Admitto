@@ -159,6 +159,14 @@ check("Statut modifiable et progression recalculée", !/\b0\s*%/.test(after), af
   check("Note conservée après un changement de statut", survives);
 }
 
+// Sans séance réservée, pas d'encart « prochaine séance » : un encart qui se
+// montre toujours cesse d'être lu. La présence est vérifiée par la suite des
+// consultations, après une vraie réservation.
+check(
+  "Aucun encart de séance sans réservation",
+  !(await page.locator("body").innerText()).includes("Votre prochaine séance")
+);
+
 // ── Timeline sur le tableau de bord aussi ──────────────────────────────────
 {
   const board = (await page.locator("body").innerText()).toLowerCase();
