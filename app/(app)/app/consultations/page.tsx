@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { colors, fonts, alpha } from "@/design/tokens";
 import { currentAssessmentId } from "@/lib/auth/current";
 import { consultationStore } from "@/lib/store/consultations";
+import { assessmentStore } from "@/lib/store/assessments";
+import { suggestedConsultation } from "@/lib/consultations/suggest";
 import { bookableSlots, remainingAllowance, totalAllowance } from "@/lib/consultations/booking";
 import { CONSULTATIONS, CONSULTATION_TYPES } from "@/lib/consultations/types";
 import { consultations } from "@/content/consultations";
@@ -27,6 +29,7 @@ export default async function ConsultationsPage() {
   if (!assessmentId) redirect("/diagnostic");
 
   const now = new Date();
+  const assessment = await assessmentStore.get(assessmentId);
   const entitlement = await consultationStore.entitlement(assessmentId);
   const mine = await consultationStore.bookingsOf(assessmentId);
   const allBookings = await consultationStore.allBookings();
@@ -54,6 +57,17 @@ export default async function ConsultationsPage() {
   const past = withSlots
     .filter((row) => Date.parse(row.slot!.startsAt) <= now.getTime())
     .reverse(); // la plus récente d'abord : c'est elle qu'on vient relire
+
+  /*
+   * La séance qui correspond à leur étape remonte en tête (personnalisation
+   * 1.5). MISE EN AVANT, jamais rétrécissement : les quatre types restent
+   * listés et réservables — réduire l'offre à ce que le produit croit
+   * pertinent déciderait à leur place (CDC §24).
+   */
+  const suggested = suggestedConsultation(assessment?.derived.currentPhase ?? null);
+  const orderedTypes = suggested
+    ? [suggested, ...CONSULTATION_TYPES.filter((type) => type !== suggested)]
+    : [...CONSULTATION_TYPES];
 
   return (
     <div>
@@ -225,7 +239,7 @@ export default async function ConsultationsPage() {
       )}
 
       <div style={{ marginTop: 44 }}>
-        {CONSULTATION_TYPES.map((type) => {
+        {orderedTypes.map((type) => {
           const definition = CONSULTATIONS[type];
           return (
             <section
@@ -247,6 +261,24 @@ export default async function ConsultationsPage() {
                 <span style={{ fontFamily: fonts.sans, fontSize: "0.75rem", color: colors.goldText }}>
                   {consultations.duration(definition.minutes)}
                 </span>
+                {/* « Correspond à votre étape », jamais « conseillée » : la
+                    correspondance est un fait tiré de leur phase, une
+                    recommandation serait un conseil que rien ne fonde. */}
+                {type === suggested && (
+                  <span
+                    style={{
+                      fontFamily: fonts.sans,
+                      fontSize: "0.68rem",
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      padding: "4px 10px",
+                      color: colors.navy900,
+                      backgroundColor: alpha.goldBadgeBg,
+                    }}
+                  >
+                    {consultations.matchesPhase}
+                  </span>
+                )}
               </div>
 
               <ScopeList title={consultations.covers} items={definition.covers} />

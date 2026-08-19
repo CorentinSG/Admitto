@@ -204,6 +204,47 @@ check("Plus aucune heure affichée en UTC", !contains(text, "UTC"));
 }
 
 /*
+ * La séance qui correspond à leur étape est mise en avant (personnalisation
+ * 1.5) — SANS retirer les autres.
+ *
+ * Le profil de cette suite prépare ses candidatures : c'est la relecture de
+ * candidature qui doit venir en tête. Les quatre types restent listés et
+ * réservables : mettre en avant n'est pas rétrécir l'offre.
+ */
+{
+  await page.goto(`${BASE}/app/consultations`, { waitUntil: "networkidle" });
+  const pageText = await page.locator("body").innerText();
+  check("La séance de l'étape est signalée", contains(pageText, "Correspond à votre étape"));
+
+  // Les `h2` portent AUSSI les titres de section (« Vos séances à venir ») :
+  // on ne compare que l'ordre des quatre types entre eux.
+  const NOMS = [
+    "Cadrage du projet",
+    "Revue de la liste d'écoles",
+    "Relecture de candidature",
+    "Planification de l'examen",
+  ];
+  const titres = (await page.locator("h2").allInnerTexts())
+    .map((t) => t.trim())
+    .filter((t) => NOMS.some((nom) => t.toLowerCase() === nom.toLowerCase()));
+  check(
+    "Elle vient en tête des types proposés",
+    /relecture de candidature/i.test(titres[0] ?? ""),
+    titres[0] ?? "aucun type trouvé"
+  );
+  check("Les quatre types sont bien tous rendus", titres.length === 4, `${titres.length}`);
+  // Mise en avant, jamais filtre : les quatre types restent proposés.
+  for (const nom of [
+    "Cadrage du projet",
+    "Revue de la liste d'écoles",
+    "Relecture de candidature",
+    "Planification de l'examen",
+  ]) {
+    check(`Type toujours proposé — ${nom}`, contains(pageText, nom));
+  }
+}
+
+/*
  * La séance réservée paraît sur le tableau de bord — l'écran d'arrivée.
  *
  * Une séance payée à venir fait partie de « où j'en suis » au premier chef :

@@ -33,6 +33,10 @@ export const consultations = {
   upcoming: "Vos séances à venir",
   noUpcoming: "Aucune séance réservée.",
   duration: (minutes: number) => `${minutes} min`,
+  /* Mise en avant de la séance correspondant à l'étape (personnalisation 1.5).
+     « Correspond », jamais « conseillée » : la correspondance est un fait tiré
+     de la phase, une recommandation serait un conseil que rien ne fonde. */
+  matchesPhase: "Correspond à votre étape",
   accessError: "Session expirée. Reconnectez-vous pour poursuivre.",
   noticeNote: `Une séance se réserve au moins ${MIN_NOTICE_HOURS} heures à l'avance et peut être annulée depuis cette page.`,
   /* Compte rendu (CDC §31) : la trace écrite de la séance, rédigée à la main. */
