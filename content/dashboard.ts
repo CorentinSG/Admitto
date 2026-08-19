@@ -113,7 +113,19 @@ export const dashboard = {
     /* Une séance payée à venir fait partie de « où j'en suis » au premier
        chef : elle était invisible hors de la page Consultations. */
     nextSession: "Votre prochaine séance",
+    /* Les cinq axes du Moteur B : la photographie la plus personnelle du
+       produit, qui ne paraissait QUE dans le rapport. */
+    axes: "Vos cinq axes",
   },
+  /* Photographie DATÉE, jamais score vivant : la recalculer en continu
+     contredirait « le profil est stocké tel qu'il a été répondu », et un score
+     qui bouge sans nouvelle réponse serait une invention. */
+  axesNote: (date: string) =>
+    `Photographie de votre diagnostic du ${date}. Ces notes ne bougent pas d'elles-mêmes : elles reflètent ce que vous avez répondu ce jour-là.`,
+  axesScore: (score: number) => `${score} sur 4`,
+  axesWeak: "À travailler",
+  axesActionsTitle: "Ce qui réduit ce risque",
+  axesModuleLink: "Lire le module",
   nextSessionLink: "Voir vos séances",
   nbaEmpty:
     "Aucune action ne vous attend actuellement. Les tâches en attente d'un tiers avancent sans vous ; celles qui sont bloquées demandent d'abord de lever leur prérequis.",

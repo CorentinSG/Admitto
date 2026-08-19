@@ -18,6 +18,8 @@ import { CONSULTATIONS } from "@/lib/consultations/types";
 import { slotLabel } from "@/lib/consultations/time";
 import { reportStore } from "@/lib/store/reports";
 import { buildTimelineView } from "@/lib/roadmap/timeline-view";
+import { assembleReportLive } from "@/lib/matrices/load";
+import { resourcesForAxis } from "@/lib/report/axis-resources";
 import { Timeline } from "../roadmap/Timeline";
 import { milestoneStore } from "@/lib/store/milestones";
 import { TaskStatusControl } from "../_components/TaskStatusControl";
@@ -60,6 +62,21 @@ export default async function DashboardPage() {
    * invisible hors de la page Consultations. Rendue seulement quand elle
    * existe : un encart qui se montre toujours cesse d'être lu.
    */
+  /*
+   * Les cinq axes du Moteur B (personnalisation 1.3).
+   *
+   * Ils étaient calculés au diagnostic, montrés UNE FOIS dans le rapport, et
+   * jamais dans l'espace où la personne revient chaque semaine — la
+   * photographie la plus personnelle du produit dormait dans un document.
+   *
+   * Résolus à la date de l'évaluation comme le rapport lui-même : c'est une
+   * photographie DATÉE, pas un score vivant. La recalculer en continu
+   * contredirait « le profil est stocké tel qu'il a été répondu », et un score
+   * qui bouge sans nouvelle réponse serait une invention.
+   */
+  const assembled = await assembleReportLive(assessment);
+  const risksByAxis = new Map(assembled.risks.map((risk) => [risk.axis, risk]));
+
   const myBookings = await consultationStore.bookingsOf(assessmentId);
   const allSlots = myBookings.length > 0 ? await consultationStore.slots() : [];
   const nextSession = myBookings
@@ -320,7 +337,140 @@ export default async function DashboardPage() {
         </div>
       </Section>
 
-      {/* 3 bis. Prochaine séance réservée — n'apparaît que si elle existe */}
+      {/* 3 bis. Les cinq axes — la photographie du diagnostic, datée */}
+      <Section title={dashboard.sections.axes}>
+        <p
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: "0.82rem",
+            lineHeight: 1.7,
+            maxWidth: 680,
+            margin: "14px 0 0",
+            color: colors.slate,
+          }}
+        >
+          {dashboard.axesNote(dateFr(assessment.createdAt))}
+        </p>
+
+        {assembled.axes.map((entry) => {
+          const risk = risksByAxis.get(entry.axis);
+          const resources = risk ? resourcesForAxis(entry.axis) : null;
+          return (
+            <div
+              key={entry.axis}
+              style={{ padding: "18px 0", borderTop: `1px solid ${alpha.cardGridGap}` }}
+            >
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 12 }}>
+                <span
+                  style={{ fontFamily: fonts.sans, fontSize: "0.95rem", color: colors.navy900 }}
+                >
+                  {entry.label}
+                </span>
+                <span
+                  style={{ fontFamily: fonts.serif, fontSize: "1.05rem", color: colors.goldText }}
+                >
+                  {dashboard.axesScore(entry.score)}
+                </span>
+                {/* Le badge ne paraît que sur un axe faible : marquer aussi
+                    les axes solides transformerait la photographie en liste
+                    de courses. */}
+                {risk && (
+                  <span
+                    style={{
+                      fontFamily: fonts.sans,
+                      fontSize: "0.68rem",
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      padding: "4px 10px",
+                      color: colors.navy900,
+                      backgroundColor: alpha.goldBadgeBg,
+                    }}
+                  >
+                    {dashboard.axesWeak}
+                  </span>
+                )}
+              </div>
+
+              <p
+                style={{
+                  fontFamily: fonts.sans,
+                  fontSize: "0.88rem",
+                  lineHeight: 1.7,
+                  maxWidth: 700,
+                  margin: "8px 0 0",
+                  color: colors.slate,
+                }}
+              >
+                {entry.comment}
+              </p>
+
+              {/* Un axe faible dit ce qui le réduit — actions déjà rédigées du
+                  rapport, puis l'outil et le module qui le travaillent. Les
+                  montrer sans cela ne serait qu'un bulletin de notes. */}
+              {risk && (
+                <div style={{ marginTop: 12 }}>
+                  <span
+                    style={{
+                      display: "block",
+                      fontFamily: fonts.sans,
+                      fontSize: "0.68rem",
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      color: colors.goldText,
+                    }}
+                  >
+                    {dashboard.axesActionsTitle}
+                  </span>
+                  <ul
+                    style={{
+                      fontFamily: fonts.sans,
+                      fontSize: "0.86rem",
+                      lineHeight: 1.8,
+                      margin: "6px 0 0",
+                      paddingLeft: 18,
+                      color: colors.navy900,
+                    }}
+                  >
+                    {risk.actions.map((action) => (
+                      <li key={action}>{action}</li>
+                    ))}
+                  </ul>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 18, marginTop: 10 }}>
+                    {resources?.tool && (
+                      <Link
+                        href={resources.tool.href}
+                        style={{
+                          fontFamily: fonts.sans,
+                          fontSize: "0.82rem",
+                          color: colors.goldText,
+                          textDecoration: "none",
+                        }}
+                      >
+                        {resources.tool.label} →
+                      </Link>
+                    )}
+                    {resources?.moduleSlug && (
+                      <Link
+                        href={`/app/modules/${resources.moduleSlug}`}
+                        style={{
+                          fontFamily: fonts.sans,
+                          fontSize: "0.82rem",
+                          color: colors.goldText,
+                          textDecoration: "none",
+                        }}
+                      >
+                        {dashboard.axesModuleLink} →
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </Section>
+
+      {/* 3 ter. Prochaine séance réservée — n'apparaît que si elle existe */}
       {nextSession && (
         <Section title={dashboard.sections.nextSession}>
           <div

@@ -104,12 +104,29 @@ for (const section of ["Progression", "Vos tâches du moment", "Étapes clés", 
   check(`Bloc « ${section} » présent`, has(section));
 }
 
-// Gamification limitée (CDC §24) : rien qui ressemble à un jeu.
-const interdits = ["points d'expérience", "niveau ", "série ", "classement", "badge"];
+/*
+ * Gamification limitée (CDC §24) : rien qui ressemble à un jeu.
+ *
+ * « niveau » et « série » sont cherchés SUIVIS D'UN CHIFFRE ou de « suivant » :
+ * ce sont les niveaux et séries d'un jeu qui sont interdits, pas les mots. Le
+ * motif large refusait « le niveau atteint » — le niveau d'études, terme du
+ * rapport relu et publié depuis longtemps — le jour où les cinq axes sont
+ * arrivés dans l'espace. Une garde qui attrape du français ordinaire finit par
+ * être contournée plutôt que respectée.
+ */
+const interdits = [
+  "points d'expérience",
+  /niveau (\d|suivant)/,
+  /série de \d/,
+  "classement",
+  "badge",
+];
+const trouve = (motif) =>
+  typeof motif === "string" ? board.toLowerCase().includes(motif) : motif.test(board.toLowerCase());
 check(
   "Aucune gamification interdite",
-  !interdits.some((mot) => board.toLowerCase().includes(mot)),
-  interdits.filter((m) => board.toLowerCase().includes(m)).join(", ")
+  !interdits.some(trouve),
+  interdits.filter(trouve).map(String).join(", ")
 );
 
 // La progression ne démarre pas gonflée : rien n'est coché à la place de l'utilisateur.
@@ -157,6 +174,32 @@ check("Statut modifiable et progression recalculée", !/\b0\s*%/.test(after), af
     NOTE
   );
   check("Note conservée après un changement de statut", survives);
+}
+
+/*
+ * Les cinq axes du Moteur B paraissent dans l'espace (personnalisation 1.3).
+ *
+ * Ils étaient calculés au diagnostic, montrés une fois dans le rapport, et
+ * jamais là où la personne revient chaque semaine.
+ */
+{
+  const board = await page.locator("body").innerText();
+  check("Section des cinq axes", /Vos cinq axes/i.test(board));
+  for (const axe of [
+    "Solidité académique",
+    "Adéquation financière",
+    "Réalisme professionnel",
+    "Faisabilité du calendrier",
+    "Risque migratoire",
+  ]) {
+    check(`Axe affiché — ${axe}`, board.includes(axe));
+  }
+  // Photographie DATÉE, jamais score vivant : le dire est la condition pour
+  // afficher un score qui ne bougera pas tout seul.
+  check("La photographie est datée", /Photographie de votre diagnostic du/i.test(board));
+  check("Les notes sont sur quatre", /\d\s+sur 4/.test(board), board.match(/\d\s+sur 4/)?.[0] ?? "?");
+  // Un axe faible dit ce qui le réduit : sans cela, ce serait un bulletin.
+  check("Un axe faible propose ce qui le réduit", /Ce qui réduit ce risque/i.test(board));
 }
 
 // Sans séance réservée, pas d'encart « prochaine séance » : un encart qui se
