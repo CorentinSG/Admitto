@@ -3,8 +3,9 @@ import type { ReportRecord } from "@/lib/store/reports";
 import { assembleReportLive } from "@/lib/matrices/load";
 import { formatEuros } from "@/lib/payments/offers";
 import { isDeductionValid } from "@/lib/payments/deduction";
-import { isModulePublished } from "@/content/modules";
 import { J2_FRAGMENTS } from "@/content/emails";
+import { moduleForAxis } from "./resource";
+import type { Axis } from "@/lib/engine-b/verdict";
 import type { EmailVariables } from "./render";
 import type { SequenceKind } from "./types";
 
@@ -56,10 +57,19 @@ export interface SequenceContext {
   now: Date;
 }
 
-/** Le risque principal : le premier axe faible du rapport, ou rien. */
-async function mainRisk(context: SequenceContext): Promise<string | null> {
+/**
+ * Le risque principal : le premier axe faible du rapport, ou rien.
+ *
+ * L'AXE est rendu avec le titre : c'est lui qui choisit le module joint au
+ * J+12 (`moduleForAxis`). Le titre seul obligerait à le retrouver par une
+ * comparaison de chaînes — une correspondance qui casse au premier mot changé.
+ */
+async function mainRisk(
+  context: SequenceContext
+): Promise<{ axis: Axis; title: string } | null> {
   const assembled = await assembleReportLive(context.assessment);
-  return assembled.risks[0]?.title ?? null;
+  const first = assembled.risks[0];
+  return first ? { axis: first.axis, title: first.title } : null;
 }
 
 interface ReportVariables {
@@ -145,11 +155,13 @@ export async function eligibility(
 
     case "J12_CONTENT": {
       const risk = await mainRisk(context);
-      const slug = risk ? resourceFor(context) : null;
+      // Le module suit l'AXE du risque principal : le produit calculait ce
+      // risque pour chacun et envoyait pourtant la même lecture à tous.
+      const slug = risk ? moduleForAxis(risk.axis) : null;
       if (!risk || !slug) return { ok: false, reason: "NO_PUBLISHED_RESOURCE" };
       return {
         ok: true,
-        variables: { mainRisk: risk, resourceUrl: `${context.baseUrl}/app/modules/${slug}` },
+        variables: { mainRisk: risk.title, resourceUrl: `${context.baseUrl}/app/modules/${slug}` },
       };
     }
 
@@ -159,26 +171,4 @@ export async function eligibility(
       return { ok: true, variables: { ...(await reportVariables(context)), ...deduction } };
     }
   }
-}
-
-/**
- * Module publié à joindre au J+12.
- *
- * Le module recommandé par la feuille de route serait plus fin ; il exige de
- * charger la feuille de route pour un email dont c'est le seul besoin. Le
- * module de décision convient à tous les risques — `isModulePublished` le
- * confirme au lieu de le supposer.
- *
- * L'identifiant est exporté et vérifié par un test : il désignait
- * « module-0-orientation », qui n'existe pas, si bien que `isModulePublished`
- * répondait non et que le J+12 n'a JAMAIS pu partir. Le garde-fou était en
- * place, il a fonctionné — mais il ne pouvait pas distinguer « module non
- * publié » de « slug faux », et un email qui ne part jamais ne se signale
- * nulle part : il compte comme « en attente », indéfiniment.
- */
-export const J12_MODULE_SLUG = "module-0-decision";
-
-function resourceFor(context: SequenceContext): string | null {
-  void context;
-  return isModulePublished(J12_MODULE_SLUG) ? J12_MODULE_SLUG : null;
 }

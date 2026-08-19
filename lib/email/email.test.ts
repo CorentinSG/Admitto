@@ -5,7 +5,8 @@ import { renderEmail } from "./render";
 import { emailsAreDelivered, sendGuarded, type EmailTransport } from "./transport";
 import { baseUrl } from "./dispatch";
 import { EMAIL_LEGAL_BASIS } from "./types";
-import { J12_MODULE_SLUG } from "./eligibility";
+import { FALLBACK_MODULE_SLUG, MODULE_BY_AXIS, moduleForAxis } from "./resource";
+import { AXES } from "@/lib/engine-b/verdict";
 import { J2_FRAGMENTS } from "@/content/emails";
 import { DELIVERY_PROMISE, deliveryPromise } from "@/content/diagnostic-delivery";
 import { rapport } from "@/content/rapport";
@@ -112,16 +113,41 @@ describe("rendu des emails", () => {
     expect(body).toMatch(/ne constitue pas un conseil juridique/);
   });
 
-  it("la ressource du J+12 désigne un module qui existe ET qui est publié", () => {
+  it("chaque module de la table du J+12 existe ET est publié", () => {
     /*
      * Le J+12 citait « module-0-orientation », un slug qui n'existe pas :
      * `isModulePublished` répondait non, l'email restait éternellement « en
      * attente », et rien ne le signalait — la garde ne pouvait pas distinguer
      * « module non publié » de « nom faux ». Même verrou que la feuille de
      * route, où chaque tâche qui cite un module cite un module qui existe.
+     *
+     * La garde porte désormais sur TOUTE la table axe → module, pas sur le seul
+     * repli : un slug faux dans une entrée serait invisible à la personne dont
+     * c'est justement le risque principal.
      */
-    expect(findModule(J12_MODULE_SLUG), `slug inconnu : ${J12_MODULE_SLUG}`).not.toBeNull();
-    expect(isModulePublished(J12_MODULE_SLUG)).toBe(true);
+    for (const slug of [...Object.values(MODULE_BY_AXIS), FALLBACK_MODULE_SLUG]) {
+      expect(findModule(slug), `slug inconnu : ${slug}`).not.toBeNull();
+      expect(isModulePublished(slug), `module non publié : ${slug}`).toBe(true);
+    }
+  });
+
+  it("le J+12 joint un module DIFFÉRENT selon l'axe du risque principal", () => {
+    // Le produit calculait le risque principal de chacun et envoyait pourtant
+    // la même lecture à tous : c'est ce que ce test interdit de refaire.
+    const choisis = new Set(AXES.map((axis) => moduleForAxis(axis)));
+    expect(choisis.size).toBeGreaterThan(1);
+    expect(moduleForAxis("FINANCIAL_FIT")).not.toBe(moduleForAxis("IMMIGRATION_RISK"));
+
+    // La table couvre exactement les cinq axes : un axe ajouté au Moteur B
+    // sans module ne compile pas, celui-ci vérifie l'inverse — aucune entrée
+    // orpheline qui ne serait jamais choisie.
+    expect(Object.keys(MODULE_BY_AXIS).sort()).toEqual([...AXES].sort());
+  });
+
+  it("sans axe, ou si le module visé n'est pas publiable, il reste le repli", () => {
+    // Le repli est le module de décision : le seul qui s'adresse à toutes les
+    // situations. Il ne sert qu'à défaut, jamais par commodité.
+    expect(moduleForAxis(null)).toBe(FALLBACK_MODULE_SLUG);
   });
 });
 

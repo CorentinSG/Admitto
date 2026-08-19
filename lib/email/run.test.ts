@@ -6,7 +6,7 @@ import { noticeStore } from "@/lib/store/notifications";
 import { createDeduction } from "@/lib/payments/deduction";
 import type { Answers } from "@/lib/questionnaire/types";
 import { MAX_LATE_DAYS, journalId, runEmailSequence } from "./run";
-import { J12_MODULE_SLUG } from "./eligibility";
+import { MODULE_BY_AXIS } from "./resource";
 
 /**
  * Passage d'envoi de la séquence.
@@ -206,7 +206,10 @@ describe("séquence J+0 → J+25", () => {
 
     const j12 = to(email).filter((m) => m.subject.includes("point de vigilance"));
     expect(j12).toHaveLength(1);
-    expect(j12[0].body).toContain(`/app/modules/${J12_MODULE_SLUG}`);
+    // Le profil de référence a « Écart entre l'objectif et le profil actuel »
+    // comme premier risque : le module joint est celui du réalisme
+    // professionnel, pas le module de décision servi jadis à tout le monde.
+    expect(j12[0].body).toContain(`/app/modules/${MODULE_BY_AXIS.PROFESSIONAL_REALISM}`);
   });
 
   it("n'annonce aucune expiration de déduction en l'absence de paiement", async () => {
